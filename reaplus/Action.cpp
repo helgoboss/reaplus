@@ -5,9 +5,7 @@
 #include "Action.h"
 #include "ModelUtil.h"
 #include "HelperControlSurface.h"
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 #undef min
 #undef max
 

@@ -3,9 +3,7 @@
 #include "Section.h"
 #include "Action.h"
 #include "utility.h"
-namespace reaper {
 #include <reaper_plugin_functions.h>
-}
 
 using rxcpp::subscriber;
 using boost::none;

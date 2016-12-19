@@ -1,8 +1,6 @@
 #include "FxChain.h"
 #include "Fx.h"
-namespace reaper {
 #include <reaper_plugin_functions.h>
-}
 
 using rxcpp::observable;
 using rxcpp::subscriber;

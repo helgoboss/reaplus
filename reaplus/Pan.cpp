@@ -3,9 +3,7 @@
 #include "ModelUtil.h"
 #include "utility.h"
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 namespace reaplus {
   Pan::Pan(double normalizedValue) : normalizedValue_(normalizedValue) {

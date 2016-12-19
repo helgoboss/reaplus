@@ -10,9 +10,7 @@
 #include "IncomingMidiEvent.h"
 #include "HelperControlSurface.h"
 
-namespace reaper {
 #include <reaper_plugin_functions.h>
-}
 
 using rxcpp::subscriber;
 using boost::none;

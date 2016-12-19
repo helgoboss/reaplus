@@ -1,8 +1,6 @@
 #include "MidiInputDevice.h"
 #include <reaplus/utility.h>
-namespace reaper {
 #include <reaper_plugin_functions.h>
-}
 
 
 namespace reaplus {

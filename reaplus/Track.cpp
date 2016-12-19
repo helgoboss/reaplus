@@ -8,9 +8,7 @@
 #include "Reaper.h"
 #include "FxChain.h"
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 using std::shared_ptr;
 using rxcpp::subscriber;

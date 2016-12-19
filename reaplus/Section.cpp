@@ -1,8 +1,6 @@
 #include "Section.h"
 #include "Action.h"
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 using rxcpp::observable;
 using rxcpp::subscriber;

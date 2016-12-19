@@ -2,9 +2,7 @@
 #include <algorithm>
 #include <cctype>
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 using std::string;
 using std::function;

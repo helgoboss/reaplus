@@ -3,9 +3,7 @@
 #include "utility.h"
 #include "HelperControlSurface.h"
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 using std::string;
 

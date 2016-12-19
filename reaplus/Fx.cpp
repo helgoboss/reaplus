@@ -4,9 +4,7 @@
 #include "FxChain.h"
 #include <regex>
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 #include "utility.h"
 

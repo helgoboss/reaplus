@@ -3,9 +3,7 @@
 #include "ModelUtil.h"
 #include "utility.h"
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 namespace reaplus {
   const double Volume::LN10_OVER_TWENTY = 0.11512925464970228420089957273422;

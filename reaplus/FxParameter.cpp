@@ -3,9 +3,7 @@
 #include "HelperControlSurface.h"
 #include "utility.h"
 
-namespace reaper {
 #include "reaper_plugin_functions.h"
-}
 
 using std::string;
 using std::unique_ptr;

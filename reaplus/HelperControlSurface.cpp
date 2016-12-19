@@ -9,6 +9,7 @@
 #include "TrackPan.h"
 #include "TrackSendVolume.h"
 #include "FxChain.h"
+#include "reaper_plugin_functions.h"
 
 using std::unique_lock;
 namespace rx = rxcpp;
@@ -19,9 +20,6 @@ using std::pair;
 using std::string;
 using std::set;
 
-namespace reaper {
-#include "reaper_plugin_functions.h"
-}
 
 namespace reaplus {
   HelperControlSurface::HelperControlSurface() {
