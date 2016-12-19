@@ -22,12 +22,16 @@ namespace reaplus {
 
   class TrackSend;
 
+  class Reaper;
+
   struct FxChainPair {
     std::set<std::string> inputFxGuids;
     std::set<std::string> outputFxGuids;
   };
 
   class HelperControlSurface : public IReaperControlSurface {
+    friend class Reaper;
+
   private:
     rxcpp::subjects::subject<FxParameter> fxParameterValueChangedSubject_;
     rxcpp::subjects::subject<FxParameter> fxParameterTouchedSubject_;
@@ -51,9 +55,24 @@ namespace reaplus {
     rxcpp::observe_on_one_worker::coordinator_type mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
+
     virtual void SetSurfacePan(MediaTrack* trackid, double pan) override;
 
     virtual void SetSurfaceVolume(MediaTrack* trackid, double volume) override;
+
+    const char* GetTypeString();
+
+    const char* GetDescString();
+
+    const char* GetConfigString();
+
+    virtual void SetTrackListChange() override;
+
+    void Run();
+
+    virtual int Extended(int call, void* parm1, void* parm2, void* parm3) override;
+
+  protected:
 
     static void init();
 
@@ -94,18 +113,6 @@ namespace reaplus {
     rxcpp::subscription enqueueCommand(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
-
-    const char* GetTypeString();
-
-    const char* GetDescString();
-
-    const char* GetConfigString();
-
-    virtual void SetTrackListChange() override;
-
-    void Run();
-
-    virtual int Extended(int call, void* parm1, void* parm2, void* parm3) override;
 
   private:
     HelperControlSurface();

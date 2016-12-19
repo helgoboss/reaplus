@@ -245,8 +245,8 @@ namespace reaplus {
     return incomingMidiEventsSubject_.get_observable();
   }
 
-  rxcpp::subscription Reaper::executeInMainThread(std::function<void(void)> command) {
-    return HelperControlSurface::instance().enqueueCommand(command);
+  void Reaper::init() {
+    HelperControlSurface::init();
   }
 
   void Reaper::processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t* reg) {
@@ -273,6 +273,78 @@ namespace reaplus {
         }
       }
     }
+  }
+
+  rxcpp::observable<Parameter*> Reaper::parameterValueChangedUnsafe() const {
+    return HelperControlSurface::instance().parameterValueChangedUnsafe();
+  }
+
+  rxcpp::observable<Parameter*> Reaper::parameterTouchedUnsafe() const {
+    return HelperControlSurface::instance().parameterTouchedUnsafe();
+  }
+
+  rxcpp::observable<FxParameter> Reaper::fxParameterValueChanged() const {
+    return HelperControlSurface::instance().fxParameterValueChanged();
+  }
+
+  rxcpp::observable<FxParameter> Reaper::fxParameterTouched() const {
+    return HelperControlSurface::instance().fxParameterTouched();
+  }
+
+  rxcpp::observable<Track> Reaper::trackVolumeChanged() const {
+    return HelperControlSurface::instance().trackVolumeChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackVolumeTouched() const {
+    return HelperControlSurface::instance().trackVolumeTouched();
+  }
+
+  rxcpp::observable<Track> Reaper::trackPanChanged() const {
+    return HelperControlSurface::instance().trackPanChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackPanTouched() const {
+    return HelperControlSurface::instance().trackPanTouched();
+  }
+
+  rxcpp::observable<TrackSend> Reaper::trackSendVolumeChanged() const {
+    return HelperControlSurface::instance().trackSendVolumeChanged();
+  }
+
+  rxcpp::observable<TrackSend> Reaper::trackSendVolumeTouched() const {
+    return HelperControlSurface::instance().trackSendVolumeTouched();
+  }
+
+  rxcpp::observable<Track> Reaper::trackAdded() const {
+    return HelperControlSurface::instance().trackAdded();
+  }
+
+  rxcpp::observable<Track> Reaper::trackRemoved() const {
+    return HelperControlSurface::instance().trackRemoved();
+  }
+
+  rxcpp::observable<Project> Reaper::tracksReordered() const {
+    return HelperControlSurface::instance().tracksReordered();
+  }
+
+  rxcpp::observable<Fx> Reaper::fxAdded() const {
+    return HelperControlSurface::instance().fxAdded();
+  }
+
+  rxcpp::observable<Fx> Reaper::fxRemoved() const {
+    return HelperControlSurface::instance().fxRemoved();
+  }
+
+  rxcpp::observable<Track> Reaper::fxReordered() const {
+    return HelperControlSurface::instance().fxReordered();
+  }
+
+  rxcpp::subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
+    return HelperControlSurface::instance().enqueueCommand(command);
+  }
+
+  const rxcpp::observe_on_one_worker& Reaper::mainThreadCoordination() const {
+    return HelperControlSurface::instance().mainThreadCoordination();
   }
 }
 

@@ -18,6 +18,10 @@ namespace reaplus {
   class Section;
   class MidiInputDevice;
   class IncomingMidiEvent;
+  class Parameter;
+  class TrackSend;
+  class Fx;
+  class Track;
 
   enum class MessageBoxType : int {
     Ok,
@@ -75,6 +79,8 @@ namespace reaplus {
   public:
     static Reaper& instance();
 
+    void init();
+
     Reaper();
 
     ~Reaper();
@@ -91,8 +97,6 @@ namespace reaplus {
     Project createNewDefaultProjectInNewTab();
 
     Project createEmptyProjectInNewTab();
-
-    rxcpp::subscription executeInMainThread(std::function<void(void)> command);
 
     void showConsoleMessage(const std::string& msg);
 
@@ -133,6 +137,43 @@ namespace reaplus {
     // actually existing at runtime. That way we would support (still) unloaded Actions.
     // TODO Don't automatically interpret command name as commandId
     Action actionByCommandName(std::string commandName) const;
+
+
+    rxcpp::observable<Parameter*> parameterValueChangedUnsafe() const;
+
+    rxcpp::observable<Parameter*> parameterTouchedUnsafe() const;
+
+    rxcpp::observable<FxParameter> fxParameterValueChanged() const;
+
+    rxcpp::observable<FxParameter> fxParameterTouched() const;
+
+    rxcpp::observable<Track> trackVolumeChanged() const;
+
+    rxcpp::observable<Track> trackVolumeTouched() const;
+
+    rxcpp::observable<Track> trackPanChanged() const;
+
+    rxcpp::observable<Track> trackPanTouched() const;
+
+    rxcpp::observable<TrackSend> trackSendVolumeChanged() const;
+
+    rxcpp::observable<TrackSend> trackSendVolumeTouched() const;
+
+    rxcpp::observable<Track> trackAdded() const;
+
+    rxcpp::observable<Track> trackRemoved() const;
+
+    rxcpp::observable<Project> tracksReordered() const;
+
+    rxcpp::observable<Fx> fxAdded() const;
+
+    rxcpp::observable<Fx> fxRemoved() const;
+
+    rxcpp::observable<Track> fxReordered() const;
+
+    rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
+
+    const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 
   private:
     static bool staticHookCommand(int commandIndex, int flag);
