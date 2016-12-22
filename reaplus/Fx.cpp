@@ -189,9 +189,12 @@ namespace reaplus {
 
   bool Fx::windowHasFocus() const {
     if (auto window = floatingWindow()) {
+      // FX is open in floating window
       return GetActiveWindow() == window;
     } else {
-      return false;
+      // FX is not open in floating window. In this case we consider it as focused if the FX chain of that track is
+      // open and the currently displayed FX in the FX chain is this FX.
+      return windowIsOpen();
     }
   }
 
