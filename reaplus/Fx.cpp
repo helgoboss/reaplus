@@ -84,6 +84,10 @@ namespace reaplus {
     reaper::TrackFX_Show(track().mediaTrack(), queryIndex(), 3);
   }
 
+  bool Fx::windowIsOpen() const {
+    return reaper::TrackFX_GetOpen(track().mediaTrack(), queryIndex());
+  }
+
   pair<int, bool> Fx::indexFromQueryIndex(int queryIndex) {
     if (queryIndex >= 0x1000000) {
       return std::make_pair(queryIndex - 0x1000000, true);
@@ -178,6 +182,14 @@ namespace reaplus {
     if (foundFx) {
       index_ = foundFx->index();
       return true;
+    } else {
+      return false;
+    }
+  }
+
+  bool Fx::windowHasFocus() const {
+    if (auto window = floatingWindow()) {
+      return GetActiveWindow() == window;
     } else {
       return false;
     }

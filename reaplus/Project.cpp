@@ -84,6 +84,14 @@ namespace reaplus {
     }
   }
 
+  boost::optional<Track> Project::trackByNumber(int number) const {
+    if (number == 0) {
+      return masterTrack();
+    } else {
+      return trackByIndex(number - 1);
+    }
+  }
+
   Track Project::masterTrack() const {
     complainIfNotAvailable();
     return Track(reaper::GetMasterTrack(reaProject_), reaProject());

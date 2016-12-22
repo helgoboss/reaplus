@@ -53,6 +53,8 @@ namespace reaplus {
     rxcpp::observable<FxParameter> parameters() const;
     void showInFloatingWindow() const;
     HWND floatingWindow() const;
+    bool windowIsOpen() const;
+    bool windowHasFocus() const;
     bool moveForwardInPresetsBy(int count);
     bool moveBackwardInPresetsBy(int count);
     bool presetIsDirty() const;

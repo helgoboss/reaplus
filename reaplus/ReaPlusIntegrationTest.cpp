@@ -28,8 +28,12 @@ namespace reaplus {
       // Then
       assertTrue(currentProjectBefore == currentProjectBefore, "Project comparison broken");
       assertTrue(Reaper::instance().projectCount() == projectCountBefore + 1, "Project count not increased");
+      assertTrue(Reaper::instance().projects().as_blocking().count() == projectCountBefore + 1);
       assertTrue(Reaper::instance().currentProject() != currentProjectBefore, "Current project still the same");
       assertTrue(Reaper::instance().currentProject() == newProject, "Current project not new project");
+      assertTrue(Reaper::instance().projects().as_blocking().first() != newProject);
+      assertTrue(Reaper::instance().projectsWithCurrentOneFirst().as_blocking().first() == newProject);
+      assertTrue(Reaper::instance().projectsWithCurrentOneFirst().as_blocking().count() == projectCountBefore + 1);
       assertTrue(newProject.trackCount() == 0, "Project not empty at beginning");
       assertTrue(newProject.index() > 0);
       assertTrue(!newProject.filePath().is_initialized());
@@ -451,7 +455,7 @@ namespace reaplus {
       auto project = Reaper::instance().currentProject();
       int trackCountBefore = project.trackCount();
       auto firstTrack = *project.trackByIndex(0);
-      auto secondTrack = *project.trackByIndex(1);
+      auto secondTrack = *project.trackByNumber(2);
       auto secondTrackGuid = secondTrack.guid();
       assertTrue(firstTrack.isAvailable(), "Precondition failed");
       assertTrue(secondTrack.index() == 1, "Precondition failed");
@@ -1040,6 +1044,11 @@ namespace reaplus {
 
         // Then
         assertTrue(fx.floatingWindow() == nullptr);
+        assertTrue(!fx.windowIsOpen());
+        assertTrue(!fx.windowHasFocus());
+        if (!fxChain.isInputFx()) {
+            assertTrue(!Reaper::instance().focusedFx().is_initialized());
+        }
       });
 
 
@@ -1052,6 +1061,14 @@ namespace reaplus {
 
         // Then
         assertTrue(fx.floatingWindow() != nullptr);
+        assertTrue(fx.windowIsOpen());
+        assertTrue(fx.windowHasFocus(), "Window has no focus");
+        if (!fxChain.isInputFx()) {
+            const auto focusedFx = Reaper::instance().focusedFx();
+            // TODO This is not reliable! After REAPER start no focused Fx can be found!
+//            assertTrue(focusedFx.is_initialized(), "Focused FX not found");
+//            assertTrue(*focusedFx == fx, "Wrong focused fx");
+        }
       });
 
       test("Add track JS fx by original name", [&fxChain] {

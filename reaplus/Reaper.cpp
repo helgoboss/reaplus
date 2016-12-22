@@ -165,6 +165,42 @@ namespace reaplus {
     acceleratorRegister_.desc = description_.c_str();
   }
 
+  boost::optional<Fx> Reaper::focusedFx() const {
+    int trackNumber;
+    int itemNumber;
+    int fxNumber;
+    const int result = reaper::GetFocusedFX(&trackNumber, &itemNumber, &fxNumber);
+    switch (result) {
+    case 1: {
+      // We don't know the project so we must check each project
+      return projectsWithCurrentOneFirst()
+          .map([trackNumber, fxNumber](Project p) -> boost::optional<Fx> {
+            if (const auto track = p.trackByIndex(trackNumber)) {
+              if (const auto fx = track->normalFxChain().fxByIndex(fxNumber)) {
+                if (fx->windowHasFocus()) {
+                  return fx;
+                } else {
+                  return none;
+                }
+              } else {
+                return none;
+              }
+            } else {
+              return none;
+            }
+          })
+          .default_if_empty(boost::optional<Fx>())
+          .as_blocking()
+          .first();
+    }
+    case 0:
+    case 2:
+      return none;
+    default:
+      return none;
+    }
+  }
+
   Guid Reaper::generateGuid() const {
     GUID guid;
     reaper::genGuid(&guid);
@@ -201,6 +237,16 @@ namespace reaplus {
         }
       }
     });
+  }
+
+  rxcpp::observable<Project> Reaper::projectsWithCurrentOneFirst() const {
+    const auto currentProject = this->currentProject();
+    return observable<>::just(currentProject)
+        .concat(
+            projects().filter([currentProject](Project p) {
+              return p != currentProject;
+            })
+        );
   }
 
   rxcpp::observable<MidiInputDevice> Reaper::midiInputDevices() const {
