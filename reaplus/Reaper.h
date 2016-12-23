@@ -121,6 +121,8 @@ namespace reaplus {
 
     rxcpp::observable<Project> projects() const;
 
+    rxcpp::observable<Project> projectsWithCurrentOneFirst() const;
+
     rxcpp::observable<MidiInputDevice> midiInputDevices() const;
 
     // It's correct that this method returns a non-optional. An id is supposed to uniquely identify a device.
@@ -180,6 +182,10 @@ namespace reaplus {
     rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
+
+    // Attention: Returns normal fx only, not input fx!
+    // This is not reliable! After REAPER start no focused Fx can be found!
+    boost::optional<Fx> focusedFx() const;
 
   private:
     static bool staticHookCommand(int commandIndex, int flag);

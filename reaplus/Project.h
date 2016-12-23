@@ -27,7 +27,10 @@ namespace reaplus {
     // It's correct that this returns an optional because the index isn't a stable identifier of a track.
     // The track could move. So this should do a runtime lookup of the track and return a stable MediaTrack-backed
     // Track object if a track exists at that index.
+    // 0 is first normal track (master track is not obtainable via this method)
     boost::optional<Track> trackByIndex(int index) const;
+    // 0 is master track, 1 is first normal track
+    boost::optional<Track> trackByNumber(int number) const;
     Track masterTrack() const;
     boost::optional<Track> firstTrack() const;
     boost::optional<Track> lastTrack() const;

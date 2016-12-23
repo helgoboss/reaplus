@@ -84,6 +84,10 @@ namespace reaplus {
     reaper::TrackFX_Show(track().mediaTrack(), queryIndex(), 3);
   }
 
+  bool Fx::windowIsOpen() const {
+    return reaper::TrackFX_GetOpen(track().mediaTrack(), queryIndex());
+  }
+
   pair<int, bool> Fx::indexFromQueryIndex(int queryIndex) {
     if (queryIndex >= 0x1000000) {
       return std::make_pair(queryIndex - 0x1000000, true);
@@ -180,6 +184,17 @@ namespace reaplus {
       return true;
     } else {
       return false;
+    }
+  }
+
+  bool Fx::windowHasFocus() const {
+    if (auto window = floatingWindow()) {
+      // FX is open in floating window
+      return GetActiveWindow() == window;
+    } else {
+      // FX is not open in floating window. In this case we consider it as focused if the FX chain of that track is
+      // open and the currently displayed FX in the FX chain is this FX.
+      return windowIsOpen();
     }
   }
 
