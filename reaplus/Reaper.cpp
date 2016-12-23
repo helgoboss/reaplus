@@ -303,6 +303,14 @@ namespace reaplus {
     return HelperControlSurface::instance().trackPanChanged();
   }
 
+  rxcpp::observable<Track> Reaper::trackNameChanged() const {
+    return HelperControlSurface::instance().trackNameChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackInputChanged() const {
+    return HelperControlSurface::instance().trackInputChanged();
+  }
+
   rxcpp::observable<Track> Reaper::trackPanTouched() const {
     return HelperControlSurface::instance().trackPanTouched();
   }
@@ -341,6 +349,10 @@ namespace reaplus {
 
   rxcpp::subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
     return HelperControlSurface::instance().enqueueCommand(command);
+  }
+
+  rxcpp::subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
+    return rxcpp::subscription();
   }
 
   const rxcpp::observe_on_one_worker& Reaper::mainThreadCoordination() const {

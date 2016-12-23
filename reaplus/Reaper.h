@@ -153,6 +153,10 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackPanChanged() const;
 
+    rxcpp::observable<Track> trackNameChanged() const;
+
+    rxcpp::observable<Track> trackInputChanged() const;
+
     rxcpp::observable<Track> trackPanTouched() const;
 
     rxcpp::observable<TrackSend> trackSendVolumeChanged() const;
@@ -172,6 +176,8 @@ namespace reaplus {
     rxcpp::observable<Track> fxReordered() const;
 
     rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
+
+    rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 

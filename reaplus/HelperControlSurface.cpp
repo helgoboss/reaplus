@@ -83,8 +83,21 @@ namespace reaplus {
     return fxParameterValueChangedSubject_.get_observable();
   }
 
+  void HelperControlSurface::SetTrackTitle(MediaTrack* trackid, const char* title) {
+    if (state() == State::PropagatingTrackSetChanges) {
+      numTrackSetChangesLeftToBePropagated_--;
+    } else {
+      trackNameChangedSubject_.get_subscriber().on_next(Track(trackid, nullptr));
+    }
+  }
+
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     switch (call) {
+    case CSURF_EXT_SETINPUTMONITOR: {
+      const auto mediaTrack = (MediaTrack*) parm1;
+      trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+      return 0;
+    }
     case CSURF_EXT_SETFXPARAM: {
       const auto mediaTrack = (MediaTrack*) parm1;
       const auto fxAndParamIndex = (int*) parm2;
@@ -135,8 +148,14 @@ namespace reaplus {
   }
 
   void HelperControlSurface::SetTrackListChange() {
+    // FIXME Not multi-project compatible!
+    numTrackSetChangesLeftToBePropagated_ = reaper::CountTracks(nullptr) + 1;
     removeInvalidReaProjects();
     detectTrackSetChanges();
+  }
+
+  HelperControlSurface::State HelperControlSurface::state() const {
+    return numTrackSetChangesLeftToBePropagated_ == 0 ? State::Normal : State::PropagatingTrackSetChanges;
   }
 
   void HelperControlSurface::detectTrackSetChanges() {
@@ -204,6 +223,14 @@ namespace reaplus {
 
   rx::observable <Track> HelperControlSurface::trackPanChanged() const {
     return trackPanChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackNameChanged() const {
+    return trackNameChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackInputChanged() const {
+    return trackInputChangedSubject_.get_observable();
   }
 
   rx::observable <TrackSend> HelperControlSurface::trackSendVolumeChanged() const {

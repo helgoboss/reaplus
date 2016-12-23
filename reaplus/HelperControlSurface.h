@@ -33,6 +33,11 @@ namespace reaplus {
     friend class Reaper;
 
   private:
+    enum class State {
+      Normal,
+      PropagatingTrackSetChanges
+    };
+    int numTrackSetChangesLeftToBePropagated_ = 0;
     rxcpp::subjects::subject<FxParameter> fxParameterValueChangedSubject_;
     rxcpp::subjects::subject<FxParameter> fxParameterTouchedSubject_;
     bool fxHasBeenTouchedJustAMomentAgo_ = false;
@@ -45,6 +50,8 @@ namespace reaplus {
     rxcpp::subjects::subject<Track> trackAddedSubject_;
     rxcpp::subjects::subject<Track> trackRemovedSubject_;
     rxcpp::subjects::subject<Project> tracksReorderedSubject_;
+    rxcpp::subjects::subject<Track> trackNameChangedSubject_;
+    rxcpp::subjects::subject<Track> trackInputChangedSubject_;
     rxcpp::subjects::subject<Fx> fxAddedSubject_;
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
@@ -72,6 +79,8 @@ namespace reaplus {
 
     virtual int Extended(int call, void* parm1, void* parm2, void* parm3) override;
 
+    virtual void SetTrackTitle(MediaTrack* trackid, const char* title) override;
+
   protected:
 
     static void init();
@@ -91,6 +100,10 @@ namespace reaplus {
     rxcpp::observable<Track> trackVolumeTouched() const;
 
     rxcpp::observable<Track> trackPanChanged() const;
+
+    rxcpp::observable<Track> trackNameChanged() const;
+
+    rxcpp::observable<Track> trackInputChanged() const;
 
     rxcpp::observable<Track> trackPanTouched() const;
 
@@ -142,5 +155,7 @@ namespace reaplus {
     bool isProbablyInputFx(Track track, int fxIndex) const;
 
     bool trackParameterIsAutomated(Track track, std::string parameterName) const;
+
+    State state() const;
   };
 }
