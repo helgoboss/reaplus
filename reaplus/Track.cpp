@@ -43,7 +43,7 @@ namespace reaplus {
 
   int Track::index() const {
     loadAndCheckIfNecessaryOrComplain();
-    auto ipTrackNumber = (int) reaper::GetSetMediaTrackInfo(mediaTrack(), "IP_TRACKNUMBER", nullptr);
+    auto ipTrackNumber = (int)(size_t) reaper::GetSetMediaTrackInfo(mediaTrack(), "IP_TRACKNUMBER", nullptr);
     if (ipTrackNumber == -1) {
       // Master track indicator
       return -1;
