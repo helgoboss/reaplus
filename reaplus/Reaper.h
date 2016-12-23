@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <thread>
 #include <memory>
 #include <unordered_map>
 #include <reaper_plugin.h>
@@ -72,6 +73,7 @@ namespace reaplus {
     };
 
 
+    std::thread::id idOfMainThread_;
     audio_hook_register_t audioHook_;
     std::unordered_map<int, Command> commandByIndex_;
     rxcpp::subjects::subject<IncomingMidiEvent> incomingMidiEventsSubject_;
@@ -175,6 +177,8 @@ namespace reaplus {
 
     rxcpp::observable<Fx> fxRemoved() const;
 
+    rxcpp::observable<Fx> fxEnabledChanged() const;
+
     rxcpp::observable<Track> fxReordered() const;
 
     rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
@@ -186,6 +190,8 @@ namespace reaplus {
     // Attention: Returns normal fx only, not input fx!
     // This is not reliable! After REAPER start no focused Fx can be found!
     boost::optional<Fx> focusedFx() const;
+
+    std::thread::id idOfMainThread() const;
 
   private:
     static bool staticHookCommand(int commandIndex, int flag);

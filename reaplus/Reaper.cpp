@@ -9,7 +9,6 @@
 #include "MidiInputDevice.h"
 #include "IncomingMidiEvent.h"
 #include "HelperControlSurface.h"
-
 #include <reaper_plugin_functions.h>
 
 using rxcpp::subscriber;
@@ -73,6 +72,7 @@ namespace reaplus {
   }
 
   Reaper::Reaper() {
+    idOfMainThread_ = std::this_thread::get_id();
     reaper::plugin_register("hookcommand", (void*) &staticHookCommand);
     reaper::plugin_register("toggleaction", (void*) &staticToggleAction);
     audioHook_.OnAudioBuffer = &processAudioBuffer;
@@ -385,6 +385,10 @@ namespace reaplus {
     return HelperControlSurface::instance().fxAdded();
   }
 
+  rxcpp::observable<Fx> Reaper::fxEnabledChanged() const {
+    return HelperControlSurface::instance().fxEnabledChanged();
+  }
+
   rxcpp::observable<Fx> Reaper::fxRemoved() const {
     return HelperControlSurface::instance().fxRemoved();
   }
@@ -398,11 +402,20 @@ namespace reaplus {
   }
 
   rxcpp::subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
-    return rxcpp::subscription();
+    if (std::this_thread::get_id() == idOfMainThread_) {
+      command();
+      return rxcpp::subscription();
+    } else {
+      return executeLaterInMainThread(command);
+    }
   }
 
   const rxcpp::observe_on_one_worker& Reaper::mainThreadCoordination() const {
     return HelperControlSurface::instance().mainThreadCoordination();
+  }
+
+  std::thread::id Reaper::idOfMainThread() const {
+    return idOfMainThread_;
   }
 }
 
