@@ -91,6 +91,10 @@ namespace reaplus {
     }
   }
 
+  rxcpp::observable<Fx> HelperControlSurface::fxEnabledChanged() const {
+    return fxEnabledChangedSubject_.get_observable();
+  }
+
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     switch (call) {
     case CSURF_EXT_SETINPUTMONITOR: {
@@ -116,6 +120,18 @@ namespace reaplus {
           fxHasBeenTouchedJustAMomentAgo_ = false;
           fxParameterTouchedSubject_.get_subscriber().on_next(fxParam);
         }
+      }
+      return 0;
+    }
+    case CSURF_EXT_SETFXENABLED: {
+      const auto mediaTrack = (MediaTrack*) parm1;
+      const auto fxIndex = *(int*) parm2;
+      // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+      const Track track(mediaTrack, nullptr);
+      const bool isInputFx = isProbablyInputFx(track, fxIndex);
+      const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+      if (const auto fx = fxChain.fxByIndex(fxIndex)) {
+        fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
       }
       return 0;
     }

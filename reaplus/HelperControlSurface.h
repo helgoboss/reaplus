@@ -54,6 +54,7 @@ namespace reaplus {
     rxcpp::subjects::subject<Track> trackInputChangedSubject_;
     rxcpp::subjects::subject<Fx> fxAddedSubject_;
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
+    rxcpp::subjects::subject<Fx> fxEnabledChangedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
     std::unordered_map<ReaProject*, std::set<MediaTrack*>> mediaTracksByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
@@ -120,6 +121,8 @@ namespace reaplus {
     rxcpp::observable<Fx> fxAdded() const;
 
     rxcpp::observable<Fx> fxRemoved() const;
+
+    rxcpp::observable<Fx> fxEnabledChanged() const;
 
     rxcpp::observable<Track> fxReordered() const;
 
