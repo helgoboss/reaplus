@@ -266,6 +266,7 @@ namespace reaplus {
 
     test("Query track selection state", [] {
       // Given
+      auto project = Reaper::instance().currentProject();
       auto track = firstTrack();
 
       // When
@@ -273,15 +274,18 @@ namespace reaplus {
 
       // Then
       assertTrue(!isSelected, "Wrong value returned");
+      assertTrue(project.selectedTrackCount() == 0);
     });
 
     test("Select track", [] {
       // Given
       auto project = Reaper::instance().currentProject();
       auto track = firstTrack();
+      auto track2 = *project.trackByIndex(2);
 
       // When
       track.select();
+      track2.select();
 
       // Then
       assertTrue(track.isSelected(), "Track was not selected");
@@ -315,7 +319,7 @@ namespace reaplus {
       bool isInAutoArmMode = track.hasAutoArmEnabled();
 
       // Then
-      assertTrue(isInAutoArmMode, "Wrong value returned");
+      assertTrue(!isInAutoArmMode, "Wrong value returned");
     });
 
     test("Query track arm state", [] {
@@ -327,42 +331,6 @@ namespace reaplus {
 
       // Then
       assertTrue(!isArmed, "Wrong value returned");
-    });
-
-    test("Arm track in auto-arm mode", [] {
-      // Given
-      auto track = firstTrack();
-
-      // When
-      track.arm();
-
-      // Then
-      assertTrue(track.isArmed(), "Track was not armed");
-      assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
-    });
-
-    test("Disarm track in auto-arm mode", [] {
-      // Given
-      auto track = firstTrack();
-
-      // When
-      track.disarm();
-
-      // Then
-      assertTrue(!track.isArmed(), "Track was not disarmed");
-      assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
-    });
-
-    test("Disable track auto-arm mode", [] {
-      // Given
-      auto track = firstTrack();
-
-      // When
-      track.disableAutoArm();
-
-      // Then
-      assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
-      assertTrue(!track.isArmed(), "Track is suddenly armed");
     });
 
     test("Arm track in normal mode", [] {
@@ -398,6 +366,42 @@ namespace reaplus {
 
       // Then
       assertTrue(track.hasAutoArmEnabled(), "Track is still in normal mode");
+      assertTrue(!track.isArmed(), "Track is suddenly armed");
+    });
+
+    test("Arm track in auto-arm mode", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      track.arm();
+
+      // Then
+      assertTrue(track.isArmed(), "Track was not armed");
+      assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
+    });
+
+    test("Disarm track in auto-arm mode", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      track.disarm();
+
+      // Then
+      assertTrue(!track.isArmed(), "Track was not disarmed");
+      assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
+    });
+
+    test("Disable track auto-arm mode", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      track.disableAutoArm();
+
+      // Then
+      assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
       assertTrue(!track.isArmed(), "Track is suddenly armed");
     });
 
@@ -1047,7 +1051,7 @@ namespace reaplus {
         assertTrue(!fx.windowIsOpen());
         assertTrue(!fx.windowHasFocus());
         if (!fxChain.isInputFx()) {
-            assertTrue(!Reaper::instance().focusedFx().is_initialized());
+          assertTrue(!Reaper::instance().focusedFx().is_initialized());
         }
       });
 
@@ -1064,8 +1068,8 @@ namespace reaplus {
         assertTrue(fx.windowIsOpen());
         assertTrue(fx.windowHasFocus(), "Window has no focus");
         if (!fxChain.isInputFx()) {
-            const auto focusedFx = Reaper::instance().focusedFx();
-            // TODO This is not reliable! After REAPER start no focused Fx can be found!
+          const auto focusedFx = Reaper::instance().focusedFx();
+          // TODO This is not reliable! After REAPER start no focused Fx can be found!
 //            assertTrue(focusedFx.is_initialized(), "Focused FX not found");
 //            assertTrue(*focusedFx == fx, "Wrong focused fx");
         }
@@ -1142,9 +1146,8 @@ namespace reaplus {
       // Then
       assertTrue(project.trackCount() == 4, "Track count not increased");
       assertTrue(newTrack.index() == 1, "Track index wrong");
-      // FIXME This doesn't work now because MediaTrack* for newTrack and secondTrack is somehow the same!!!???
-      // Maybe we should try InsertTrackAtIndex and see if that works better
-//      assertTrue(secondTrack.index() == 2, "Tracks after not correctly moved");
+      assertTrue(newTrack.name() == "Inserted track", "Track name wrong");
+      assertTrue(secondTrack.index() == 2, "Tracks after not correctly moved");
     });
 
     test("Query MIDI input devices", [] {

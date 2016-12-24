@@ -99,22 +99,15 @@ namespace reaplus {
 
   Track Project::addTrack() {
     complainIfNotAvailable();
-    // reaper::InsertTrackAtIndex unfortunately doesn't allow to specify ReaProject :(
-    Reaper::instance().mainSection().actionByCommandId(40702).invoke(*this);
-    auto mediaTrack = reaper::GetTrack(reaProject_, trackCount() - 1);
-    return Track(mediaTrack, reaProject());
+    return insertTrackAt(trackCount());
   }
 
   Track Project::insertTrackAt(int index) {
-    // reaper::InsertTrackAtIndex unfortunately doesn't allow to specify ReaProject :(
-    if (auto precedingTrack = trackByIndex(index - 1)) {
-      precedingTrack->selectExclusively();
-      Reaper::instance().mainSection().actionByCommandId(40001).invoke(*this);
-      auto mediaTrack = reaper::GetTrack(reaProject_, index);
-      return Track(mediaTrack, reaProject());
-    } else {
-      return addTrack();
-    }
+    complainIfNotAvailable();
+    // TODO reaper::InsertTrackAtIndex unfortunately doesn't allow to specify ReaProject :(
+    reaper::InsertTrackAtIndex(index, false);
+    auto mediaTrack = reaper::GetTrack(reaProject_, index);
+    return Track(mediaTrack, reaProject());
   }
 
   rxcpp::observable<Track> Project::selectedTracks() const {
