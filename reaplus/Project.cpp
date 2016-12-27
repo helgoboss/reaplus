@@ -4,6 +4,7 @@
 #include "Action.h"
 #include "utility.h"
 #include <reaper_plugin_functions.h>
+#include "UndoBlock.h"
 
 using rxcpp::subscriber;
 using boost::none;
@@ -167,6 +168,15 @@ namespace reaplus {
     return reaper::ValidatePtr2(nullptr, reaProject_, "ReaProject*");
   }
 
+
+  void Project::undoable(const std::string& label, std::function<void(void)> command) {
+    if (reaper::GetCurrentProjectInLoadSave() == nullptr) {
+      UndoBlock undoBlock(label, reaProject_);
+      command();
+    } else {
+      command();
+    }
+  }
 
 }
 

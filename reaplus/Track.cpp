@@ -209,16 +209,16 @@ namespace reaplus {
     setChunk(chunk.content()->c_str());
   }
 
-  void Track::arm() {
-    if (hasAutoArmEnabled()) {
+  void Track::arm(bool supportAutoArm) {
+    if (supportAutoArm && hasAutoArmEnabled()) {
       select();
     } else {
       reaper::CSurf_OnRecArmChangeEx(mediaTrack(), 1, false);
     }
   }
 
-  bool Track::isArmed() const {
-    if (hasAutoArmEnabled()) {
+  bool Track::isArmed(bool supportAutoArm) const {
+    if (supportAutoArm && hasAutoArmEnabled()) {
       return isSelected();
     } else {
       return reaper::GetMediaTrackInfo_Value(mediaTrack(), "I_RECARM") == 1;
@@ -364,8 +364,8 @@ namespace reaplus {
     return RecordingInput::ofRecInputIndex(recInputIndex);
   }
 
-  void Track::disarm() {
-    if (hasAutoArmEnabled()) {
+  void Track::disarm(bool supportAutoArm) {
+    if (supportAutoArm && hasAutoArmEnabled()) {
       unselect();
     } else {
       reaper::CSurf_OnRecArmChangeEx(mediaTrack(), 0, false);

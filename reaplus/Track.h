@@ -47,12 +47,12 @@ namespace reaplus {
     Volume volume() const;
     void setPan(double normalizedValue);
     Pan pan() const;
-    void arm();
-    void disarm();
+    void arm(bool supportAutoArm = true);
+    void disarm(bool supportAutoArm = true);
     bool hasAutoArmEnabled() const;
     void enableAutoArm();
     void disableAutoArm();
-    bool isArmed() const;
+    bool isArmed(bool supportAutoArm = true) const;
     Chunk chunk(int maxChunkSize = MAX_CHUNK_SIZE) const;
     void setChunk(const char* chunk);
     void setChunk(Chunk chunk);
