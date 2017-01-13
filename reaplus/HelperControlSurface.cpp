@@ -1,14 +1,10 @@
 #include "HelperControlSurface.h"
 
-#include "FxParameter.h"
 #include "TrackSend.h"
-#include "Track.h"
-#include "Project.h"
 #include "Reaper.h"
 #include "TrackVolume.h"
 #include "TrackPan.h"
 #include "TrackSendVolume.h"
-#include "FxChain.h"
 #include "reaper_plugin_functions.h"
 
 using std::unique_lock;
@@ -192,6 +188,30 @@ namespace reaplus {
       return 0;
     }
 
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackInputMonitoringChanged() const {
+    return trackInputMonitoringChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackArmChanged() const {
+    return trackArmChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackMuteChanged() const {
+    return trackMuteChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackSoloChanged() const {
+    return trackSoloChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackSelectedChanged() const {
+    return trackSelectedChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Project> HelperControlSurface::projectSwitched() const {
+    return activeProjectBehavior_.get_observable();
   }
 
   void HelperControlSurface::SetTrackListChange() {

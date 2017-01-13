@@ -397,6 +397,30 @@ namespace reaplus {
     return HelperControlSurface::instance().fxReordered();
   }
 
+  rxcpp::observable<Track> Reaper::trackInputMonitoringChanged() const {
+    return HelperControlSurface::instance().trackInputMonitoringChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackArmChanged() const {
+    return HelperControlSurface::instance().trackArmChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackMuteChanged() const {
+    return HelperControlSurface::instance().trackMuteChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackSoloChanged() const {
+    return HelperControlSurface::instance().trackSoloChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackSelectedChanged() const {
+    return HelperControlSurface::instance().trackSelectedChanged();
+  }
+
+  rxcpp::observable<Project> Reaper::projectSwitched() const {
+    return HelperControlSurface::instance().projectSwitched();
+  }
+
   rxcpp::subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
     return HelperControlSurface::instance().enqueueCommand(command);
   }

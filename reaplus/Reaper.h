@@ -181,6 +181,18 @@ namespace reaplus {
 
     rxcpp::observable<Track> fxReordered() const;
 
+    rxcpp::observable<Track> trackInputMonitoringChanged() const;
+
+    rxcpp::observable<Track> trackArmChanged() const;
+
+    rxcpp::observable<Track> trackMuteChanged() const;
+
+    rxcpp::observable<Track> trackSoloChanged() const;
+
+    rxcpp::observable<Track> trackSelectedChanged() const;
+
+    rxcpp::observable<Project> projectSwitched() const;
+
     rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
 
     rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);
