@@ -175,18 +175,17 @@ namespace reaplus {
   }
 
   void HelperControlSurface::detectTrackSetChanges() {
-    Reaper::instance().projects().subscribe([this](Project project) {
-      auto& oldMediaTracks = mediaTracksByReaProject_[project.reaProject()];
-      const int oldTrackCount = (int) oldMediaTracks.size();
-      const int newTrackCount = project.trackCount();
-      if (newTrackCount < oldTrackCount) {
-        removeInvalidMediaTracks(project, oldMediaTracks);
-      } else if (newTrackCount > oldTrackCount) {
-        addMissingMediaTracks(project, oldMediaTracks);
-      } else {
-        tracksReorderedSubject_.get_subscriber().on_next(project);
-      }
-    });
+    const auto project = Reaper::instance().currentProject();
+    auto& oldMediaTracks = mediaTracksByReaProject_[project.reaProject()];
+    const int oldTrackCount = (int) oldMediaTracks.size();
+    const int newTrackCount = project.trackCount();
+    if (newTrackCount < oldTrackCount) {
+      removeInvalidMediaTracks(project, oldMediaTracks);
+    } else if (newTrackCount > oldTrackCount) {
+      addMissingMediaTracks(project, oldMediaTracks);
+    } else {
+      tracksReorderedSubject_.get_subscriber().on_next(project);
+    }
   }
 
   void HelperControlSurface::addMissingMediaTracks(const Project& project,
