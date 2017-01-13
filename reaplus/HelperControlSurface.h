@@ -24,6 +24,16 @@ namespace reaplus {
 
   class Reaper;
 
+  struct TrackData {
+    double volume;
+    double pan;
+    bool selected;
+    bool mute;
+    bool solo;
+    bool armed;
+    int number;
+  };
+
   struct FxChainPair {
     std::set<std::string> inputFxGuids;
     std::set<std::string> outputFxGuids;
@@ -56,7 +66,8 @@ namespace reaplus {
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
     rxcpp::subjects::subject<Fx> fxEnabledChangedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
-    std::unordered_map<ReaProject*, std::set<MediaTrack*>> mediaTracksByReaProject_;
+    typedef std::unordered_map<MediaTrack*, TrackData> TrackDataMap;
+    std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
     rxcpp::schedulers::run_loop mainThreadRunLoop_;
     rxcpp::observe_on_one_worker mainThreadCoordination_ = rxcpp::observe_on_run_loop(mainThreadRunLoop_);
@@ -81,6 +92,14 @@ namespace reaplus {
     virtual int Extended(int call, void* parm1, void* parm2, void* parm3) override;
 
     virtual void SetTrackTitle(MediaTrack* trackid, const char* title) override;
+
+    virtual void SetSurfaceMute(MediaTrack* trackid, bool mute) override;
+
+    virtual void SetSurfaceSelected(MediaTrack* trackid, bool selected) override;
+
+    virtual void SetSurfaceSolo(MediaTrack* trackid, bool solo) override;
+
+    virtual void SetSurfaceRecArm(MediaTrack* trackid, bool recarm) override;
 
   protected:
 
@@ -138,9 +157,11 @@ namespace reaplus {
 
     void detectTrackSetChanges();
 
-    void removeInvalidMediaTracks(const Project& project, std::set<MediaTrack*>& mediaTracks);
+    void removeInvalidMediaTracks(const Project& project, TrackDataMap& trackDatas);
 
-    void addMissingMediaTracks(const Project& project, std::set<MediaTrack*>& mediaTracks);
+    void addMissingMediaTracks(const Project& project, TrackDataMap& trackDatas);
+
+    void updateMediaTrackPositions(const Project& project, TrackDataMap& trackDatas);
 
     void detectFxChangesOnTrack(Track track);
 
@@ -160,5 +181,7 @@ namespace reaplus {
     bool trackParameterIsAutomated(Track track, std::string parameterName) const;
 
     State state() const;
+
+    TrackData* findTrackDataByTrack(MediaTrack* mediaTrack);
   };
 }

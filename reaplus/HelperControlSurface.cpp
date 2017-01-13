@@ -58,10 +58,15 @@ namespace reaplus {
 
   void HelperControlSurface::SetSurfaceVolume(MediaTrack* trackid, double volume) {
     if (state() != State::PropagatingTrackSetChanges) {
-      Track track(trackid, nullptr);
-      trackVolumeChangedSubject_.get_subscriber().on_next(track);
-      if (!trackParameterIsAutomated(track, "Volume")) {
-        trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->volume != volume) {
+          td->volume = volume;
+          Track track(trackid, nullptr);
+          trackVolumeChangedSubject_.get_subscriber().on_next(track);
+          if (!trackParameterIsAutomated(track, "Volume")) {
+            trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+          }
+        }
       }
     }
   }
@@ -69,10 +74,15 @@ namespace reaplus {
 
   void HelperControlSurface::SetSurfacePan(MediaTrack* trackid, double pan) {
     if (state() != State::PropagatingTrackSetChanges) {
-      Track track(trackid, nullptr);
-      trackPanChangedSubject_.get_subscriber().on_next(track);
-      if (!trackParameterIsAutomated(track, "Pan")) {
-        trackPanTouchedSubject_.get_subscriber().on_next(track);
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->pan != pan) {
+          td->pan = pan;
+          Track track(trackid, nullptr);
+          trackPanChangedSubject_.get_subscriber().on_next(track);
+          if (!trackParameterIsAutomated(track, "Pan")) {
+            trackPanTouchedSubject_.get_subscriber().on_next(track);
+          }
+        }
       }
     }
   }
@@ -180,50 +190,112 @@ namespace reaplus {
 
   void HelperControlSurface::detectTrackSetChanges() {
     const auto project = Reaper::instance().currentProject();
-    auto& oldMediaTracks = mediaTracksByReaProject_[project.reaProject()];
-    const int oldTrackCount = (int) oldMediaTracks.size();
+    auto& oldTrackDatas = trackDataByMediaTrackByReaProject_[project.reaProject()];
+    const int oldTrackCount = (int) oldTrackDatas.size();
     const int newTrackCount = project.trackCount();
     if (newTrackCount < oldTrackCount) {
-      removeInvalidMediaTracks(project, oldMediaTracks);
+      removeInvalidMediaTracks(project, oldTrackDatas);
     } else if (newTrackCount > oldTrackCount) {
-      addMissingMediaTracks(project, oldMediaTracks);
+      addMissingMediaTracks(project, oldTrackDatas);
     } else {
-      tracksReorderedSubject_.get_subscriber().on_next(project);
+      updateMediaTrackPositions(project, oldTrackDatas);
     }
   }
 
-  void HelperControlSurface::addMissingMediaTracks(const Project& project,
-      std::set<MediaTrack*>& mediaTracks) {
-    project.tracks().subscribe([this, &mediaTracks](Track track) {
-      const auto wasInserted = mediaTracks.insert(track.mediaTrack()).second;
-      if (wasInserted) {
+  void HelperControlSurface::addMissingMediaTracks(const Project& project, TrackDataMap& trackDatas) {
+    project.tracks().subscribe([this, &trackDatas](Track track) {
+      auto mediaTrack = track.mediaTrack();
+      if (trackDatas.count(mediaTrack) == 0) {
+        TrackData d;
+        d.armed = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECARM") != 0;
+        d.mute = reaper::GetMediaTrackInfo_Value(mediaTrack, "B_MUTE") != 0;
+        d.number = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
+        d.pan = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_PAN");
+        d.volume = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_VOL");
+        d.selected = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SELECTED") != 0;
+        d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
+        trackDatas[mediaTrack] = d;
         trackAddedSubject_.get_subscriber().on_next(track);
         detectFxChangesOnTrack(track);
       }
     });
   }
 
-  void HelperControlSurface::removeInvalidMediaTracks(const Project& project, std::set<MediaTrack*>& mediaTracks) {
-    for (auto it = mediaTracks.begin(); it != mediaTracks.end();) {
-      const auto mediaTrack = *it;
+  void HelperControlSurface::updateMediaTrackPositions(const Project& project,
+      HelperControlSurface::TrackDataMap& trackDatas) {
+    bool tracksHaveBeenReordered = false;
+    for (auto it = trackDatas.begin(); it != trackDatas.end();) {
+      const auto mediaTrack = it->first;
+      if (reaper::ValidatePtr2(project.reaProject(), (void*) mediaTrack, "MediaTrack*")) {
+        auto& trackData = it->second;
+        const int newNumber = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
+        if (newNumber != trackData.number) {
+          tracksHaveBeenReordered = true;
+          trackData.number = newNumber;
+        }
+      }
+      it++;
+    }
+    if (tracksHaveBeenReordered) {
+      tracksReorderedSubject_.get_subscriber().on_next(project);
+    }
+  }
+
+  TrackData* HelperControlSurface::findTrackDataByTrack(MediaTrack* mediaTrack) {
+    const auto project = Reaper::instance().currentProject();
+    auto& trackDatas = trackDataByMediaTrackByReaProject_[project.reaProject()];
+    if (trackDatas.count(mediaTrack) == 0) {
+      return nullptr;
+    } else {
+      return &trackDatas.at(mediaTrack);
+    }
+  }
+
+  void HelperControlSurface::SetSurfaceMute(MediaTrack* trackid, bool mute) {
+    if (auto td = findTrackDataByTrack(trackid)) {
+      td->mute = mute;
+    }
+  }
+
+  void HelperControlSurface::SetSurfaceSelected(MediaTrack* trackid, bool selected) {
+    if (auto td = findTrackDataByTrack(trackid)) {
+      td->selected = selected;
+    }
+  }
+
+  void HelperControlSurface::SetSurfaceSolo(MediaTrack* trackid, bool solo) {
+    if (auto td = findTrackDataByTrack(trackid)) {
+      td->solo = solo;
+    }
+  }
+
+  void HelperControlSurface::SetSurfaceRecArm(MediaTrack* trackid, bool recarm) {
+    if (auto td = findTrackDataByTrack(trackid)) {
+      td->armed = recarm;
+    }
+  }
+
+  void HelperControlSurface::removeInvalidMediaTracks(const Project& project, TrackDataMap& trackDatas) {
+    for (auto it = trackDatas.begin(); it != trackDatas.end();) {
+      const auto mediaTrack = it->first;
       if (reaper::ValidatePtr2(project.reaProject(), (void*) mediaTrack, "MediaTrack*")) {
         it++;
       } else {
         fxChainPairByMediaTrack_.erase(mediaTrack);
         trackRemovedSubject_.get_subscriber().on_next(Track(mediaTrack, project.reaProject()));
-        it = mediaTracks.erase(it);
+        it = trackDatas.erase(it);
       }
     }
   }
 
   void HelperControlSurface::removeInvalidReaProjects() {
-    for (auto it = mediaTracksByReaProject_.begin(); it != mediaTracksByReaProject_.end();) {
+    for (auto it = trackDataByMediaTrackByReaProject_.begin(); it != trackDataByMediaTrackByReaProject_.end();) {
       const auto pair = *it;
       const auto project = pair.first;
       if (reaper::ValidatePtr2(nullptr, (void*) project, "ReaProject*")) {
         it++;
       } else {
-        it = mediaTracksByReaProject_.erase(it);
+        it = trackDataByMediaTrackByReaProject_.erase(it);
       }
     }
   }
@@ -441,6 +513,4 @@ namespace reaplus {
       return false;
     }
   }
-
-
 }
