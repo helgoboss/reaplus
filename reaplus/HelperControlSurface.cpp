@@ -22,7 +22,7 @@ using std::set;
 
 
 namespace reaplus {
-  HelperControlSurface::HelperControlSurface() {
+  HelperControlSurface::HelperControlSurface() : activeProjectBehavior_(Reaper::instance().currentProject()) {
     reaper::plugin_register("csurf_inst", this);
   }
 
@@ -112,8 +112,25 @@ namespace reaplus {
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     switch (call) {
     case CSURF_EXT_SETINPUTMONITOR: {
-      const auto mediaTrack = (MediaTrack*) parm1;
-      trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+      if (state() != State::PropagatingTrackSetChanges) {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        if (auto td = findTrackDataByTrack(mediaTrack)) {
+          {
+            const auto recmonitor = (int*) parm2;
+            if (td->recmonitor != *recmonitor) {
+              td->recmonitor = *recmonitor;
+              trackInputMonitoringChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+            }
+          }
+          {
+            const int recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+            if (td->recinput != recinput) {
+              td->recinput = recinput;
+              trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+            }
+          }
+        }
+      }
       return 0;
     }
     case CSURF_EXT_SETFXPARAM: {
@@ -164,7 +181,7 @@ namespace reaplus {
     }
     case CSURF_EXT_SETFXCHANGE: {
       const auto mediaTrack = (MediaTrack*) parm1;
-      detectFxChangesOnTrack(Track(mediaTrack, nullptr));
+      detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
       return 0;
     }
     case CSURF_EXT_SETLASTTOUCHEDFX: {
@@ -179,6 +196,10 @@ namespace reaplus {
 
   void HelperControlSurface::SetTrackListChange() {
     // FIXME Not multi-project compatible!
+    const auto newActiveProject = Reaper::instance().currentProject();
+    if (newActiveProject != activeProjectBehavior_.get_value()) {
+      activeProjectBehavior_.get_subscriber().on_next(newActiveProject);
+    }
     numTrackSetChangesLeftToBePropagated_ = reaper::CountTracks(nullptr) + 1;
     removeInvalidReaProjects();
     detectTrackSetChanges();
@@ -207,16 +228,18 @@ namespace reaplus {
       auto mediaTrack = track.mediaTrack();
       if (trackDatas.count(mediaTrack) == 0) {
         TrackData d;
-        d.armed = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECARM") != 0;
+        d.recarm = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECARM") != 0;
         d.mute = reaper::GetMediaTrackInfo_Value(mediaTrack, "B_MUTE") != 0;
         d.number = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
         d.pan = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_PAN");
         d.volume = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_VOL");
         d.selected = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SELECTED") != 0;
         d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
+        d.recmonitor = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECMON");
+        d.recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
         trackDatas[mediaTrack] = d;
         trackAddedSubject_.get_subscriber().on_next(track);
-        detectFxChangesOnTrack(track);
+        detectFxChangesOnTrack(track, false);
       }
     });
   }
@@ -252,26 +275,50 @@ namespace reaplus {
   }
 
   void HelperControlSurface::SetSurfaceMute(MediaTrack* trackid, bool mute) {
-    if (auto td = findTrackDataByTrack(trackid)) {
-      td->mute = mute;
+    if (state() != State::PropagatingTrackSetChanges) {
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->mute != mute) {
+          td->mute = mute;
+          Track track(trackid, nullptr);
+          trackMuteChangedSubject_.get_subscriber().on_next(track);
+        }
+      }
     }
   }
 
   void HelperControlSurface::SetSurfaceSelected(MediaTrack* trackid, bool selected) {
-    if (auto td = findTrackDataByTrack(trackid)) {
-      td->selected = selected;
+    if (state() != State::PropagatingTrackSetChanges) {
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->selected != selected) {
+          td->selected = selected;
+          Track track(trackid, nullptr);
+          trackSelectedChangedSubject_.get_subscriber().on_next(track);
+        }
+      }
     }
   }
 
   void HelperControlSurface::SetSurfaceSolo(MediaTrack* trackid, bool solo) {
-    if (auto td = findTrackDataByTrack(trackid)) {
-      td->solo = solo;
+    if (state() != State::PropagatingTrackSetChanges) {
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->solo != solo) {
+          td->solo = solo;
+          Track track(trackid, nullptr);
+          trackSoloChangedSubject_.get_subscriber().on_next(track);
+        }
+      }
     }
   }
 
   void HelperControlSurface::SetSurfaceRecArm(MediaTrack* trackid, bool recarm) {
-    if (auto td = findTrackDataByTrack(trackid)) {
-      td->armed = recarm;
+    if (state() != State::PropagatingTrackSetChanges) {
+      if (auto td = findTrackDataByTrack(trackid)) {
+        if (td->recarm != recarm) {
+          td->recarm = recarm;
+          Track track(trackid, nullptr);
+          trackArmChangedSubject_.get_subscriber().on_next(track);
+        }
+      }
     }
   }
 
@@ -340,27 +387,50 @@ namespace reaplus {
     return fxReorderedSubject_.get_observable();
   }
 
-  void HelperControlSurface::detectFxChangesOnTrack(Track track) {
+  void HelperControlSurface::detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges) {
     if (track.isAvailable()) {
       MediaTrack* mediaTrack = track.mediaTrack();
       auto& fxChainPair = fxChainPairByMediaTrack_[mediaTrack];
-      bool addedOrRemovedOutputFx = detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false);
-      bool addedOrRemovedInputFx = detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true);
-      if (!addedOrRemovedInputFx && !addedOrRemovedOutputFx) {
+      const bool addedOrRemovedOutputFx = detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false, notifyListenersAboutChanges);
+      const bool addedOrRemovedInputFx = detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true, notifyListenersAboutChanges);
+      if (notifyListenersAboutChanges && !addedOrRemovedInputFx && !addedOrRemovedOutputFx) {
         fxReorderedSubject_.get_subscriber().on_next(track);
       }
     }
   }
 
+  void HelperControlSurface::CloseNoReset() {
+    bool dummy = false;
+  }
 
-  bool HelperControlSurface::detectFxChangesOnTrack(Track track, set<string>& oldFxGuids, bool isInputFx) {
+  void HelperControlSurface::SetPlayState(bool play, bool pause, bool rec) {
+    bool dummy = false;
+  }
+
+  void HelperControlSurface::SetRepeatState(bool rep) {
+    bool dummy = false;
+  }
+
+  void HelperControlSurface::SetAutoMode(int mode) {
+    bool dummy = false;
+  }
+
+  void HelperControlSurface::ResetCachedVolPanStates() {
+    bool dummy = false;
+  }
+
+  void HelperControlSurface::OnTrackSelection(MediaTrack* trackid) {
+    bool dummy = false;
+  }
+
+  bool HelperControlSurface::detectFxChangesOnTrack(Track track, set<string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
     const int oldFxCount = (int) oldFxGuids.size();
     const int newFxCount = (isInputFx ? track.inputFxChain() : track.normalFxChain()).fxCount();
     if (newFxCount < oldFxCount) {
-      removeInvalidFx(track, oldFxGuids, isInputFx);
+      removeInvalidFx(track, oldFxGuids, isInputFx, notifyListenersAboutChanges);
       return true;
     } else if (newFxCount > oldFxCount) {
-      addMissingFx(track, oldFxGuids, isInputFx);
+      addMissingFx(track, oldFxGuids, isInputFx, notifyListenersAboutChanges);
       return true;
     } else {
       // Reordering (or nothing)
@@ -369,25 +439,27 @@ namespace reaplus {
   }
 
 
-  void HelperControlSurface::removeInvalidFx(Track track, std::set<string>& oldFxGuids, bool isInputFx) {
+  void HelperControlSurface::removeInvalidFx(Track track, std::set<string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
     const auto newFxGuids = fxGuidsOnTrack(track, isInputFx);
     for (auto it = oldFxGuids.begin(); it != oldFxGuids.end();) {
       const string oldFxGuid = *it;
       if (newFxGuids.count(oldFxGuid)) {
         it++;
       } else {
-        const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-        fxRemovedSubject_.get_subscriber().on_next(fxChain.fxByGuid(oldFxGuid));
+        if (notifyListenersAboutChanges) {
+          const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+          fxRemovedSubject_.get_subscriber().on_next(fxChain.fxByGuid(oldFxGuid));
+        }
         it = oldFxGuids.erase(it);
       }
     }
   }
 
-  void HelperControlSurface::addMissingFx(Track track, std::set<string>& fxGuids, bool isInputFx) {
+  void HelperControlSurface::addMissingFx(Track track, std::set<string>& fxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
     const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-    fxChain.fxs().subscribe([this, &fxGuids](Fx fx) {
+    fxChain.fxs().subscribe([this, &fxGuids, notifyListenersAboutChanges](Fx fx) {
       bool wasInserted = fxGuids.insert(fx.guid()).second;
-      if (wasInserted) {
+      if (wasInserted && notifyListenersAboutChanges) {
         fxAddedSubject_.get_subscriber().on_next(fx);
       }
     });

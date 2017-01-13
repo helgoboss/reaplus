@@ -30,8 +30,10 @@ namespace reaplus {
     bool selected;
     bool mute;
     bool solo;
-    bool armed;
+    bool recarm;
     int number;
+    int recmonitor;
+    int recinput;
   };
 
   struct FxChainPair {
@@ -62,10 +64,16 @@ namespace reaplus {
     rxcpp::subjects::subject<Project> tracksReorderedSubject_;
     rxcpp::subjects::subject<Track> trackNameChangedSubject_;
     rxcpp::subjects::subject<Track> trackInputChangedSubject_;
+    rxcpp::subjects::subject<Track> trackInputMonitoringChangedSubject_;
+    rxcpp::subjects::subject<Track> trackArmChangedSubject_;
+    rxcpp::subjects::subject<Track> trackMuteChangedSubject_;
+    rxcpp::subjects::subject<Track> trackSoloChangedSubject_;
+    rxcpp::subjects::subject<Track> trackSelectedChangedSubject_;
     rxcpp::subjects::subject<Fx> fxAddedSubject_;
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
     rxcpp::subjects::subject<Fx> fxEnabledChangedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
+    rxcpp::subjects::behavior<Project> activeProjectBehavior_;
     typedef std::unordered_map<MediaTrack*, TrackData> TrackDataMap;
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
@@ -100,6 +108,18 @@ namespace reaplus {
     virtual void SetSurfaceSolo(MediaTrack* trackid, bool solo) override;
 
     virtual void SetSurfaceRecArm(MediaTrack* trackid, bool recarm) override;
+
+    virtual void CloseNoReset() override;
+
+    virtual void SetPlayState(bool play, bool pause, bool rec) override;
+
+    virtual void SetRepeatState(bool rep) override;
+
+    virtual void SetAutoMode(int mode) override;
+
+    virtual void ResetCachedVolPanStates() override;
+
+    virtual void OnTrackSelection(MediaTrack* trackid) override;
 
   protected:
 
@@ -163,14 +183,14 @@ namespace reaplus {
 
     void updateMediaTrackPositions(const Project& project, TrackDataMap& trackDatas);
 
-    void detectFxChangesOnTrack(Track track);
+    void detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges);
 
     // Returns true if FX was added or removed
-    bool detectFxChangesOnTrack(Track track, std::set<std::string>& oldFxGuids, bool isInputFx);
+    bool detectFxChangesOnTrack(Track track, std::set<std::string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges);
 
-    void removeInvalidFx(Track track, std::set<std::string>& oldFxGuids, bool isInputFx);
+    void removeInvalidFx(Track track, std::set<std::string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges);
 
-    void addMissingFx(Track track, std::set<std::string>& fxGuids, bool isInputFx);
+    void addMissingFx(Track track, std::set<std::string>& fxGuids, bool isInputFx, bool notifyListenersAboutChanges);
 
     std::set<std::string> fxGuidsOnTrack(Track track, bool isInputFx) const;
 
