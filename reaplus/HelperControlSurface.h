@@ -34,6 +34,7 @@ namespace reaplus {
     int number;
     int recmonitor;
     int recinput;
+    std::string guid;
   };
 
   struct FxChainPair {

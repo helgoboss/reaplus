@@ -6,6 +6,7 @@
 #include "TrackPan.h"
 #include "TrackSendVolume.h"
 #include "reaper_plugin_functions.h"
+#include "utility.h"
 
 using std::unique_lock;
 namespace rx = rxcpp;
@@ -257,6 +258,7 @@ namespace reaplus {
         d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
         d.recmonitor = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECMON");
         d.recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+        d.guid = convertGuidToString(*reaper::GetTrackGUID(mediaTrack));
         trackDatas[mediaTrack] = d;
         trackAddedSubject_.get_subscriber().on_next(track);
         detectFxChangesOnTrack(track, false);
@@ -345,11 +347,12 @@ namespace reaplus {
   void HelperControlSurface::removeInvalidMediaTracks(const Project& project, TrackDataMap& trackDatas) {
     for (auto it = trackDatas.begin(); it != trackDatas.end();) {
       const auto mediaTrack = it->first;
+      const auto trackData = it->second;
       if (reaper::ValidatePtr2(project.reaProject(), (void*) mediaTrack, "MediaTrack*")) {
         it++;
       } else {
         fxChainPairByMediaTrack_.erase(mediaTrack);
-        trackRemovedSubject_.get_subscriber().on_next(Track(mediaTrack, project.reaProject()));
+        trackRemovedSubject_.get_subscriber().on_next(project.trackByGuid(trackData.guid));
         it = trackDatas.erase(it);
       }
     }

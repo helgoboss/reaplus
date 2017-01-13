@@ -169,6 +169,7 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackAdded() const;
 
+    // Delivers a GUID-based track (to still be able to identify it even it is deleted)
     rxcpp::observable<Track> trackRemoved() const;
 
     rxcpp::observable<Project> tracksReordered() const;
