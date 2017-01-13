@@ -57,19 +57,23 @@ namespace reaplus {
 
 
   void HelperControlSurface::SetSurfaceVolume(MediaTrack* trackid, double volume) {
-    Track track(trackid, nullptr);
-    trackVolumeChangedSubject_.get_subscriber().on_next(track);
-    if (!trackParameterIsAutomated(track, "Volume")) {
-      trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+    if (state() != State::PropagatingTrackSetChanges) {
+      Track track(trackid, nullptr);
+      trackVolumeChangedSubject_.get_subscriber().on_next(track);
+      if (!trackParameterIsAutomated(track, "Volume")) {
+        trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+      }
     }
   }
 
 
   void HelperControlSurface::SetSurfacePan(MediaTrack* trackid, double pan) {
-    Track track(trackid, nullptr);
-    trackPanChangedSubject_.get_subscriber().on_next(track);
-    if (!trackParameterIsAutomated(track, "Pan")) {
-      trackPanTouchedSubject_.get_subscriber().on_next(track);
+    if (state() != State::PropagatingTrackSetChanges) {
+      Track track(trackid, nullptr);
+      trackPanChangedSubject_.get_subscriber().on_next(track);
+      if (!trackParameterIsAutomated(track, "Pan")) {
+        trackPanTouchedSubject_.get_subscriber().on_next(track);
+      }
     }
   }
 
