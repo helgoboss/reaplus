@@ -107,6 +107,7 @@ namespace reaplus {
     complainIfNotAvailable();
     // TODO reaper::InsertTrackAtIndex unfortunately doesn't allow to specify ReaProject :(
     reaper::InsertTrackAtIndex(index, false);
+    reaper::TrackList_UpdateAllExternalSurfaces();
     auto mediaTrack = reaper::GetTrack(reaProject_, index);
     return Track(mediaTrack, reaProject());
   }

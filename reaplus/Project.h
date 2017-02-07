@@ -35,7 +35,9 @@ namespace reaplus {
     boost::optional<Track> firstTrack() const;
     boost::optional<Track> lastTrack() const;
     ReaProject* reaProject() const;
+    // TODO Introduce variant that doesn't notify ControlSurface
     Track addTrack();
+    // TODO Introduce variant that doesn't notify ControlSurface
     Track insertTrackAt(int index);
     void removeTrack(Track track);
     boost::optional<std::string> filePath() const;
