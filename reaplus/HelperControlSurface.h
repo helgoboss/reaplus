@@ -44,7 +44,7 @@ namespace reaplus {
 
   class HelperControlSurface : public IReaperControlSurface {
     friend class Reaper;
-
+    friend class Track;
   private:
     enum class State {
       Normal,

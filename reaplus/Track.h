@@ -24,9 +24,9 @@ namespace reaplus {
     // Only filled if track loaded.
     mutable MediaTrack* mediaTrack_;
     // Possible states:
-    // a) guid filled and media track not (guid-based and not yet loaded)
-    // b) guid filled and media track as well (guid-based and loaded)
-    // c) guid not filled and media track filled (media track based, loaded)
+    // a) guid, project, !mediaTrack (guid-based and not yet loaded)
+    // b) guid, mediaTrack (guid-based and loaded)
+    // c) !guid, mediaTrack (media track based, loaded)
     boost::optional<std::string> guid_;
   public:
     static int const MAX_CHUNK_SIZE;
@@ -97,10 +97,18 @@ namespace reaplus {
 
     void loadIfNecessaryOrComplain() const;
 
+    // Precondition: mediaTrack_ must be filled!
     bool isValid() const;
 
     boost::optional<ChunkRegion> autoArmChunkLine() const;
 
+    // Precondition: mediaTrack_ must be filled!
+    ReaProject* findContainingProject() const;
+
+    // Precondition: mediaTrack_ must be filled!
+    void attemptToFillProjectIfNecessary() const;
+
+    Project uncheckedProject() const;
   };
 }
 

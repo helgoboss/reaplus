@@ -97,42 +97,57 @@ namespace reaplus {
     return index() == -1;
   }
 
-  bool Track::isValid() const {
-    if (reaProject_ == nullptr) {
-      // TODO Factor out validation code
-      // No ReaProject* available. Try current project first (most likely in everyday REAPER usage).
-      const auto currentProject = Reaper::instance().currentProject();
-      const bool isValidInCurrentProject = reaper::ValidatePtr2(currentProject.reaProject(), mediaTrack_,
-          "MediaTrack*");
-      if (isValidInCurrentProject) {
-        // Valid in current project
-        return true;
-      } else {
-        // Worst case. It could still be valid in another project. We have to check each project.
-        const auto otherProject = Reaper::instance().projects()
-            .filter([currentProject](Project p) {
-              // We already know it's invalid in current project
-              return p != currentProject;
-            })
-            .filter([this](Project p) {
-              return reaper::ValidatePtr2(p.reaProject(), mediaTrack_, "MediaTrack*");
-            })
-            .map([](Project p) {
-              return shared_ptr<Project>(new Project(p));
-            })
-            .default_if_empty((shared_ptr<Project>)nullptr)
-            .as_blocking()
-            .first();
-        if (otherProject == nullptr) {
-          return false;
-        } else {
-          // Speed up validation process for next check
-          reaProject_ = otherProject->reaProject();
-          return true;
-        }
-      }
+  ReaProject* Track::findContainingProject() const {
+    if (mediaTrack_ == nullptr) {
+      throw std::logic_error("Containing project cannot be found if mediaTrack not available");
+    }
+    // No ReaProject* available. Try current project first (most likely in everyday REAPER usage).
+    const auto currentProject = Reaper::instance().currentProject();
+    const bool isValidInCurrentProject = reaper::ValidatePtr2(currentProject.reaProject(), mediaTrack_,
+        "MediaTrack*");
+    if (isValidInCurrentProject) {
+      // Valid in current project
+      return currentProject.reaProject();
     } else {
-      if (project().isAvailable()) {
+      // Worst case. It could still be valid in another project. We have to check each project.
+      const auto otherProject = Reaper::instance().projects()
+          .filter([currentProject](Project p) {
+            // We already know it's invalid in current project
+            return p != currentProject;
+          })
+          .filter([this](Project p) {
+            return reaper::ValidatePtr2(p.reaProject(), mediaTrack_, "MediaTrack*");
+          })
+          .map([](Project p) {
+            return shared_ptr<Project>(new Project(p));
+          })
+          .default_if_empty((shared_ptr<Project>)nullptr)
+          .as_blocking()
+          .first();
+      if (otherProject == nullptr) {
+        return nullptr;
+      } else {
+        // Speed up validation process for next check
+        return otherProject->reaProject();
+      }
+    }
+  }
+
+  void Track::attemptToFillProjectIfNecessary() const {
+    if (reaProject_ == nullptr) {
+      reaProject_ = findContainingProject();
+    }
+  }
+
+  bool Track::isValid() const {
+    if (mediaTrack_ == nullptr) {
+      throw std::logic_error("Track can not be validated if mediaTrack not available");
+    }
+    attemptToFillProjectIfNecessary();
+    if (reaProject_ == nullptr) {
+      return false;
+    } else {
+      if (Project(reaProject_).isAvailable()) {
         return reaper::ValidatePtr2(reaProject_, mediaTrack_, "MediaTrack*");
       } else {
         return false;
@@ -149,6 +164,12 @@ namespace reaplus {
   }
 
   Project Track::project() const {
+    loadIfNecessaryOrComplain();
+    return uncheckedProject();
+  }
+
+  Project Track::uncheckedProject() const {
+    attemptToFillProjectIfNecessary();
     return Project(reaProject_);
   }
 
@@ -228,6 +249,11 @@ namespace reaplus {
   void Track::setRecordingInput(MidiRecordingInput midiRecordingInput) {
     loadAndCheckIfNecessaryOrComplain();
     reaper::SetMediaTrackInfo_Value(mediaTrack_, "I_RECINPUT", midiRecordingInput.recInputIndex());
+    // Only for triggering notification (as manual setting the rec input would also trigger it)
+    int recMon = (int) reaper::GetMediaTrackInfo_Value(mediaTrack_, "I_RECMON");
+    HelperControlSurface::instance().Extended(CSURF_EXT_SETINPUTMONITOR, (void*) mediaTrack_, (void*) &recMon, nullptr);
+    // This doesn't work in one test case unfortunately
+//    reaper::CSurf_OnInputMonitorChangeEx(mediaTrack_, recMon, false);
   }
 
   AutomationMode Track::automationMode() const {
@@ -285,8 +311,11 @@ namespace reaplus {
   }
 
   bool Track::loadByGuid() const {
+    if (reaProject_ == nullptr) {
+      throw std::logic_error("For loading per GUID, a project must be given");
+    }
     // TODO Don't save ReaProject but Project as member
-    mediaTrack_ = project().tracks()
+    mediaTrack_ = uncheckedProject().tracks()
         .filter([this](Track track) {
           return track.guid() == *guid_;
         })
