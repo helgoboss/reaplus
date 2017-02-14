@@ -18,6 +18,7 @@ namespace reaplus {
 
     int recInputIndex() const;
     virtual RecordingInputType type() const = 0;
+    friend bool operator==(const RecordingInput& lhs, const RecordingInput& rhs);
 
   protected:
     RecordingInput(int recInputIndex);
