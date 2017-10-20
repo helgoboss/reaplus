@@ -379,6 +379,10 @@ namespace reaplus {
     return HelperControlSurface::instance().trackPanTouched();
   }
 
+  rxcpp::observable<Track> Reaper::trackArmTouched() const {
+    return HelperControlSurface::instance().trackArmTouched();
+  }
+
   rxcpp::observable<TrackSend> Reaper::trackSendVolumeChanged() const {
     return HelperControlSurface::instance().trackSendVolumeChanged();
   }

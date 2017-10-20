@@ -586,6 +586,11 @@ namespace reaplus {
     return trackPanTouchedSubject_.get_observable();
   }
 
+  rx::observable <Track> HelperControlSurface::trackArmTouched() const {
+    // So far there is no automation envelope for track arm, so touched = changed
+    return trackArmChanged();
+  }
+
   rx::observable <TrackSend> HelperControlSurface::trackSendVolumeTouched() const {
     return trackSendVolumeTouchedSubject_.get_observable();
   }

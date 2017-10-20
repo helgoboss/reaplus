@@ -160,6 +160,8 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackPanTouched() const;
 
+    rxcpp::observable<Track> trackArmTouched() const;
+
     rxcpp::observable<TrackSend> trackSendVolumeChanged() const;
 
     rxcpp::observable<TrackSend> trackSendVolumeTouched() const;
