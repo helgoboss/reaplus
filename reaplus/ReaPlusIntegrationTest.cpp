@@ -9,6 +9,7 @@
 #include "Fx.h"
 #include "FxParameter.h"
 #include "MidiInputDevice.h"
+#include "MidiOutputDevice.h"
 #include <cstring>
 
 using boost::none;
@@ -1156,6 +1157,16 @@ namespace reaplus {
       // When
       Reaper::instance().midiInputDevices();
       Reaper::instance().midiInputDeviceById(0).isAvailable();
+
+      // Then
+    });
+
+    test("Query MIDI output devices", [] {
+      // Given
+
+      // When
+      Reaper::instance().midiOutputDevices();
+      Reaper::instance().midiOutputDeviceById(0).isAvailable();
 
       // Then
     });

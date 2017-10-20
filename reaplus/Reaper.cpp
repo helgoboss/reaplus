@@ -7,6 +7,7 @@
 #include "Section.h"
 #include "Action.h"
 #include "MidiInputDevice.h"
+#include "MidiOutputDevice.h"
 #include "IncomingMidiEvent.h"
 #include "HelperControlSurface.h"
 #include <reaper_plugin_functions.h>
@@ -264,6 +265,23 @@ namespace reaplus {
 
   MidiInputDevice Reaper::midiInputDeviceById(int id) const {
     return MidiInputDevice(id);
+  }
+
+  rxcpp::observable<MidiOutputDevice> Reaper::midiOutputDevices() const {
+    return observable<>::create<MidiOutputDevice>([this](subscriber<MidiOutputDevice> s) {
+      const int maxCount = reaper::GetMaxMidiOutputs();
+      for (int i = 0; i < maxCount && s.is_subscribed(); i++) {
+        const auto dev = midiOutputDeviceById(i);
+        if (dev.isAvailable()) {
+          s.on_next(dev);
+        }
+      }
+      s.on_completed();
+    });
+  }
+
+  MidiOutputDevice Reaper::midiOutputDeviceById(int id) const {
+    return MidiOutputDevice(id);
   }
 
   optional<Project> Reaper::projectByIndex(int index) const {

@@ -18,6 +18,7 @@ namespace reaplus {
   class Project;
   class Section;
   class MidiInputDevice;
+  class MidiOutputDevice;
   class IncomingMidiEvent;
   class Parameter;
   class TrackSend;
@@ -127,10 +128,17 @@ namespace reaplus {
 
     rxcpp::observable<MidiInputDevice> midiInputDevices() const;
 
+    rxcpp::observable<MidiOutputDevice> midiOutputDevices() const;
+
     // It's correct that this method returns a non-optional. An id is supposed to uniquely identify a device.
     // A MidiInputDevice#isAvailable method returns if the device is actually existing at runtime. That way we
     // support (still) unloaded MidiInputDevices.
     MidiInputDevice midiInputDeviceById(int id) const;
+
+    // It's correct that this method returns a non-optional. An id is supposed to uniquely identify a device.
+    // A MidiOutputDevice#isAvailable method returns if the device is actually existing at runtime. That way we
+    // support (still) unloaded MidiOutputDevices.
+    MidiOutputDevice midiOutputDeviceById(int id) const;
 
     AutomationMode globalAutomationOverride() const;
 
