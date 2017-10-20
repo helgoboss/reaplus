@@ -100,6 +100,10 @@ namespace reaplus {
     return simple(MidiMessageType::ChannelAftertouch, channel, aftertouchValue, 0, frameOffset);
   }
 
+  MidiMessage MidiMessage::polyphonicAftertouch(int channel, int noteNumber, int aftertouchValue, int frameOffset) {
+    return simple(MidiMessageType::PolyphonicAftertouch, channel, noteNumber, aftertouchValue, frameOffset);
+  }
+
   MidiMessage MidiMessage::programChange(int channel, int programIndex, int frameOffset) {
     return simple(MidiMessageType::ProgramChange, channel, programIndex, 0, frameOffset);
   }

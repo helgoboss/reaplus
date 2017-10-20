@@ -11,7 +11,7 @@ namespace reaplus {
     PitchWheel = 0xb0,
     ProgramChange = 0xc0,
     ChannelAftertouch = 0xd0,
-    PolyAftertouch = 0xa0,
+    PolyphonicAftertouch = 0xa0,
     ActiveSensing = 0xfe
   };
   class MidiMessage {
@@ -25,6 +25,7 @@ namespace reaplus {
     static MidiMessage cc(int channel, int ccNumber, int ccValue, int frameOffset);
     static MidiMessage pitchWheel(int channel, int pitchValue, int frameOffset);
     static MidiMessage channelAftertouch(int channel, int aftertouchValue, int frameOffset);
+    static MidiMessage polyphonicAftertouch(int channel, int noteNumber, int aftertouchValue, int frameOffset);
     static MidiMessage programChange(int channel, int programIndex, int frameOffset);
     static inline MidiMessage simple(MidiMessageType type, int channel, int data1, int data2, int frameOffset);
 //    static MidiMessage rpn(int channel, int rpnNumber, int rpnValue, int frameOffset);
