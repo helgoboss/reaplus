@@ -4,7 +4,7 @@
 
 
 namespace reaplus {
-  MidiOutputDevice::MidiOutputDevice(int id) : id_(id), midiOutput_(nullptr) {
+  MidiOutputDevice::MidiOutputDevice(int id) : id_(id) {
   }
 
   int MidiOutputDevice::id() const {
@@ -22,8 +22,9 @@ namespace reaplus {
   }
   
   void MidiOutputDevice::send(const MidiMessage &message) const {
-    loadIfNecessaryOrComplain();
-    midiOutput_->Send(message.statusByte(), message.dataByte1(), message.dataByte2(), message.frameOffset());
+    if (auto midiOutput = load()) {
+      midiOutput->Send(message.statusByte(), message.dataByte1(), message.dataByte2(), message.frameOffset());
+    }
   }
 
   bool reaplus::operator==(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs) {
@@ -34,14 +35,7 @@ namespace reaplus {
     return !(lhs == rhs);
   }
 
-  void MidiOutputDevice::loadIfNecessaryOrComplain() const {
-    if (midiOutput_ == nullptr && !loadById()) {
-      throw std::logic_error("Device not loadable");
-    }
-  }
-
-  bool MidiOutputDevice::loadById() const {
-    midiOutput_ = reaper::GetMidiOutput(id_);
-    return midiOutput_ != nullptr;
+  midi_Output* MidiOutputDevice::load() const {
+    return reaper::GetMidiOutput(id_);
   }
 }

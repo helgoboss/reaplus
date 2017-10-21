@@ -8,8 +8,6 @@ namespace reaplus {
   class MidiOutputDevice {
   private:
     int id_;
-    // Only filled if device loaded
-    mutable midi_Output* midiOutput_;
   public:
     MidiOutputDevice(int id);
 
@@ -25,8 +23,7 @@ namespace reaplus {
 
     friend bool operator!=(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs);
   private:
-    void loadIfNecessaryOrComplain() const;
-    bool loadById() const;
+    inline midi_Output* load() const;
   };
 }
 
