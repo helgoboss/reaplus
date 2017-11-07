@@ -47,11 +47,12 @@ namespace reaplus {
   }
 
   void HelperControlSurface::Run() {
-    int i = 0;
-    const auto now = mainThreadRunLoop_.now();
-    while (i < 100 && !mainThreadRunLoop_.empty() && mainThreadRunLoop_.peek().when <= now) {
+    const auto fixedNow = mainThreadRunLoop_.now();
+    const auto maxExecutionTime = std::chrono::milliseconds(50);
+    while (mainThreadRunLoop_.now() - fixedNow <= maxExecutionTime
+           && !mainThreadRunLoop_.empty()
+           && mainThreadRunLoop_.peek().when <= fixedNow) {
       mainThreadRunLoop_.dispatch();
-      i++;
     }
   }
 
