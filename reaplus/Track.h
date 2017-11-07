@@ -26,10 +26,10 @@ namespace reaplus {
     // Possible states:
     // a) guid, project, !mediaTrack (guid-based and not yet loaded)
     // b) guid, mediaTrack (guid-based and loaded)
-    // c) !guid, mediaTrack (media track based, loaded)
-    boost::optional<std::string> guid_;
+    std::string guid_;
   public:
     static int const MAX_CHUNK_SIZE;
+    static std::string getMediaTrackGuid(MediaTrack* mediaTrack);
     // mediaTrack must not be null
     // reaProject can be null but should be set (for performance reasons)
     Track(MediaTrack* mediaTrack, ReaProject* reaProject);

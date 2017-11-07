@@ -24,8 +24,14 @@ namespace reaplus {
 
   const int Track::MAX_CHUNK_SIZE = 1000000;
 
-  Track::Track(MediaTrack* mediaTrack, ReaProject* reaProject) : mediaTrack_(mediaTrack), reaProject_(reaProject),
-    guid_(none) {
+  Track::Track(MediaTrack* mediaTrack, ReaProject* reaProject) :
+      mediaTrack_(mediaTrack),
+      reaProject_(reaProject),
+      // We load the GUID eagerly because we want to make comparability possible even in the following case:
+      // Track A has been initialized with a GUID not been loaded yet, track B has been initialized with a MediaTrack*
+      // (this constructor) but has rendered invalid in the meantime. Now there would not be any way to compare them
+      // because I can neither compare MediaTrack* pointers nor GUIDs. Except I extract the GUID eagerly.
+      guid_(Track::getMediaTrackGuid(mediaTrack)) {
   }
 
   MediaTrack* Track::mediaTrack() const {
@@ -33,14 +39,13 @@ namespace reaplus {
     return mediaTrack_;
   }
 
+  std::string Track::getMediaTrackGuid(MediaTrack* mediaTrack) {
+    auto guid = (GUID*) reaper::GetSetMediaTrackInfo(mediaTrack, "GUID", nullptr);
+    return convertGuidToString(*guid);
+  }
+
   string Track::guid() const {
-    if (guid_) {
-      return *guid_;
-    } else {
-      complainIfNotValid();
-      auto guid = (GUID*) reaper::GetSetMediaTrackInfo(mediaTrack(), "GUID", nullptr);
-      return convertGuidToString(*guid);
-    }
+    return guid_;
   }
 
   int Track::index() const {
@@ -319,7 +324,7 @@ namespace reaplus {
     // TODO Don't save ReaProject but Project as member
     mediaTrack_ = uncheckedProject().tracks()
         .filter([this](Track track) {
-          return track.guid() == *guid_;
+          return track.guid() == guid();
         })
         .map([](Track track) {
           return track.mediaTrack();
