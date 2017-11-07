@@ -109,6 +109,8 @@ namespace reaplus {
     void attemptToFillProjectIfNecessary() const;
 
     Project uncheckedProject() const;
+
+    void complainIfNotValid() const;
   };
 }
 

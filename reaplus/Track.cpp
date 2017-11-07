@@ -37,7 +37,8 @@ namespace reaplus {
     if (guid_) {
       return *guid_;
     } else {
-      return convertGuidToString(*reaper::GetTrackGUID(mediaTrack()));
+      auto guid = (GUID*) reaper::GetSetMediaTrackInfo(mediaTrack(), "GUID", nullptr);
+      return convertGuidToString(*guid);
     }
   }
 
@@ -363,6 +364,10 @@ namespace reaplus {
 
   void Track::loadAndCheckIfNecessaryOrComplain() const {
     loadIfNecessaryOrComplain();
+    complainIfNotValid();
+  }
+
+  void Track::complainIfNotValid() const {
     if (!isValid()) {
       throw std::logic_error("Track not available");
     }

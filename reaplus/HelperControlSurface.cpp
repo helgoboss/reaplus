@@ -258,7 +258,8 @@ namespace reaplus {
         d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
         d.recmonitor = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECMON");
         d.recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
-        d.guid = convertGuidToString(*reaper::GetTrackGUID(mediaTrack));
+        auto guid = (GUID*) reaper::GetSetMediaTrackInfo(mediaTrack, "GUID", nullptr);
+        d.guid = convertGuidToString(*guid);
         trackDatas[mediaTrack] = d;
         trackAddedSubject_.get_subscriber().on_next(track);
         detectFxChangesOnTrack(track, false);
