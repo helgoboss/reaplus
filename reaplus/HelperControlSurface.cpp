@@ -47,7 +47,8 @@ namespace reaplus {
   }
 
   void HelperControlSurface::Run() {
-    while (!mainThreadRunLoop_.empty() && mainThreadRunLoop_.peek().when <= mainThreadRunLoop_.now()) {
+    const auto now = mainThreadRunLoop_.now();
+    while (!mainThreadRunLoop_.empty() && mainThreadRunLoop_.peek().when <= now) {
       mainThreadRunLoop_.dispatch();
     }
   }
