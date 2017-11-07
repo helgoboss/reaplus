@@ -37,6 +37,7 @@ namespace reaplus {
     if (guid_) {
       return *guid_;
     } else {
+      complainIfNotValid();
       auto guid = (GUID*) reaper::GetSetMediaTrackInfo(mediaTrack(), "GUID", nullptr);
       return convertGuidToString(*guid);
     }
