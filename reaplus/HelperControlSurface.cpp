@@ -180,9 +180,13 @@ namespace reaplus {
       }
       return 0;
     }
+    case CSURF_EXT_SETFOCUSEDFX: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
+    case CSURF_EXT_SETFXOPEN: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
     case CSURF_EXT_SETFXCHANGE: {
       const auto mediaTrack = (MediaTrack*) parm1;
-      detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
+      if (mediaTrack) {
+        detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
+      }
       return 0;
     }
     case CSURF_EXT_SETLASTTOUCHEDFX: {
