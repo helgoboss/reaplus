@@ -249,6 +249,7 @@ namespace reaplus {
     if (supportAutoArm && hasAutoArmEnabled()) {
       return isSelected();
     } else {
+      loadAndCheckIfNecessaryOrComplain();
       return reaper::GetMediaTrackInfo_Value(mediaTrack(), "I_RECARM") == 1;
     }
   }
