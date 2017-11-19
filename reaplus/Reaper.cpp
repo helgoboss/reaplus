@@ -50,6 +50,11 @@ namespace reaplus {
     }
   }
 
+  void Reaper::staticHookPostCommand(int commandId, int flag) {
+    auto action = Reaper::instance().mainSection().actionByCommandId(commandId);
+    instance().actionInvokedSubject_.get_subscriber().on_next(action);
+  }
+
   bool Reaper::Command::reportsOnOffState() const {
     return isOn_ != nullptr;
   }
@@ -72,15 +77,22 @@ namespace reaplus {
     }
   }
 
+  rxcpp::observable<Action> Reaper::actionInvoked() const {
+    // TODO Add integration test
+    return actionInvokedSubject_.get_observable();
+  }
+
   Reaper::Reaper() {
     idOfMainThread_ = std::this_thread::get_id();
     reaper::plugin_register("hookcommand", (void*) &staticHookCommand);
     reaper::plugin_register("toggleaction", (void*) &staticToggleAction);
+    reaper::plugin_register("hookpostcommand", (void*) &staticHookPostCommand);
     audioHook_.OnAudioBuffer = &processAudioBuffer;
     reaper::Audio_RegHardwareHook(true, &audioHook_);
   }
 
   Reaper::~Reaper() {
+    reaper::plugin_register("-hookpostcommand", (void*) &staticHookPostCommand);
     reaper::plugin_register("-toggleaction", (void*) &staticToggleAction);
     reaper::plugin_register("-hookcommand", (void*) &staticHookCommand);
   }

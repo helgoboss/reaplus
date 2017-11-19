@@ -78,6 +78,7 @@ namespace reaplus {
     audio_hook_register_t audioHook_;
     std::unordered_map<int, Command> commandByIndex_;
     rxcpp::subjects::subject<IncomingMidiEvent> incomingMidiEventsSubject_;
+    rxcpp::subjects::subject<Action> actionInvokedSubject_;
 
   public:
     static Reaper& instance();
@@ -204,6 +205,8 @@ namespace reaplus {
 
     rxcpp::observable<Project> projectSwitched() const;
 
+    rxcpp::observable<Action> actionInvoked() const;
+
     rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
 
     rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);
@@ -217,7 +220,11 @@ namespace reaplus {
     std::thread::id idOfMainThread() const;
 
   private:
+    // Only for main section
+    static void staticHookPostCommand(int commandId, int flag);
+    // Only for main section
     static bool staticHookCommand(int commandIndex, int flag);
+    // Only for main section
     static int staticToggleAction(int commandIndex);
     static void processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t *reg);
   };
