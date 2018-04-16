@@ -24,10 +24,24 @@ using boost::optional;
 
 
 namespace reaplus {
+  std::unique_ptr<Reaper> Reaper::INSTANCE = nullptr;
 
   Reaper& reaplus::Reaper::instance() {
-    static Reaper INSTANCE;
-    return INSTANCE;
+    static Guard guard;
+    if (INSTANCE == nullptr) {
+      INSTANCE = unique_ptr<Reaper>(new Reaper());
+    }
+    return *INSTANCE;
+  }
+
+  void Reaper::destroyInstance() {
+    if (INSTANCE != nullptr) {
+      INSTANCE = nullptr;
+    }
+  }
+
+  Reaper::Guard::~Guard() {
+    Reaper::destroyInstance();
   }
 
   RegisteredAction Reaper::registerAction(const string& commandId, const string& description,
@@ -92,6 +106,8 @@ namespace reaplus {
   }
 
   Reaper::~Reaper() {
+    HelperControlSurface::destroyInstance();
+    reaper::Audio_RegHardwareHook(false, &audioHook_);
     reaper::plugin_register("-hookpostcommand", (void*) &staticHookPostCommand);
     reaper::plugin_register("-toggleaction", (void*) &staticToggleAction);
     reaper::plugin_register("-hookcommand", (void*) &staticHookCommand);

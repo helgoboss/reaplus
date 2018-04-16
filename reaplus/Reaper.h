@@ -48,6 +48,11 @@ namespace reaplus {
     friend class RegisteredAction;
 
   private:
+    class Guard {
+    public:
+      ~Guard();
+    };
+
     class Command {
     private:
       std::string description_;
@@ -74,6 +79,7 @@ namespace reaplus {
     };
 
 
+    static std::unique_ptr<Reaper> INSTANCE;
     std::thread::id idOfMainThread_;
     audio_hook_register_t audioHook_;
     std::unordered_map<int, Command> commandByIndex_;
@@ -83,11 +89,18 @@ namespace reaplus {
   public:
     static Reaper& instance();
 
-    void init();
-
-    Reaper();
+    /**
+     * Destroys the single instance of this class. Also takes care of destroying the HelperControlSurfaces. Most
+     * importantly, this triggers a lot of unregistrations from REAPER (hooks, control surface etc.).
+     * In case you use ReaPlus from a VST plug-in (which unlike REAPER extensions most likely have a smaller lifetime
+     * than REAPER itself), you *must* call this function as soon as the last instance of your VST plug-in is destroyed.
+     * But you should do it in extensions as well.
+     */
+    static void destroyInstance();
 
     ~Reaper();
+
+    void init();
 
     RegisteredAction registerAction(const std::string& commandId, const std::string& description,
         std::function<void()> operation, std::function<bool()> isOn = nullptr);
@@ -220,6 +233,9 @@ namespace reaplus {
     std::thread::id idOfMainThread() const;
 
   private:
+    Reaper();
+    Reaper(const Reaper&);
+
     // Only for main section
     static void staticHookPostCommand(int commandId, int flag);
     // Only for main section

@@ -16,11 +16,18 @@ using std::mutex;
 using std::pair;
 using std::string;
 using std::set;
+using std::unique_ptr;
 
 
 namespace reaplus {
+  std::unique_ptr<HelperControlSurface> HelperControlSurface::INSTANCE = nullptr;
+
   HelperControlSurface::HelperControlSurface() : activeProjectBehavior_(Reaper::instance().currentProject()) {
     reaper::plugin_register("csurf_inst", this);
+  }
+
+  HelperControlSurface::~HelperControlSurface() {
+    reaper::plugin_register("-csurf_inst", this);
   }
 
   rxcpp::subscription HelperControlSurface::enqueueCommand(function<void(void)> command) {
@@ -90,8 +97,21 @@ namespace reaplus {
 
 
   HelperControlSurface& HelperControlSurface::instance() {
-    static HelperControlSurface INSTANCE;
-    return INSTANCE;
+    static Guard guard;
+    if (INSTANCE == nullptr) {
+      INSTANCE = unique_ptr<HelperControlSurface>(new HelperControlSurface());
+    }
+    return *INSTANCE;
+  }
+
+  void HelperControlSurface::destroyInstance() {
+    if (INSTANCE != nullptr) {
+      INSTANCE = nullptr;
+    }
+  }
+
+  HelperControlSurface::Guard::~Guard() {
+    Reaper::destroyInstance();
   }
 
   rx::observable <FxParameter> HelperControlSurface::fxParameterValueChanged() const {

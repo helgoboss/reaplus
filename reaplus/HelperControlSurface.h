@@ -3,6 +3,7 @@
 #include <functional>
 #include <unordered_map>
 #include <set>
+#include <memory>
 #include <vector>
 #include <string>
 #include <mutex>
@@ -46,10 +47,17 @@ namespace reaplus {
     friend class Reaper;
     friend class Track;
   private:
+    class Guard {
+    public:
+      ~Guard();
+    };
+
     enum class State {
       Normal,
       PropagatingTrackSetChanges
     };
+
+    static std::unique_ptr<HelperControlSurface> INSTANCE;
     int numTrackSetChangesLeftToBePropagated_ = 0;
     rxcpp::subjects::subject<FxParameter> fxParameterValueChangedSubject_;
     rxcpp::subjects::subject<FxParameter> fxParameterTouchedSubject_;
@@ -83,6 +91,7 @@ namespace reaplus {
     rxcpp::observe_on_one_worker::coordinator_type mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
+    ~HelperControlSurface();
 
     virtual void SetSurfacePan(MediaTrack* trackid, double pan) override;
 
@@ -127,6 +136,8 @@ namespace reaplus {
     static void init();
 
     static HelperControlSurface& instance();
+
+    static void destroyInstance();
 
     rxcpp::observable<Parameter*> parameterValueChangedUnsafe() const;
 
@@ -186,7 +197,8 @@ namespace reaplus {
 
   private:
     HelperControlSurface();
-    // TODO Delete copy method
+
+    HelperControlSurface(const HelperControlSurface&);
 
     void removeInvalidReaProjects();
 
