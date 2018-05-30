@@ -87,7 +87,7 @@ namespace reaplus {
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
     rxcpp::schedulers::run_loop mainThreadRunLoop_;
-    rxcpp::observe_on_one_worker mainThreadCoordination_ = rxcpp::observe_on_run_loop(mainThreadRunLoop_);
+    rxcpp::observe_on_one_worker mainThreadCoordination_ = rxcpp::observe_on_one_worker(rxcpp::schedulers::make_run_loop(mainThreadRunLoop_));
     rxcpp::observe_on_one_worker::coordinator_type mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
