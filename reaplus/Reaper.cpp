@@ -491,6 +491,10 @@ namespace reaplus {
   std::thread::id Reaper::idOfMainThread() const {
     return idOfMainThread_;
   }
+
+  HWND Reaper::mainWindow() const {
+    return reaper::GetMainHwnd();
+  }
 }
 
 

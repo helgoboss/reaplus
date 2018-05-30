@@ -232,6 +232,8 @@ namespace reaplus {
 
     std::thread::id idOfMainThread() const;
 
+    HWND mainWindow() const;
+
   private:
     Reaper();
     Reaper(const Reaper&);
