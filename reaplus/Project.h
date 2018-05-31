@@ -41,6 +41,7 @@ namespace reaplus {
     Track insertTrackAt(int index);
     void removeTrack(Track track);
     boost::optional<std::string> filePath() const;
+    void markAsDirty();
     void undoable(const std::string& label, std::function<void(void)> command);
     friend bool operator==(const Project& lhs, const Project& rhs);
     friend bool operator!=(const Project& lhs, const Project& rhs);

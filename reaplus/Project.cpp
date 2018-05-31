@@ -63,6 +63,10 @@ namespace reaplus {
     }
   }
 
+  void Project::markAsDirty() {
+    reaper::MarkProjectDirty(reaProject_);
+  }
+
   bool reaplus::operator==(const Project& lhs, const Project& rhs) {
     return lhs.reaProject_ == rhs.reaProject_;
   }
