@@ -244,6 +244,11 @@ namespace reaplus {
     return trackSelectedChangedSubject_.get_observable();
   }
 
+  rxcpp::observable<Track> HelperControlSurface::trackSelectedTouched() const {
+    // So far there is no automation envelope for track selection, so touched = changed
+    return trackSelectedChanged();
+  }
+
   rxcpp::observable<Project> HelperControlSurface::projectSwitched() const {
     return activeProjectBehavior_.get_observable();
   }

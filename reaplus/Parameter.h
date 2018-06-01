@@ -10,7 +10,8 @@ namespace reaplus {
     TrackSendVolume,
     Action,
     TrackPan,
-    TrackArm
+    TrackArm,
+    TrackSelection
   };
 
   class Parameter {

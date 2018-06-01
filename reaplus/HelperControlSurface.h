@@ -165,6 +165,8 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackSelectedChanged() const;
 
+    rxcpp::observable<Track> trackSelectedTouched() const;
+
     rxcpp::observable<Project> projectSwitched() const;
 
     rxcpp::observable<Track> trackInputChanged() const;

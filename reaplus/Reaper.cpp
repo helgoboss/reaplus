@@ -467,6 +467,10 @@ namespace reaplus {
     return HelperControlSurface::instance().trackSelectedChanged();
   }
 
+  rxcpp::observable<Track> Reaper::trackSelectedTouched() const {
+    return HelperControlSurface::instance().trackSelectedTouched();
+  }
+
   rxcpp::observable<Project> Reaper::projectSwitched() const {
     return HelperControlSurface::instance().projectSwitched();
   }
