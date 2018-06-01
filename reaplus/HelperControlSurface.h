@@ -76,6 +76,7 @@ namespace reaplus {
     rxcpp::subjects::subject<Track> trackInputMonitoringChangedSubject_;
     rxcpp::subjects::subject<Track> trackArmChangedSubject_;
     rxcpp::subjects::subject<Track> trackMuteChangedSubject_;
+    rxcpp::subjects::subject<Track> trackMuteTouchedSubject_;
     rxcpp::subjects::subject<Track> trackSoloChangedSubject_;
     rxcpp::subjects::subject<Track> trackSelectedChangedSubject_;
     rxcpp::subjects::subject<Fx> fxAddedSubject_;
@@ -161,7 +162,11 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackMuteChanged() const;
 
+    rxcpp::observable<Track> trackMuteTouched() const;
+
     rxcpp::observable<Track> trackSoloChanged() const;
+
+    rxcpp::observable<Track> trackSoloTouched() const;
 
     rxcpp::observable<Track> trackSelectedChanged() const;
 

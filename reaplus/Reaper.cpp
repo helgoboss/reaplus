@@ -459,8 +459,16 @@ namespace reaplus {
     return HelperControlSurface::instance().trackMuteChanged();
   }
 
+  rxcpp::observable<Track> Reaper::trackMuteTouched() const {
+    return HelperControlSurface::instance().trackMuteTouched();
+  }
+
   rxcpp::observable<Track> Reaper::trackSoloChanged() const {
     return HelperControlSurface::instance().trackSoloChanged();
+  }
+
+  rxcpp::observable<Track> Reaper::trackSoloTouched() const {
+    return HelperControlSurface::instance().trackSoloTouched();
   }
 
   rxcpp::observable<Track> Reaper::trackSelectedChanged() const {

@@ -11,7 +11,9 @@ namespace reaplus {
     Action,
     TrackPan,
     TrackArm,
-    TrackSelection
+    TrackSelection,
+    TrackMute,
+    TrackSolo
   };
 
   class Parameter {

@@ -236,8 +236,17 @@ namespace reaplus {
     return trackMuteChangedSubject_.get_observable();
   }
 
+  rxcpp::observable<Track> HelperControlSurface::trackMuteTouched() const {
+    return trackMuteTouchedSubject_.get_observable();
+  }
+
   rxcpp::observable<Track> HelperControlSurface::trackSoloChanged() const {
     return trackSoloChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Track> HelperControlSurface::trackSoloTouched() const {
+    // So far there is no automation envelope for track solo, so touched = changed
+    return trackSoloChanged();
   }
 
   rxcpp::observable<Track> HelperControlSurface::trackSelectedChanged() const {
@@ -341,6 +350,9 @@ namespace reaplus {
           td->mute = mute;
           Track track(trackid, nullptr);
           trackMuteChangedSubject_.get_subscriber().on_next(track);
+          if (!trackParameterIsAutomated(track, "Mute")) {
+            trackMuteTouchedSubject_.get_subscriber().on_next(track);
+          }
         }
       }
     }

@@ -70,6 +70,9 @@ namespace reaplus {
     bool isMuted() const;
     void mute();
     void unmute();
+    bool isSolo() const;
+    void solo();
+    void unsolo();
     // Non-Optional. Even the index is not a stable identifier, we need a way to create
     // sends just by an index, not to target tracks. Think of ReaLearn for example and saving
     // a preset for a future project which doesn't have the same target track like in the

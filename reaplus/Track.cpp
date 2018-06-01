@@ -369,6 +369,23 @@ namespace reaplus {
     reaper::SetMediaTrackInfo_Value(mediaTrack(), "B_MUTE", 0);
   }
 
+  bool Track::isSolo() const {
+    loadAndCheckIfNecessaryOrComplain();
+    return reaper::GetMediaTrackInfo_Value(mediaTrack(), "I_SOLO") > 0;
+  }
+
+  void Track::solo() {
+    loadAndCheckIfNecessaryOrComplain();
+    // TODO Add second version with surface solo
+    reaper::SetMediaTrackInfo_Value(mediaTrack(), "I_SOLO", 1);
+  }
+
+  void Track::unsolo() {
+    loadAndCheckIfNecessaryOrComplain();
+    // TODO Add second version with surface solo
+    reaper::SetMediaTrackInfo_Value(mediaTrack(), "I_SOLO", 0);
+  }
+
   void Track::loadAndCheckIfNecessaryOrComplain() const {
     loadIfNecessaryOrComplain();
     complainIfNotValid();

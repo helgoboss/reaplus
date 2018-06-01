@@ -212,7 +212,11 @@ namespace reaplus {
 
     rxcpp::observable<Track> trackMuteChanged() const;
 
+    rxcpp::observable<Track> trackMuteTouched() const;
+
     rxcpp::observable<Track> trackSoloChanged() const;
+
+    rxcpp::observable<Track> trackSoloTouched() const;
 
     rxcpp::observable<Track> trackSelectedChanged() const;
 
