@@ -85,6 +85,7 @@ namespace reaplus {
     std::unordered_map<int, Command> commandByIndex_;
     rxcpp::subjects::subject<IncomingMidiEvent> incomingMidiEventsSubject_;
     rxcpp::subjects::subject<Action> actionInvokedSubject_;
+    uint64_t sampleCounter_ = 0;
 
   public:
     static Reaper& instance();
@@ -239,6 +240,8 @@ namespace reaplus {
     std::thread::id idOfMainThread() const;
 
     HWND mainWindow() const;
+
+    uint64_t sampleCounter() const;
 
   private:
     Reaper();

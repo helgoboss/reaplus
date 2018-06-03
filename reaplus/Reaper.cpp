@@ -341,20 +341,25 @@ namespace reaplus {
     HelperControlSurface::init();
   }
 
+  uint64_t Reaper::sampleCounter() const {
+    return sampleCounter_;
+  }
+
   void Reaper::processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t* reg) {
     if (!isPost) {
       auto& reaper = Reaper::instance();
       // For each open MIDI device
-      auto subject = reaper.incomingMidiEventsSubject_;
-      
-      for (int i = 0; subject.has_observers() && i < reaper::GetMaxMidiInputs(); i++) {
+      auto& subject = reaper.incomingMidiEventsSubject_;
+      // TODO Use subject.has_observers() instead of true as soon as it works
+      for (int i = 0; true && i < reaper::GetMaxMidiInputs(); i++) {
         // Read MIDI messages
         const auto midiInput = reaper::GetMidiInput(i);
         if (midiInput != nullptr) {
           const auto midiEvents = midiInput->GetReadBuf();
           MIDI_event_t* midiEvent;
           int l = 0;
-          while (subject.has_observers() && (midiEvent = midiEvents->EnumItems(&l))) {
+          // TODO Use subject.has_observers() instead of true as soon as it works
+          while (true && (midiEvent = midiEvents->EnumItems(&l))) {
             // Send MIDI message
             auto& msg = midiEvent->midi_message;
             if (msg[0] != 254) {
@@ -364,6 +369,7 @@ namespace reaplus {
           }
         }
       }
+      reaper.sampleCounter_ += len;
     }
   }
 
