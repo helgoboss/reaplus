@@ -347,14 +347,14 @@ namespace reaplus {
       // For each open MIDI device
       auto subject = reaper.incomingMidiEventsSubject_;
       
-      for (int i = 0; subject.get_subscriber().is_subscribed() && i < reaper::GetMaxMidiInputs(); i++) {
+      for (int i = 0; subject.has_observers() && i < reaper::GetMaxMidiInputs(); i++) {
         // Read MIDI messages
         const auto midiInput = reaper::GetMidiInput(i);
         if (midiInput != nullptr) {
           const auto midiEvents = midiInput->GetReadBuf();
           MIDI_event_t* midiEvent;
           int l = 0;
-          while (subject.get_subscriber().is_subscribed() && (midiEvent = midiEvents->EnumItems(&l))) {
+          while (subject.has_observers() && (midiEvent = midiEvents->EnumItems(&l))) {
             // Send MIDI message
             auto& msg = midiEvent->midi_message;
             if (msg[0] != 254) {
