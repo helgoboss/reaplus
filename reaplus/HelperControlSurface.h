@@ -9,6 +9,7 @@
 #include <mutex>
 #include "reaper_plugin.h"
 #include "rxcpp/rx.hpp"
+#include "util/rx-relaxed-runloop.hpp"
 #include "Project.h"
 #include "Fx.h"
 #include "FxParameter.h"
@@ -87,8 +88,9 @@ namespace reaplus {
     typedef std::unordered_map<MediaTrack*, TrackData> TrackDataMap;
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
-    rxcpp::schedulers::run_loop mainThreadRunLoop_;
-    rxcpp::observe_on_one_worker mainThreadCoordination_ = rxcpp::observe_on_one_worker(rxcpp::schedulers::make_run_loop(mainThreadRunLoop_));
+    rxcpp::schedulers::relaxed_run_loop mainThreadRunLoop_;
+    rxcpp::observe_on_one_worker mainThreadCoordination_ =
+        rxcpp::observe_on_one_worker(rxcpp::schedulers::make_relaxed_run_loop(mainThreadRunLoop_));
     rxcpp::observe_on_one_worker::coordinator_type mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
