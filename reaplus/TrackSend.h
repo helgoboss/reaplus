@@ -2,6 +2,7 @@
 
 #include "Track.h"
 #include "Volume.h"
+#include "Pan.h"
 #include <boost/optional.hpp>
 
 namespace reaplus {
@@ -18,6 +19,8 @@ namespace reaplus {
     std::string name() const;
     void setVolume(double normalizedValue);
     Volume volume() const;
+    void setPan(double normalizedValue);
+    Pan pan() const;
     bool isAvailable() const;
 
     friend bool operator==(const TrackSend& lhs, const TrackSend& rhs);

@@ -69,6 +69,8 @@ namespace reaplus {
     rxcpp::subjects::subject<Track> trackPanTouchedSubject_;
     rxcpp::subjects::subject<TrackSend> trackSendVolumeChangedSubject_;
     rxcpp::subjects::subject<TrackSend> trackSendVolumeTouchedSubject_;
+    rxcpp::subjects::subject<TrackSend> trackSendPanChangedSubject_;
+    rxcpp::subjects::subject<TrackSend> trackSendPanTouchedSubject_;
     rxcpp::subjects::subject<Track> trackAddedSubject_;
     rxcpp::subjects::subject<Track> trackRemovedSubject_;
     rxcpp::subjects::subject<Project> tracksReorderedSubject_;
@@ -185,6 +187,10 @@ namespace reaplus {
     rxcpp::observable<TrackSend> trackSendVolumeChanged() const;
 
     rxcpp::observable<TrackSend> trackSendVolumeTouched() const;
+
+    rxcpp::observable<TrackSend> trackSendPanChanged() const;
+
+    rxcpp::observable<TrackSend> trackSendPanTouched() const;
 
     rxcpp::observable<Track> trackAdded() const;
 

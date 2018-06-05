@@ -40,6 +40,17 @@ namespace reaplus {
     return Volume::ofReaperValue(volume);
   }
 
+  void TrackSend::setPan(double normalizedValue) {
+    const double reaperValue = Pan(normalizedValue).reaperValue();
+    reaper::CSurf_OnSendPanChange(sourceTrack().mediaTrack(), index(), reaperValue, false);
+  }
+
+  Pan TrackSend::pan() const {
+    double pan;
+    reaper::GetTrackSendUIVolPan(sourceTrack().mediaTrack(), index(), nullptr, &pan);
+    return Pan::ofReaperValue(pan);
+  }
+
   bool operator==(const TrackSend& lhs, const TrackSend& rhs) {
     if (lhs.sourceTrack_ == rhs.sourceTrack_) {
       if (lhs.isIndexBased() && rhs.isIndexBased()) {

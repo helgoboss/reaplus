@@ -192,16 +192,24 @@ namespace reaplus {
       }
       return 0;
     }
-    case CSURF_EXT_SETSENDVOLUME: {
+    case CSURF_EXT_SETSENDVOLUME:
+    case CSURF_EXT_SETSENDPAN: {
       const auto mediaTrack = (MediaTrack*) parm1;
       const int sendIdx = *(int*) parm2;
       const Track track(mediaTrack, nullptr);
       const auto trackSend = track.indexBasedSendByIndex(sendIdx);
-      trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
-
-      // Send volume touch event only if not automated
-      if (!trackParameterIsAutomated(track, "Send Volume")) {
-        trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
+      if (call == CSURF_EXT_SETSENDVOLUME) {
+        trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
+        // Send volume touch event only if not automated
+        if (!trackParameterIsAutomated(track, "Send Volume")) {
+          trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
+        }
+      } else if (call == CSURF_EXT_SETSENDPAN) {
+        trackSendPanChangedSubject_.get_subscriber().on_next(trackSend);
+        // Send pan touch event only if not automated
+        if (!trackParameterIsAutomated(track, "Send Pan")) {
+          trackSendPanTouchedSubject_.get_subscriber().on_next(trackSend);
+        }
       }
       return 0;
     }
@@ -446,6 +454,14 @@ namespace reaplus {
 
   rx::observable <TrackSend> HelperControlSurface::trackSendVolumeChanged() const {
     return trackSendVolumeChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<TrackSend> HelperControlSurface::trackSendPanChanged() const {
+    return trackSendPanChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<TrackSend> HelperControlSurface::trackSendPanTouched() const {
+    return trackSendPanTouchedSubject_.get_observable();
   }
 
   const rxcpp::observe_on_one_worker& HelperControlSurface::mainThreadCoordination() const {

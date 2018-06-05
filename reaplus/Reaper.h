@@ -192,6 +192,10 @@ namespace reaplus {
 
     rxcpp::observable<TrackSend> trackSendVolumeTouched() const;
 
+    rxcpp::observable<TrackSend> trackSendPanChanged() const;
+
+    rxcpp::observable<TrackSend> trackSendPanTouched() const;
+
     rxcpp::observable<Track> trackAdded() const;
 
     // Delivers a GUID-based track (to still be able to identify it even it is deleted)
