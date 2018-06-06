@@ -86,6 +86,8 @@ namespace reaplus {
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
     rxcpp::subjects::subject<Fx> fxEnabledChangedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
+    rxcpp::subjects::subject<bool> masterTempoChangedSubject_;
+    rxcpp::subjects::subject<bool> masterTempoTouchedSubject_;
     rxcpp::subjects::behavior<Project> activeProjectBehavior_;
     typedef std::unordered_map<MediaTrack*, TrackData> TrackDataMap;
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
@@ -205,6 +207,10 @@ namespace reaplus {
     rxcpp::observable<Fx> fxEnabledChanged() const;
 
     rxcpp::observable<Track> fxReordered() const;
+
+    rxcpp::observable<bool> masterTempoChanged() const;
+
+    rxcpp::observable<bool> masterTempoTouched() const;
 
     rxcpp::subscription enqueueCommand(std::function<void(void)> command);
 

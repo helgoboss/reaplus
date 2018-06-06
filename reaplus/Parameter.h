@@ -14,7 +14,8 @@ namespace reaplus {
     TrackSelection,
     TrackMute,
     TrackSolo,
-    TrackSendPan
+    TrackSendPan,
+    MasterTempo
   };
 
   class Parameter {

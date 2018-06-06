@@ -231,6 +231,10 @@ namespace reaplus {
 
     rxcpp::observable<Action> actionInvoked() const;
 
+    rxcpp::observable<bool> masterTempoChanged() const;
+
+    rxcpp::observable<bool> masterTempoTouched() const;
+
     rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
 
     rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);

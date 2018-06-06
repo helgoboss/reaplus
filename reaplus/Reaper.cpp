@@ -495,6 +495,14 @@ namespace reaplus {
     return HelperControlSurface::instance().projectSwitched();
   }
 
+  rxcpp::observable<bool> Reaper::masterTempoChanged() const {
+    return HelperControlSurface::instance().masterTempoChanged();
+  }
+
+  rxcpp::observable<bool> Reaper::masterTempoTouched() const {
+    return HelperControlSurface::instance().masterTempoTouched();
+  }
+
   rxcpp::subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
     return HelperControlSurface::instance().enqueueCommand(command);
   }

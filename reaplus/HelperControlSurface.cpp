@@ -226,10 +226,27 @@ namespace reaplus {
       fxHasBeenTouchedJustAMomentAgo_ = true;
       return 0;
     }
+    case CSURF_EXT_SETBPMANDPLAYRATE: {
+      if (parm1) {
+        const double bpm = *(double*) parm1;
+        masterTempoChangedSubject_.get_subscriber().on_next(true);
+        // FIXME
+        masterTempoTouchedSubject_.get_subscriber().on_next(true);
+      }
+      return 0;
+    }
     default:
       return 0;
     }
 
+  }
+
+  rxcpp::observable<bool> HelperControlSurface::masterTempoChanged() const {
+    return masterTempoChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<bool> HelperControlSurface::masterTempoTouched() const {
+    return masterTempoTouchedSubject_.get_observable();
   }
 
   rxcpp::observable<Track> HelperControlSurface::trackInputMonitoringChanged() const {

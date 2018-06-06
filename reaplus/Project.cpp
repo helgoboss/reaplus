@@ -183,5 +183,15 @@ namespace reaplus {
     }
   }
 
+  Tempo Project::tempo() const {
+    // FIXME This is not project-specific
+    return Tempo(reaper::Master_GetTempo());
+  }
+
+  void Project::setTempo(double bpm, bool wantUndo) {
+    complainIfNotAvailable();
+    reaper::SetCurrentBPM(reaProject_, bpm, wantUndo);
+  }
+
 }
 
