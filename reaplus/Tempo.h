@@ -12,6 +12,7 @@ namespace reaplus {
     double normalizedValue() const;
     double bpm() const;
     std::string toString() const;
+    std::string toStringWithoutUnit() const;
   };
 }
 

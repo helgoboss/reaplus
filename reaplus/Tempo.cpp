@@ -8,7 +8,7 @@ namespace reaplus {
   }
 
   Tempo::Tempo(double bpm) {
-    bpm_ = bpm;
+    bpm_ = std::max(1.0, std::min(960.0, bpm));
   }
 
   double Tempo::normalizedValue() const {
@@ -20,9 +20,13 @@ namespace reaplus {
   }
 
   std::string Tempo::toString() const {
+    return toStringWithoutUnit() + " bpm";
+  }
+
+  std::string Tempo::toStringWithoutUnit() const {
     // @closureIsSafe
-    return helgoboss::toString(12, [this](char* buffer, int maxSize) {
-      sprintf(buffer, "%.2f bpm", bpm_);
+    return helgoboss::toString(8, [this](char* buffer, int maxSize) {
+      sprintf(buffer, "%.2f", bpm_);
     });
   }
 }
