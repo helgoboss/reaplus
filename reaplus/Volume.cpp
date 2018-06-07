@@ -12,9 +12,13 @@ namespace reaplus {
   }
   
   Volume Volume::ofReaperValue(double reaperValue) {
-    return Volume(reaper::DB2SLIDER(std::log(reaperValue) / LN10_OVER_TWENTY) / 1000.0);
+    return Volume::ofDb(std::log(reaperValue) / LN10_OVER_TWENTY);
   }
-  
+
+  Volume Volume::ofDb(double db) {
+    return Volume(reaper::DB2SLIDER(db) / 1000.0);
+  }
+
   double Volume::reaperValue() const {
     return std::exp(db() * LN10_OVER_TWENTY);
   }
@@ -24,8 +28,17 @@ namespace reaplus {
     if (db == -1000) {
       return std::string("-inf");
     } else {
-      return reaplus::toString(20, [db](char* buffer, int maxSize) {
-        std::sprintf(buffer, "%.2f dB", db);
+      return toStringWithoutUnit() + " dB";
+    }
+  }
+
+  std::string Volume::toStringWithoutUnit() const {
+    double db = this->db();
+    if (db == -1000) {
+      return std::string("-inf");
+    } else {
+      return reaplus::toString(17, [db](char* buffer, int maxSize) {
+        std::sprintf(buffer, "%.2f", db);
       });
     }
   }
