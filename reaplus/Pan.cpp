@@ -12,7 +12,12 @@ namespace reaplus {
   Pan Pan::ofReaperValue(double reaperValue) {
     return Pan(ModelUtil::mapValueInRangeToNormalizedValue(reaperValue, -1, 1));
   }
-  
+
+  Pan Pan::ofPanExpression(const std::string &panExpression) {
+    const double reaperValue = reaper::parsepanstr(panExpression.c_str());
+    return Pan::ofReaperValue(reaperValue);
+  }
+
   double Pan::reaperValue() const {
     return ModelUtil::mapNormalizedValueToValueInRange(normalizedValue_, -1, 1);
   }
