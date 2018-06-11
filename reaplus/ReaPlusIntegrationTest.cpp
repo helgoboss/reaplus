@@ -464,6 +464,35 @@ namespace reaplus {
       assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
+    test("Disarm track in auto-arm mode (ignoring auto-arm)", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      track.disarm(false);
+
+      // Then
+      assertTrue(!track.isArmed(), "Track was not disarmed");
+      assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
+      assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
+    });
+
+    test("Arm track in auto-arm mode (ignoring auto-arm)", [] {
+      // Given
+      auto track = firstTrack();
+      track.enableAutoArm();
+      assertTrue(track.hasAutoArmEnabled(), "Precondition failed");
+      assertTrue(!track.isArmed(), "Precondition failed");
+
+      // When
+      track.arm(false);
+
+      // Then
+      assertTrue(track.isArmed(), "Track was not armed");
+      assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
+      assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
+    });
+
     test("Select track exclusively", [] {
       // Given
       auto project = Reaper::instance().currentProject();

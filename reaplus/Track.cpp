@@ -242,6 +242,11 @@ namespace reaplus {
       select();
     } else {
       reaper::CSurf_OnRecArmChangeEx(mediaTrack(), 1, false);
+      // If track was auto-armed before, this would just have switched off the auto-arm but not actually armed
+      // the track. Therefore we check if it's really armed and if not we do it again.
+      if (reaper::GetMediaTrackInfo_Value(mediaTrack(), "I_RECARM") != 1) {
+        reaper::CSurf_OnRecArmChangeEx(mediaTrack(), 1, false);
+      }
     }
   }
 
