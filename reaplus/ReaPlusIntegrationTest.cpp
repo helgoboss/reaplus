@@ -11,6 +11,7 @@
 #include "MidiInputDevice.h"
 #include "MidiOutputDevice.h"
 #include <cstring>
+#include <reaper_plugin_functions.h>
 
 using boost::none;
 using boost::optional;
@@ -22,14 +23,7 @@ namespace reaplus {
       /**
        *    - MidiMessage
             - All events
-            - UndoBlock/Project::undoable()
-            - Reaper::destroyInstance
-            - Reaper::mainWindow
-            - Project::markAsDirty
-            - Track solo functions
             - Reaper::sampleCounter
-            - Project tempo functions
-            - Pan/Volume/Tempo
        */
 
 
@@ -673,6 +667,28 @@ namespace reaplus {
       assertTrue(track.isMuted());
     });
 
+    test("Solo track", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      firstTrack().solo();
+
+      // Then
+      assertTrue(track.isSolo());
+    });
+
+    test("Unsolo track", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      firstTrack().unsolo();
+
+      // Then
+      assertTrue(!track.isSolo());
+    });
+
     test("Generate GUID", [] {
       // Given
 
@@ -1268,6 +1284,46 @@ namespace reaplus {
 
       // Then
       assertTrue(firstTrack().name() == "Renamed", "Redo didn't work");
+    });
+
+    test("Get REAPER window", [] {
+      // Given
+
+      // When
+      auto result = Reaper::instance().mainWindow();
+
+      // Then
+      assertTrue(result == reaper::GetMainHwnd(), "Wrong main window");
+    });
+
+    test("Mark project as dirty", [] {
+      // Given
+
+      // When
+      Reaper::instance().currentProject().markAsDirty();
+
+      // Then
+    });
+
+    test("Get project tempo", [] {
+      // Given
+
+      // When
+      const auto tempo = Reaper::instance().currentProject().tempo();
+
+      // Then
+      assertTrue(tempo.bpm() == 120.0);
+      assertTrue(tempo.normalizedValue() == 119.0 / 959);
+    });
+
+    test("Set project tempo", [] {
+      // Given
+
+      // When
+      Reaper::instance().currentProject().setTempo(130.0, false);
+
+      // Then
+      assertTrue(Reaper::instance().currentProject().tempo().bpm() == 130.0);
     });
 
     test("Show message box", [] {
