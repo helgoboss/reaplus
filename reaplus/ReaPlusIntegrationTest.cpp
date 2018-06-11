@@ -23,10 +23,6 @@ namespace reaplus {
        *    - MidiMessage
             - All events
             - UndoBlock/Project::undoable()
-            - supportAutoArm parameter
-            - RecordingInput::==
-            - Track::getMediaTrackGuid
-            - Section::actionByIndex
             - Reaper::destroyInstance
             - Reaper::mainWindow
             - Project::markAsDirty
@@ -107,6 +103,7 @@ namespace reaplus {
       assertTrue(foundTrack.isAvailable(), "Reported existing track as non-available");
       assertTrue(foundTrack == newTrack, "Didn't find right track");
       assertTrue(foundTrack != firstTrack, "Found wrong track");
+      assertTrue(newTrack.guid() == Track::getMediaTrackGuid(newTrack.mediaTrack()), "getMediaTrackGuid() doesn't work");
     });
 
     test("Query non-existent track by GUID", [] {
@@ -166,6 +163,7 @@ namespace reaplus {
       auto& midiRecInput = dynamic_cast<MidiRecordingInput&>(*recInput);
       assertTrue(midiRecInput.channel() == none, "Returned explicit channel");
       assertTrue(midiRecInput.device() == none, "Returned explicit device");
+      assertTrue(*RecordingInput::ofRecInputIndex(recInput->recInputIndex()) == *recInput, "== doesn't work");
     });
 
     test("Set track recording input 1", [] {
@@ -622,6 +620,7 @@ namespace reaplus {
       // When
       auto toggleAction = Reaper::instance().mainSection().actionByCommandId(6);
       auto normalAction = Reaper::instance().mainSection().actionByCommandId(41075);
+      auto normalActionByIndex = Reaper::instance().mainSection().actionByIndex(normalAction.index());
 
       // Then
       assertTrue(toggleAction.isAvailable());
@@ -637,6 +636,7 @@ namespace reaplus {
       assertTrue(toggleAction.name() == "Track: Toggle mute for selected tracks");
       assertTrue(toggleAction.index() >= 0);
       assertTrue(toggleAction.section() == Reaper::instance().mainSection());
+      assertTrue(normalActionByIndex == normalAction, "== doesn't work");
     });
 
     test("Invoke action", [] {
