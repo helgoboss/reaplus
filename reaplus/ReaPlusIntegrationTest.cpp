@@ -348,9 +348,11 @@ namespace reaplus {
 
       // When
       bool isArmed = track.isArmed();
+      bool isArmedIgnoringAutoArm = track.isArmed(false);
 
       // Then
       assertTrue(!isArmed, "Wrong value returned");
+      assertTrue(!isArmedIgnoringAutoArm, "Wrong value returned (ignoring auto-arm)");
     });
 
     test("Arm track in normal mode", [] {
@@ -362,6 +364,7 @@ namespace reaplus {
 
       // Then
       assertTrue(track.isArmed(), "Track was not armed");
+      assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is not in normal mode anymore");
     });
 
@@ -374,6 +377,7 @@ namespace reaplus {
 
       // Then
       assertTrue(!track.isArmed(), "Track was not disarmed");
+      assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is not in normal mode anymore");
     });
 
@@ -387,6 +391,7 @@ namespace reaplus {
       // Then
       assertTrue(track.hasAutoArmEnabled(), "Track is still in normal mode");
       assertTrue(!track.isArmed(), "Track is suddenly armed");
+      assertTrue(!track.isArmed(false), "Track is suddenly armed (ignoring auto-arm)");
     });
 
     test("Arm track in auto-arm mode", [] {
@@ -398,6 +403,9 @@ namespace reaplus {
 
       // Then
       assertTrue(track.isArmed(), "Track was not armed");
+      // TODO Interesting! GetMediaTrackInfo_Value read with I_RECARM seems to support auto-arm already!
+      // So maybe we should remove the chunk check and the parameter supportAutoArm
+      assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
       assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
     });
 
@@ -410,6 +418,7 @@ namespace reaplus {
 
       // Then
       assertTrue(!track.isArmed(), "Track was not disarmed");
+      assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
       assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
     });
 
@@ -423,6 +432,7 @@ namespace reaplus {
       // Then
       assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
       assertTrue(!track.isArmed(), "Track is suddenly armed");
+      assertTrue(!track.isArmed(false), "Track is suddenly armed (ignoring auto-arm)");
     });
 
     test("Switch to normal track mode while armed", [] {
@@ -437,6 +447,7 @@ namespace reaplus {
       // Then
       assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
       assertTrue(track.isArmed(), "Track is suddenly unarmed");
+      assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
     test("Switch track to auto-arm mode while armed", [] {
@@ -450,6 +461,7 @@ namespace reaplus {
       // Then
       assertTrue(track.hasAutoArmEnabled(), "Track is still in normal mode");
       assertTrue(track.isArmed(), "Track is suddenly unarmed");
+      assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
     test("Select track exclusively", [] {
