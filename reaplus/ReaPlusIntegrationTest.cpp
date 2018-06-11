@@ -18,6 +18,25 @@ using std::string;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() const {
+      // TODO to be tested
+      /**
+       *    - MidiMessage
+            - All events
+            - UndoBlock/Project::undoable()
+            - supportAutoArm parameter
+            - RecordingInput::==
+            - Track::getMediaTrackGuid
+            - Section::actionByIndex
+            - Reaper::destroyInstance
+            - Reaper::mainWindow
+            - Project::markAsDirty
+            - Track solo functions
+            - Reaper::sampleCounter
+            - Project tempo functions
+            - Pan/Volume/Tempo
+       */
+
+
     test("Create empty project in new tab", [] {
       // Given
       const auto currentProjectBefore = Reaper::instance().currentProject();
