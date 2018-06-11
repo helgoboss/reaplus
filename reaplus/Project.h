@@ -46,6 +46,10 @@ namespace reaplus {
     void setTempo(double bpm, bool wantUndo);
     void markAsDirty();
     void undoable(const std::string& label, std::function<void(void)> command);
+    void undo();
+    void redo();
+    boost::optional<std::string> labelOfLastUndoableAction() const;
+    boost::optional<std::string> labelOfNextRedoableAction() const;
     friend bool operator==(const Project& lhs, const Project& rhs);
     friend bool operator!=(const Project& lhs, const Project& rhs);
   private:

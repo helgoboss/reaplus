@@ -183,6 +183,34 @@ namespace reaplus {
     }
   }
 
+  void Project::undo() {
+    complainIfNotAvailable();
+    reaper::Undo_DoUndo2(reaProject_);
+  }
+
+  void Project::redo() {
+    complainIfNotAvailable();
+    reaper::Undo_DoRedo2(reaProject_);
+  }
+
+  boost::optional<std::string> Project::labelOfLastUndoableAction() const {
+    complainIfNotAvailable();
+    if (auto label = reaper::Undo_CanUndo2(reaProject_)) {
+      return string(label);
+    } else {
+      return none;
+    }
+  }
+
+  boost::optional<std::string> Project::labelOfNextRedoableAction() const {
+    complainIfNotAvailable();
+    if (auto label = reaper::Undo_CanRedo2(reaProject_)) {
+      return string(label);
+    } else {
+      return none;
+    }
+  }
+
   Tempo Project::tempo() const {
     // FIXME This is not project-specific
     return Tempo(reaper::Master_GetTempo());

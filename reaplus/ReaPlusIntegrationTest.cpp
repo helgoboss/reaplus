@@ -1231,6 +1231,45 @@ namespace reaplus {
       // Then
     });
 
+    test("Use undoable", [] {
+      // Given
+      auto t = firstTrack();
+
+      // When
+      Reaper::instance().currentProject().undoable("ReaPlus integration test operation", [t]() mutable {
+        t.setName("Renamed");
+      });
+      const auto label = Reaper::instance().currentProject().labelOfLastUndoableAction();
+
+      // Then
+      assertTrue(t.name() == "Renamed", "Undoable operation was not executed");
+      assertTrue(label && *label == "ReaPlus integration test operation", "Label was wrong");
+    });
+
+    test("Undo", [] {
+      // Given
+      auto t = firstTrack();
+
+      // When
+      Reaper::instance().currentProject().undo();
+      const auto label = Reaper::instance().currentProject().labelOfNextRedoableAction();
+
+      // Then
+      assertTrue(firstTrack().name() == "", "Undo was not executed or undoable didn't really work");
+      assertTrue(label && *label == "ReaPlus integration test operation", "Label was wrong");
+    });
+
+    test("Redo", [] {
+      // Given
+      auto t = firstTrack();
+
+      // When
+      Reaper::instance().currentProject().redo();
+
+      // Then
+      assertTrue(firstTrack().name() == "Renamed", "Redo didn't work");
+    });
+
     test("Show message box", [] {
       // Given
 

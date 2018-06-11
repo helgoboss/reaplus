@@ -47,7 +47,9 @@ namespace reaplus {
     Volume volume() const;
     void setPan(double normalizedValue);
     Pan pan() const;
+    // If supportAutoArm is false, auto-arm mode is disabled if it has been enabled before
     void arm(bool supportAutoArm = true);
+    // If supportAutoArm is false, auto-arm mode is disabled if it has been enabled before
     void disarm(bool supportAutoArm = true);
     bool hasAutoArmEnabled() const;
     void enableAutoArm();
