@@ -335,11 +335,10 @@ namespace reaplus {
     if (isValid()) {
       const auto before = this->before();
       if (before.isValid()) {
-        const size_t endPosOfNeedle = before.content().rfind(needle);
-        if (endPosOfNeedle == string::npos) {
+        const size_t startPosOfNeedle = before.content().rfind(needle);
+        if (startPosOfNeedle == string::npos) {
           return createInvalidRegion();
         } else {
-          const size_t startPosOfNeedle = endPosOfNeedle - needle.size() + 1;
           return moveLeftCursorTo(startPosOfNeedle);
         }
       } else {
@@ -389,11 +388,10 @@ namespace reaplus {
 
   ChunkRegion ChunkRegion::moveRightCursorLeftToStartOf(const string& needle) const {
     if (isValid()) {
-      const size_t relEndPosOfNeedle = content().rfind(needle);
-      if (relEndPosOfNeedle == string::npos) {
+      const size_t relStartPosOfNeedle = content().rfind(needle);
+      if (relStartPosOfNeedle == string::npos) {
         return createInvalidRegion();
       } else {
-        const size_t relStartPosOfNeedle = relEndPosOfNeedle - needle.size() + 1;
         return createRegionFromRelativeStartPos(0, relStartPosOfNeedle);
       }
     } else {
