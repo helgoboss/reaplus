@@ -16,6 +16,7 @@
 using boost::none;
 using boost::optional;
 using std::string;
+using rxcpp::composite_subscription;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() const {
@@ -49,16 +50,24 @@ namespace reaplus {
       assertTrue(!newProject.filePath().is_initialized());
     });
 
-    test("Add track", [] {
+    testWithLifetime("Add track", [](composite_subscription lifetime) {
       // Given
       auto project = Reaper::instance().currentProject();
 
       // When
+      optional<Track> eventTrack;
+      lifetime.add(
+          Reaper::instance().trackAdded().subscribe([&](Track t) {
+            eventTrack = t;
+          })
+      );
+
       const auto newTrack = project.addTrack();
 
       // Then
       assertTrue(project.trackCount() == 1, "Track count not increased");
       assertTrue(newTrack.index() == 0, "Track index wrong");
+      assertTrue(*eventTrack == newTrack, "Track event wrong");
     });
 
     test("Query master track", [] {
@@ -1339,21 +1348,29 @@ namespace reaplus {
   }
 
   void ReaPlusIntegrationTest::test(const std::string& name, std::function<void(void)> code) const {
-    log("\n\n## ");
-    log(name);
-    try {
-      code();
-      log("\nSuccessful");
-    } catch (const std::exception& e) {
-      log("\nFailed");
-      if (std::strlen(e.what()) > 0) {
-        log(":");
-        log(e.what());
+    testWithLifetime(name, [code](composite_subscription) { code(); });
+  }
+
+  void ReaPlusIntegrationTest::testWithLifetime(const std::string &name,
+                                     std::function<void(rxcpp::composite_subscription)> code) const {
+      log("\n\n## ");
+      log(name);
+      composite_subscription lifetime;
+      try {
+          code(lifetime);
+          lifetime.unsubscribe();
+          log("\nSuccessful");
+      } catch (const std::exception& e) {
+          lifetime.unsubscribe();
+          log("\nFailed");
+          if (std::strlen(e.what()) > 0) {
+              log(":");
+              log(e.what());
+          }
+          if (stopOnFailure_) {
+              throw e;
+          }
       }
-      if (stopOnFailure_) {
-        throw e;
-      }
-    }
   }
 
   ReaPlusIntegrationTest::ReaPlusIntegrationTest(bool stopOnFailure) : stopOnFailure_(stopOnFailure) {
