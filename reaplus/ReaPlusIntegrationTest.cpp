@@ -21,12 +21,12 @@ using rxcpp::observable;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() const {
-      // TODO to be tested
-      /**
-       *    - MidiMessage
-            - All events
-            - Reaper::sampleCounter
-       */
+    // TODO to be tested
+    /**
+     *    - MidiMessage
+          - All events
+          - Reaper::sampleCounter
+     */
 
 
     test("Create empty project in new tab", [] {
@@ -108,7 +108,8 @@ namespace reaplus {
       assertTrue(foundTrack.isAvailable(), "Reported existing track as non-available");
       assertTrue(foundTrack == newTrack, "Didn't find right track");
       assertTrue(foundTrack != firstTrack, "Found wrong track");
-      assertTrue(newTrack.guid() == Track::getMediaTrackGuid(newTrack.mediaTrack()), "getMediaTrackGuid() doesn't work");
+      assertTrue(newTrack.guid() == Track::getMediaTrackGuid(newTrack.mediaTrack()),
+          "getMediaTrackGuid() doesn't work");
     });
 
     test("Query non-existent track by GUID", [] {
@@ -789,7 +790,6 @@ namespace reaplus {
         assertTrue(fxChain.chunk() == none);
       });
 
-
       test("Add track fx by original name", [&fxChain] {
         // Given
 
@@ -1143,7 +1143,6 @@ namespace reaplus {
         }
       });
 
-
       test("Show fx in floating window", [&fxChain] {
         // Given
         auto fx = *fxChain.fxByIndex(0);
@@ -1353,48 +1352,48 @@ namespace reaplus {
     testWithLifetime(name, [code](composite_subscription) { code(); });
   }
 
-  void ReaPlusIntegrationTest::testWithLifetime(const std::string &name,
-                                     std::function<void(rxcpp::composite_subscription)> code) const {
-      log("\n\n## ");
-      log(name);
-      composite_subscription lifetime;
-      try {
-          code(lifetime);
-          lifetime.unsubscribe();
-          log("\nSuccessful");
-      } catch (const std::exception& e) {
-          lifetime.unsubscribe();
-          log("\nFailed");
-          if (std::strlen(e.what()) > 0) {
-              log(":");
-              log(e.what());
-          }
-          if (stopOnFailure_) {
-              throw e;
-          }
+  void ReaPlusIntegrationTest::testWithLifetime(const std::string& name,
+      std::function<void(rxcpp::composite_subscription)> code) const {
+    log("\n\n## ");
+    log(name);
+    composite_subscription lifetime;
+    try {
+      code(lifetime);
+      lifetime.unsubscribe();
+      log("\nSuccessful");
+    } catch (const std::exception& e) {
+      lifetime.unsubscribe();
+      log("\nFailed");
+      if (std::strlen(e.what()) > 0) {
+        log(":");
+        log(e.what());
       }
+      if (stopOnFailure_) {
+        throw e;
+      }
+    }
   }
 
-  void ReaPlusIntegrationTest::testWithUntil(const std::string &name,
-                                     std::function<void(rxcpp::observable<bool>)> code) const {
-      log("\n\n## ");
-      log(name);
-      rxcpp::subjects::subject<bool> testIsOver;
-      try {
-          code(testIsOver.get_observable());
-          testIsOver.get_subscriber().on_next(true);
-          log("\nSuccessful");
-      } catch (const std::exception& e) {
-          testIsOver.get_subscriber().on_next(true);
-          log("\nFailed");
-          if (std::strlen(e.what()) > 0) {
-              log(":");
-              log(e.what());
-          }
-          if (stopOnFailure_) {
-              throw e;
-          }
+  void ReaPlusIntegrationTest::testWithUntil(const std::string& name,
+      std::function<void(rxcpp::observable<bool>)> code) const {
+    log("\n\n## ");
+    log(name);
+    rxcpp::subjects::subject<bool> testIsOver;
+    try {
+      code(testIsOver.get_observable());
+      testIsOver.get_subscriber().on_next(true);
+      log("\nSuccessful");
+    } catch (const std::exception& e) {
+      testIsOver.get_subscriber().on_next(true);
+      log("\nFailed");
+      if (std::strlen(e.what()) > 0) {
+        log(":");
+        log(e.what());
       }
+      if (stopOnFailure_) {
+        throw e;
+      }
+    }
   }
 
   ReaPlusIntegrationTest::ReaPlusIntegrationTest(bool stopOnFailure) : stopOnFailure_(stopOnFailure) {
