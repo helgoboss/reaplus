@@ -17,6 +17,7 @@ using boost::none;
 using boost::optional;
 using std::string;
 using rxcpp::composite_subscription;
+using rxcpp::observable;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() const {
@@ -50,23 +51,24 @@ namespace reaplus {
       assertTrue(!newProject.filePath().is_initialized());
     });
 
-    testWithLifetime("Add track", [](composite_subscription lifetime) {
+    testWithUntil("Add track", [](observable<bool> testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
 
       // When
       optional<Track> eventTrack;
-      lifetime.add(
-          Reaper::instance().trackAdded().subscribe([&](Track t) {
-            eventTrack = t;
-          })
-      );
+      int count = 0;
+      Reaper::instance().trackAdded().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
 
       const auto newTrack = project.addTrack();
 
       // Then
       assertTrue(project.trackCount() == 1, "Track count not increased");
       assertTrue(newTrack.index() == 0, "Track index wrong");
+      assertTrue(count == 1, "Event count wrong");
       assertTrue(*eventTrack == newTrack, "Track event wrong");
     });
 
@@ -1362,6 +1364,28 @@ namespace reaplus {
           log("\nSuccessful");
       } catch (const std::exception& e) {
           lifetime.unsubscribe();
+          log("\nFailed");
+          if (std::strlen(e.what()) > 0) {
+              log(":");
+              log(e.what());
+          }
+          if (stopOnFailure_) {
+              throw e;
+          }
+      }
+  }
+
+  void ReaPlusIntegrationTest::testWithUntil(const std::string &name,
+                                     std::function<void(rxcpp::observable<bool>)> code) const {
+      log("\n\n## ");
+      log(name);
+      rxcpp::subjects::subject<bool> testIsOver;
+      try {
+          code(testIsOver.get_observable());
+          testIsOver.get_subscriber().on_next(true);
+          log("\nSuccessful");
+      } catch (const std::exception& e) {
+          testIsOver.get_subscriber().on_next(true);
           log("\nFailed");
           if (std::strlen(e.what()) > 0) {
               log(":");

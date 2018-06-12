@@ -18,6 +18,7 @@ namespace reaplus {
     static Track firstTrack();
     void test(const std::string& name, std::function<void(void)> code) const;
     void testWithLifetime(const std::string& name, std::function<void(rxcpp::composite_subscription)> code) const;
+    void testWithUntil(const std::string& name, std::function<void(rxcpp::observable<bool>)> code) const;
     void log(const std::string& msg) const;
   };
 }
