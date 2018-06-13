@@ -5,6 +5,12 @@
 #include "TrackVolume.h"
 #include "TrackPan.h"
 #include "TrackSendVolume.h"
+#include "MasterTempo.h"
+#include "TrackArm.h"
+#include "TrackMute.h"
+#include "TrackSolo.h"
+#include "TrackSelection.h"
+#include "TrackSendPan.h"
 #include "reaper_plugin_functions.h"
 #include "utility.h"
 
@@ -637,6 +643,24 @@ namespace reaplus {
         .merge(trackPanChanged().map([this](Track track) -> Parameter* {
           return new TrackPan(track);
         }))
+        .merge(trackArmChanged().map([this](Track track) -> Parameter* {
+          return new TrackArm(track);
+        }))
+        .merge(trackMuteChanged().map([this](Track track) -> Parameter* {
+          return new TrackMute(track);
+        }))
+        .merge(trackSoloChanged().map([this](Track track) -> Parameter* {
+          return new TrackSolo(track);
+        }))
+        .merge(trackSelectedChanged().map([this](Track track) -> Parameter* {
+          return new TrackSelection(track);
+        }))
+        .merge(masterTempoChanged().map([](bool) -> Parameter* {
+          return new MasterTempo();
+        }))
+        .merge(trackSendPanChanged().map([this](TrackSend trackSend) -> Parameter* {
+          return new TrackSendPan(trackSend);
+        }))
         .merge(trackSendVolumeChanged().map([this](TrackSend trackSend) -> Parameter* {
           return new TrackSendVolume(trackSend);
         }));
@@ -651,6 +675,24 @@ namespace reaplus {
         }))
         .merge(trackPanTouched().map([this](Track track) -> Parameter* {
           return new TrackPan(track);
+        }))
+        .merge(trackArmTouched().map([this](Track track) -> Parameter* {
+          return new TrackArm(track);
+        }))
+        .merge(trackMuteTouched().map([this](Track track) -> Parameter* {
+          return new TrackMute(track);
+        }))
+        .merge(trackSoloTouched().map([this](Track track) -> Parameter* {
+          return new TrackSolo(track);
+        }))
+        .merge(trackSelectedTouched().map([this](Track track) -> Parameter* {
+          return new TrackSelection(track);
+        }))
+        .merge(masterTempoTouched().map([](bool) -> Parameter* {
+          return new MasterTempo();
+        }))
+        .merge(trackSendPanTouched().map([this](TrackSend trackSend) -> Parameter* {
+          return new TrackSendPan(trackSend);
         }))
         .merge(trackSendVolumeTouched().map([this](TrackSend trackSend) -> Parameter* {
           return new TrackSendVolume(trackSend);
