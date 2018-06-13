@@ -63,7 +63,6 @@ namespace reaplus {
         count++;
         eventTrack = t;
       });
-
       const auto newTrack = project.addTrack();
 
       // Then
@@ -799,10 +798,18 @@ namespace reaplus {
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackMuteChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       firstTrack().unmute();
 
       // Then
       assertTrue(!track.isMuted());
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     testWithUntil("Mute track", [](auto testIsOver) {
@@ -810,10 +817,18 @@ namespace reaplus {
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackMuteChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       firstTrack().mute();
 
       // Then
       assertTrue(track.isMuted());
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     testWithUntil("Solo track", [](auto testIsOver) {
@@ -821,10 +836,18 @@ namespace reaplus {
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackSoloChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       firstTrack().solo();
 
       // Then
       assertTrue(track.isSolo());
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     testWithUntil("Unsolo track", [](auto testIsOver) {
@@ -832,10 +855,18 @@ namespace reaplus {
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackSoloChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       firstTrack().unsolo();
 
       // Then
       assertTrue(!track.isSolo());
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Generate GUID", [] {
@@ -933,6 +964,12 @@ namespace reaplus {
         auto fxChain = getFxChain();
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxAdded().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         auto fx = fxChain.addFxByOriginalName("ReaControlMIDI (Cockos)");
 
         // Then
@@ -963,6 +1000,8 @@ namespace reaplus {
         auto firstTag = chainChunk->findFirstTag(0);
         assertTrue(firstTag.is_initialized());
         assertTrue(firstTag->content() == chainChunk->content());
+        assertTrue(count == 1, "Event count wrong");
+        assertTrue(*eventFx == fx, "FX event wrong");
       });
 
       test("Check track fx with 1 fx", [getFxChain, getTrack] {
@@ -1003,10 +1042,18 @@ namespace reaplus {
         auto fx1 = *fxChain.fxByIndex(0);
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxEnabledChanged().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         fx1.disable();
 
         // Then
         assertTrue(!fx1.isEnabled());
+        assertTrue(count == 1, "Event count wrong");
+        assertTrue(*eventFx == fx1, "FX event wrong");
       });
 
       testWithUntil("Enable track fx", [getFxChain](auto testIsOver) {
@@ -1015,10 +1062,18 @@ namespace reaplus {
         auto fx1 = *fxChain.fxByIndex(0);
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxEnabledChanged().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         fx1.enable();
 
         // Then
         assertTrue(fx1.isEnabled());
+        assertTrue(count == 1, "Event count wrong");
+        assertTrue(*eventFx == fx1, "FX event wrong");
       });
 
       test("Check track fx with 2 fx", [getFxChain, getTrack] {
@@ -1118,6 +1173,12 @@ namespace reaplus {
         auto p = fx.parameterByIndex(5);
 
         // When
+        optional<FxParameter> eventFxParameter;
+        int count = 0;
+        Reaper::instance().fxParameterValueChanged().take_until(testIsOver).subscribe([&](FxParameter f) {
+          count++;
+          eventFxParameter = f;
+        });
         p.setNormalizedValue(0.3);
 
         // Then
@@ -1131,7 +1192,9 @@ namespace reaplus {
         assertTrue(p.normalizedValue() == 0.30000001192092896);
         assertTrue(p.reaperValue() == 0.30000001192092896);
         assertTrue(p.formatNormalizedValue(p.normalizedValue()) == "-4.44 dB");
-
+        // TODO 1 invocation would be better than 2
+        assertTrue(count == 2, "Event count wrong (maybe 1 instead of 2, that would be an improvement?)");
+        assertTrue(*eventFxParameter == p, "FX parameter event wrong");
       });
 
       testWithUntil("Move FX", [getFxChain](auto testIsOver) {
@@ -1141,11 +1204,21 @@ namespace reaplus {
         auto synthFx = *fxChain.fxByIndex(1);
 
         // When
+        optional<Track> eventTrack;
+        int count = 0;
+        Reaper::instance().fxReordered().take_until(testIsOver).subscribe([&](Track t) {
+          count++;
+          eventTrack = t;
+        });
         fxChain.moveFx(synthFx, 0);
 
         // Then
         assertTrue(midiFx.index() == 1);
         assertTrue(synthFx.index() == 0);
+        // TODO Detect such a programmatic FX move as well (maybe by hooking into HelperControlSurface::updateMediaTrackPositions)
+        assertTrue(count == 0, "Event count wrong, maybe 1, that would be an improvement");
+        // TODO Add FxChain.track()
+        assertTrue(!eventTrack.is_initialized(), "Track event wrong, maybe an improvement");
       });
 
       testWithUntil("Remove FX", [getFxChain](auto testIsOver) {
@@ -1155,6 +1228,12 @@ namespace reaplus {
         auto midiFx = *fxChain.fxByIndex(1);
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxRemoved().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         fxChain.removeFx(synthFx);
 
         // Then
@@ -1162,6 +1241,8 @@ namespace reaplus {
         assertTrue(midiFx.isAvailable());
         assertTrue(midiFx.index() == 0);
         midiFx.invalidateIndex();
+        assertTrue(count == 1, "Event count wrong");
+        assertTrue(*eventFx == synthFx, "FX event wrong");
       });
 
       testWithUntil("Add FX by chunk", [getFxChain](auto testIsOver) {
@@ -1178,6 +1259,12 @@ namespace reaplus {
   WAK 0)foo";
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxAdded().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         auto synthFx = fxChain.addFxOfChunk(fxChunk);
 
         // Then
@@ -1185,6 +1272,9 @@ namespace reaplus {
         assertTrue(synthFx->index() == 1);
         assertTrue(synthFx->guid() == "5FF5FB09-9102-4CBA-A3FB-3467BA1BFE5D");
         assertTrue(synthFx->parameterByIndex(5).formattedValue() == "-6.00");
+        // TODO Detect such a programmatic FX add as well (maybe by hooking into HelperControlSurface::updateMediaTrackPositions)
+        assertTrue(count == 0, "Event count wrong, could be an improvement");
+        assertTrue(!eventFx.is_initialized(), "FX event wrong, could be an improvement");
       });
 
       testWithUntil("Set fx chunk", [getFxChain](auto testIsOver) {
@@ -1327,6 +1417,12 @@ namespace reaplus {
         auto fxChain = getFxChain();
 
         // When
+        optional<Fx> eventFx;
+        int count = 0;
+        Reaper::instance().fxAdded().take_until(testIsOver).subscribe([&](Fx f) {
+          count++;
+          eventFx = f;
+        });
         auto fx = fxChain.addFxByOriginalName("phaser");
 
         // Then
@@ -1342,6 +1438,8 @@ namespace reaplus {
         assertTrue(!fxChain.fxByGuidAndIndex("bla", 0).isAvailable());
         assertTrue(fxChain.firstFxByName("ReaControlMIDI (Cockos)").is_initialized());
         assertTrue(*fxChain.firstFxByName("phaser") == *fx);
+        assertTrue(count == 1, "Event count wrong");
+        assertTrue(*eventFx == fx, "FX event wrong");
       });
 
       test("Query track JS fx by index", [getFxChain, getTrack] {
@@ -1384,7 +1482,7 @@ namespace reaplus {
 
     fxTests(
         [this] { return secondTrack(); },
-        [this] { return secondTrack().normalFxChain(); }
+        [this] { return secondTrack().inputFxChain(); }
     );
 
     testWithUntil("Insert track at", [](auto testIsOver) {
@@ -1394,6 +1492,12 @@ namespace reaplus {
       auto secondTrack = *project.trackByIndex(1);
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackAdded().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       auto newTrack = project.insertTrackAt(1);
       newTrack.setName("Inserted track");
 
@@ -1402,6 +1506,8 @@ namespace reaplus {
       assertTrue(newTrack.index() == 1, "Track index wrong");
       assertTrue(newTrack.name() == "Inserted track", "Track name wrong");
       assertTrue(secondTrack.index() == 2, "Tracks after not correctly moved");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == newTrack, "Track event wrong");
     });
 
     test("Query MIDI input devices", [] {
@@ -1424,11 +1530,17 @@ namespace reaplus {
       // Then
     });
 
-    test("Use undoable", [] {
+    testWithUntil("Use undoable", [](auto testIsOver) {
       // Given
       auto t = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackAdded().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       Reaper::instance().currentProject().undoable("ReaPlus integration test operation", [t]() mutable {
         t.setName("Renamed");
       });
@@ -1437,6 +1549,8 @@ namespace reaplus {
       // Then
       assertTrue(t.name() == "Renamed", "Undoable operation was not executed");
       assertTrue(label && *label == "ReaPlus integration test operation", "Label was wrong");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == t, "Track event wrong");
     });
 
     test("Undo", [] {
@@ -1497,10 +1611,15 @@ namespace reaplus {
       // Given
 
       // When
+      int count = 0;
+      Reaper::instance().masterTempoChanged().take_until(testIsOver).subscribe([&](bool) {
+        count++;
+      });
       Reaper::instance().currentProject().setTempo(130.0, false);
 
       // Then
       assertTrue(Reaper::instance().currentProject().tempo().bpm() == 130.0);
+      assertTrue(count == 1, "Event count wrong");
     });
 
     test("Show message box", [] {
@@ -1591,6 +1710,7 @@ namespace reaplus {
           }
         });
       } catch (const std::exception& e) {
+        testIsOver.get_subscriber().on_next(true);
         processFailure(e);
       }
     }
