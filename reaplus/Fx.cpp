@@ -22,7 +22,6 @@ namespace reaplus {
   std::regex JS_LINE_REGEX("<JS ([^ ]+).*");
 
   int Fx::index() const {
-    loadIfNecessaryOrComplain();
     return index_;
   }
 
