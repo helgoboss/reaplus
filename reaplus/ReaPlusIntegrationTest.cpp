@@ -776,6 +776,24 @@ namespace reaplus {
       assertTrue(!eventAction.is_initialized(), "actionInvoked was actually raised!");
     });
 
+    testWithUntil("Test actionInvoked event", [](auto testIsOver) {
+      // Given
+      auto action = Reaper::instance().mainSection().actionByCommandId(1582);
+
+      // When
+      optional<Action> eventAction;
+      int count = 0;
+      Reaper::instance().actionInvoked().take_until(testIsOver).subscribe([&](Action a) {
+        count++;
+        eventAction = a;
+      });
+      reaper::Main_OnCommandEx(action.commandId(), 0, nullptr);
+
+      // Then
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventAction == action, "Action event wrong");
+    });
+
     testWithUntil("Unmute track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
