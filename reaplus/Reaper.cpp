@@ -92,7 +92,6 @@ namespace reaplus {
   }
 
   rxcpp::observable<Action> Reaper::actionInvoked() const {
-    // TODO Add integration test
     return actionInvokedSubject_.get_observable();
   }
 

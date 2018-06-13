@@ -3,23 +3,41 @@
 #include <functional>
 #include <string>
 #include <rxcpp/rx.hpp>
+#include <queue>
 
 namespace reaplus {
   class Track;
+  class TestStep {
+  private:
+    typedef std::function<rxcpp::observable<bool>(rxcpp::observable<bool>)> Operation;
+    const std::string name_;
+    const Operation operation_;
+  public:
+    TestStep(const std::string& name, Operation operation);
+    std::string getName() const;
+    Operation getOperation() const;
+  };
+
   class ReaPlusIntegrationTest {
   private:
-    bool stopOnFailure_;
+    std::queue<TestStep> stepQueue_;
   public:
-    ReaPlusIntegrationTest(bool stopOnFailure);
-    void execute() const;
-    void tests() const;
+    void execute();
+    void tests();
   private:
     static void assertTrue(bool expression, const std::string& errorMsg = "");
     static Track firstTrack();
-    void test(const std::string& name, std::function<void(void)> code) const;
-    void testWithLifetime(const std::string& name, std::function<void(rxcpp::composite_subscription)> code) const;
-    void testWithUntil(const std::string& name, std::function<void(rxcpp::observable<bool>)> code) const;
-    void log(const std::string& msg) const;
+    static Track secondTrack();
+    void executeNextStep();
+    void test(const std::string& name, std::function<void(void)> code);
+    void testWithUntil(const std::string& name, std::function<void(rxcpp::observable<bool>)> code);
+    void testAndWait(const std::string& name, std::function<rxcpp::observable<bool>(void)> code);
+    void testInternal(const std::string& name,
+        std::function<rxcpp::observable<bool>(rxcpp::observable<bool>)> code);
+    void log(const std::string& msg);
+    void logHeading(const std::string& name);
+    void processSuccess();
+    void processFailure(const std::exception& e);
   };
 }
 

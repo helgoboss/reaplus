@@ -83,6 +83,8 @@ namespace reaplus {
       int relmode = 0;
       // reaper::kbd_RunCommandThroughHooks(section_.sectionInfo(), &actionCommandId, &val, &valhw, &relmode, reaper::GetMainHwnd());
       reaper::KBD_OnMainActionEx(actionCommandId, val, valhw, relmode, reaper::GetMainHwnd(), project ? project->reaProject() : nullptr);
+      // Main_OnCommandEx would trigger the actionInvoked event but it has not enough parameters for passing values etc.
+//      reaper::Main_OnCommandEx(actionCommandId, 0, project ? project->reaProject() : nullptr);
     }
   }
 

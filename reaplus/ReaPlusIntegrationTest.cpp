@@ -18,9 +18,10 @@ using boost::optional;
 using std::string;
 using rxcpp::composite_subscription;
 using rxcpp::observable;
+using std::function;
 
 namespace reaplus {
-  void ReaPlusIntegrationTest::tests() const {
+  void ReaPlusIntegrationTest::tests() {
     // TODO to be tested
     /**
      *    - MidiMessage
@@ -38,7 +39,7 @@ namespace reaplus {
       const auto newProject = Reaper::instance().createEmptyProjectInNewTab();
 
       // Then
-      assertTrue(currentProjectBefore == currentProjectBefore, "Project comparison broken");
+      assertTrue(currentProjectBefore == currentProjectBefore, "Project comparison broken"); // NOLINT
       assertTrue(Reaper::instance().projectCount() == projectCountBefore + 1, "Project count not increased");
       assertTrue(Reaper::instance().projects().as_blocking().count() == projectCountBefore + 1);
       assertTrue(Reaper::instance().currentProject() != currentProjectBefore, "Current project still the same");
@@ -51,7 +52,7 @@ namespace reaplus {
       assertTrue(!newProject.filePath().is_initialized());
     });
 
-    testWithUntil("Add track", [](observable<bool> testIsOver) {
+    testWithUntil("Add track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
 
@@ -142,18 +143,26 @@ namespace reaplus {
       auto trackName = track.name();
 
       // Then
-      assertTrue(trackName == "", "Wrong name reported");
+      assertTrue(trackName.empty(), "Wrong name reported");
     });
 
-    test("Set track name", [] {
+    testWithUntil("Set track name", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackNameChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.setName("Foo Bla");
 
       // Then
       assertTrue(track.name() == "Foo Bla", "Name not correctly set");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Query track recording input", [] {
@@ -172,11 +181,17 @@ namespace reaplus {
       assertTrue(*RecordingInput::ofRecInputIndex(recInput->recInputIndex()) == *recInput, "== doesn't work");
     });
 
-    test("Set track recording input 1", [] {
+    testWithUntil("Set track recording input 1", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackInputChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.setRecordingInput(MidiRecordingInput::fromDeviceAndChannel(4, 5));
 
       // Then
@@ -186,6 +201,8 @@ namespace reaplus {
       auto& midiRecInput = dynamic_cast<MidiRecordingInput&>(*recInput);
       assertTrue(midiRecInput.channel() == 5, "Returned wrong channel");
       assertTrue(midiRecInput.device()->id() == 4, "Returned wrong device");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Set track recording input 2", [] {
@@ -249,11 +266,17 @@ namespace reaplus {
       assertTrue(volume.normalizedValue() == 0.71599999999999997, "Wrong normalized value returned");
     });
 
-    test("Set track volume", [] {
+    testWithUntil("Set track volume", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackVolumeChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.setVolume(0.25);
 
       // Then
@@ -261,6 +284,8 @@ namespace reaplus {
       assertTrue(volume.reaperValue() == 0.031588093366685013, "Wrong REAPER value returned");
       assertTrue(volume.db() == -30.009531739774296, "Wrong db returned");
       assertTrue(volume.normalizedValue() == 0.25000000000003497, "Wrong normalized value returned");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Query track pan", [] {
@@ -275,17 +300,25 @@ namespace reaplus {
       assertTrue(pan.normalizedValue() == 0.5, "Wrong normalized value returned");
     });
 
-    test("Set track pan", [] {
+    testWithUntil("Set track pan", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackPanChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.setPan(0.25);
 
       // Then
       auto pan = track.pan();
       assertTrue(pan.reaperValue() == -0.5, "Wrong REAPER value returned");
       assertTrue(pan.normalizedValue() == 0.25, "Wrong normalized value returned");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Query track selection state", [] {
@@ -301,13 +334,19 @@ namespace reaplus {
       assertTrue(project.selectedTrackCount() == 0);
     });
 
-    test("Select track", [] {
+    testWithUntil("Select track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
       auto track = firstTrack();
       auto track2 = *project.trackByIndex(2);
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackSelectedChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.select();
       track2.select();
 
@@ -317,14 +356,22 @@ namespace reaplus {
       assertTrue(project.firstSelectedTrack().is_initialized());
       assertTrue(project.firstSelectedTrack()->index() == 0);
       assertTrue(project.selectedTracks().as_blocking().count() == 2);
+      assertTrue(count == 2, "Event count wrong");
+      assertTrue(*eventTrack == track2, "Track event wrong");
     });
 
-    test("Unselect track", [] {
+    testWithUntil("Unselect track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackSelectedChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.unselect();
 
       // Then
@@ -333,6 +380,8 @@ namespace reaplus {
       assertTrue(project.firstSelectedTrack().is_initialized());
       assertTrue(project.firstSelectedTrack()->index() == 2);
       assertTrue(project.selectedTracks().as_blocking().count() == 1);
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Query track auto arm mode", [] {
@@ -359,30 +408,46 @@ namespace reaplus {
       assertTrue(!isArmedIgnoringAutoArm, "Wrong value returned (ignoring auto-arm)");
     });
 
-    test("Arm track in normal mode", [] {
+    testWithUntil("Arm track in normal mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.arm();
 
       // Then
       assertTrue(track.isArmed(), "Track was not armed");
       assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is not in normal mode anymore");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
-    test("Disarm track in normal mode", [] {
+    testWithUntil("Disarm track in normal mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.disarm();
 
       // Then
       assertTrue(!track.isArmed(), "Track was not disarmed");
       assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is not in normal mode anymore");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Enable track auto-arm mode", [] {
@@ -398,11 +463,17 @@ namespace reaplus {
       assertTrue(!track.isArmed(false), "Track is suddenly armed (ignoring auto-arm)");
     });
 
-    test("Arm track in auto-arm mode", [] {
+    testWithUntil("Arm track in auto-arm mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.arm();
 
       // Then
@@ -411,19 +482,29 @@ namespace reaplus {
       // So maybe we should remove the chunk check and the parameter supportAutoArm
       assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
       assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
-    test("Disarm track in auto-arm mode", [] {
+    testWithUntil("Disarm track in auto-arm mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.disarm();
 
       // Then
       assertTrue(!track.isArmed(), "Track was not disarmed");
       assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
       assertTrue(track.hasAutoArmEnabled(), "Track is not in auto-arm mode anymore");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
     test("Disable track auto-arm mode", [] {
@@ -468,20 +549,28 @@ namespace reaplus {
       assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
-    test("Disarm track in auto-arm mode (ignoring auto-arm)", [] {
+    testWithUntil("Disarm track in auto-arm mode (ignoring auto-arm)", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.disarm(false);
 
       // Then
       assertTrue(!track.isArmed(), "Track was not disarmed");
       assertTrue(!track.isArmed(false), "Track was not disarmed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
-    test("Arm track in auto-arm mode (ignoring auto-arm)", [] {
+    testWithUntil("Arm track in auto-arm mode (ignoring auto-arm)", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
       track.enableAutoArm();
@@ -489,15 +578,23 @@ namespace reaplus {
       assertTrue(!track.isArmed(), "Precondition failed");
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackArmChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       track.arm(false);
 
       // Then
       assertTrue(track.isArmed(), "Track was not armed");
       assertTrue(track.isArmed(false), "Track was not armed (ignoring auto-arm)");
       assertTrue(!track.hasAutoArmEnabled(), "Track is still in auto-arm mode");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
     });
 
-    test("Select track exclusively", [] {
+    testWithUntil("Select track exclusively", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
       auto firstTrack = *project.trackByIndex(0);
@@ -508,6 +605,10 @@ namespace reaplus {
       thirdTrack.select();
 
       // When
+      int count = 0;
+      Reaper::instance().trackSelectedChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+      });
       firstTrack.selectExclusively();
 
       // Then
@@ -517,9 +618,10 @@ namespace reaplus {
       assertTrue(project.selectedTrackCount() == 1);
       assertTrue(project.firstSelectedTrack().is_initialized());
       assertTrue(project.selectedTracks().as_blocking().count() == 1);
+      assertTrue(count == 3, "Event count wrong");
     });
 
-    test("Remove track", [] {
+    testWithUntil("Remove track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
       int trackCountBefore = project.trackCount();
@@ -531,6 +633,12 @@ namespace reaplus {
       assertTrue(secondTrack.isAvailable(), "Precondition failed");
 
       // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackRemoved().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
       project.removeTrack(firstTrack);
 
       // Then
@@ -538,6 +646,8 @@ namespace reaplus {
       assertTrue(!firstTrack.isAvailable(), "Removed track still available");
       assertTrue(secondTrack.index() == 0, "Index of track after removed track not invalidated");
       assertTrue(secondTrack.guid() == secondTrackGuid, "GUID of track after removed track has changed");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == firstTrack, "Track event wrong");
     });
 
     test("Query track automation mode", [] {
@@ -645,19 +755,28 @@ namespace reaplus {
       assertTrue(normalActionByIndex == normalAction, "== doesn't work");
     });
 
-    test("Invoke action", [] {
+    testWithUntil("Invoke action", [](auto testIsOver) {
       // Given
       auto action = Reaper::instance().mainSection().actionByCommandId(6);
 
       // When
+      optional<Action> eventAction;
+      int count = 0;
+      Reaper::instance().actionInvoked().take_until(testIsOver).subscribe([&](Action a) {
+        count++;
+        eventAction = a;
+      });
       action.invoke();
 
       // Then
       assertTrue(action.isOn());
       assertTrue(firstTrack().isMuted());
+      // TODO Actually it would be nice if the actionInvoked event would be raised but it just isn't
+      assertTrue(count == 0, "actionInvoked was actually raised!");
+      assertTrue(!eventAction.is_initialized(), "actionInvoked was actually raised!");
     });
 
-    test("Unmute track", [] {
+    testWithUntil("Unmute track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
@@ -668,7 +787,7 @@ namespace reaplus {
       assertTrue(!track.isMuted());
     });
 
-    test("Mute track", [] {
+    testWithUntil("Mute track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
@@ -679,7 +798,7 @@ namespace reaplus {
       assertTrue(track.isMuted());
     });
 
-    test("Solo track", [] {
+    testWithUntil("Solo track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
@@ -690,7 +809,7 @@ namespace reaplus {
       assertTrue(track.isSolo());
     });
 
-    test("Unsolo track", [] {
+    testWithUntil("Unsolo track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
 
@@ -772,9 +891,10 @@ namespace reaplus {
       assertTrue(!action.isAvailable(), "Action should not be available anymore after unregistering");
     });
 
-    auto fxTests = [this](Track track, FxChain fxChain) {
-      test("Query fx chain", [&fxChain] {
+    auto fxTests = [this](function<Track(void)> getTrack, function<FxChain(void)> getFxChain) {
+      test("Query fx chain", [getFxChain] {
         // Given
+        auto fxChain = getFxChain();
 
         // When
 
@@ -790,8 +910,9 @@ namespace reaplus {
         assertTrue(fxChain.chunk() == none);
       });
 
-      test("Add track fx by original name", [&fxChain] {
+      testWithUntil("Add track fx by original name", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
 
         // When
         auto fx = fxChain.addFxByOriginalName("ReaControlMIDI (Cockos)");
@@ -826,8 +947,10 @@ namespace reaplus {
         assertTrue(firstTag->content() == chainChunk->content());
       });
 
-      test("Check track fx with 1 fx", [&fxChain, &track] {
+      test("Check track fx with 1 fx", [getFxChain, getTrack] {
         // Given
+        auto fxChain = getFxChain();
+        auto track = getTrack();
 
         // When
         auto fx1 = fxChain.fxByIndex(0);
@@ -856,8 +979,9 @@ namespace reaplus {
         assertTrue(fx1->isEnabled());
       });
 
-      test("Disable track fx", [&fxChain, &track] {
+      testWithUntil("Disable track fx", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto fx1 = *fxChain.fxByIndex(0);
 
         // When
@@ -867,8 +991,9 @@ namespace reaplus {
         assertTrue(!fx1.isEnabled());
       });
 
-      test("Enable track fx", [&fxChain, &track] {
+      testWithUntil("Enable track fx", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto fx1 = *fxChain.fxByIndex(0);
 
         // When
@@ -878,8 +1003,10 @@ namespace reaplus {
         assertTrue(fx1.isEnabled());
       });
 
-      test("Check track fx with 2 fx", [&fxChain, &track] {
+      test("Check track fx with 2 fx", [getFxChain, getTrack] {
         // Given
+        auto fxChain = getFxChain();
+        auto track = getTrack();
 
         // When
         auto fx1 = fxChain.fxByIndex(0);
@@ -927,8 +1054,10 @@ namespace reaplus {
         }
       });
 
-      test("Check fx parameter", [&fxChain, &track] {
+      test("Check fx parameter", [getFxChain, getTrack] {
         // Given
+        auto fxChain = getFxChain();
+        auto track = getTrack();
         auto fx = *fxChain.fxByIndex(0);
 
         // When
@@ -950,8 +1079,9 @@ namespace reaplus {
         assertTrue(p.stepSize() == -1);
       });
 
-      test("Check fx presets", [&fxChain, &track] {
+      test("Check fx presets", [getFxChain] {
         // Given
+        auto fxChain = getFxChain();
         auto fx = *fxChain.fxByIndex(0);
 
         // When
@@ -963,8 +1093,9 @@ namespace reaplus {
         assertTrue(fx.presetIsDirty());
       });
 
-      test("Set fx parameter value", [&fxChain] {
+      testWithUntil("Set fx parameter value", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto fx = *fxChain.fxByIndex(1);
         auto p = fx.parameterByIndex(5);
 
@@ -985,7 +1116,9 @@ namespace reaplus {
 
       });
 
-      test("Move FX", [&fxChain] {
+      testWithUntil("Move FX", [getFxChain](auto testIsOver) {
+        // Given
+        auto fxChain = getFxChain();
         auto midiFx = *fxChain.fxByIndex(0);
         auto synthFx = *fxChain.fxByIndex(1);
 
@@ -997,8 +1130,9 @@ namespace reaplus {
         assertTrue(synthFx.index() == 0);
       });
 
-      test("Remove FX", [&fxChain] {
+      testWithUntil("Remove FX", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto synthFx = *fxChain.fxByIndex(0);
         auto midiFx = *fxChain.fxByIndex(1);
 
@@ -1012,8 +1146,9 @@ namespace reaplus {
         midiFx.invalidateIndex();
       });
 
-      test("Add FX by chunk", [&fxChain] {
+      testWithUntil("Add FX by chunk", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto fxChunk = R"foo(BYPASS 0 0 0
   <VST "VSTi: ReaSynth (Cockos)" reasynth.dll 0 "" 1919251321
   eXNlcu9e7f4AAAAAAgAAAAEAAAAAAAAAAgAAAAAAAAA8AAAAAAAAAAAAEAA=
@@ -1034,8 +1169,9 @@ namespace reaplus {
         assertTrue(synthFx->parameterByIndex(5).formattedValue() == "-6.00");
       });
 
-      test("Set fx chunk", [&fxChain] {
+      testWithUntil("Set fx chunk", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto midiFx = *fxChain.fxByIndex(0);
         auto synthFx = *fxChain.fxByIndex(1);
         auto synthFxGuidBefore = synthFx.guid();
@@ -1050,8 +1186,9 @@ namespace reaplus {
         assertTrue(synthFx.index() == 1);
       });
 
-      test("Set fx tag chunk", [&fxChain] {
+      test("Set fx tag chunk", [getFxChain] {
         // Given
+        auto fxChain = getFxChain();
         auto midiFx1 = *fxChain.fxByIndex(0);
         auto midiFx2 = *fxChain.fxByIndex(1);
         auto fxTagChunk = R"foo(<VST "VSTi: ReaSynth (Cockos)" reasynth.dll 0 "" 1919251321
@@ -1070,8 +1207,9 @@ namespace reaplus {
         assertTrue(midiFx1.name() == "VST: ReaControlMIDI (Cockos)");
       });
 
-      test("Set fx state chunk", [&fxChain] {
+      testWithUntil("Set fx state chunk", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
         auto midiFx = *fxChain.fxByIndex(0);
         auto synthFx = *fxChain.fxByIndex(1);
         synthFx.parameterByIndex(5).setNormalizedValue(0);
@@ -1091,8 +1229,10 @@ namespace reaplus {
         assertTrue(midiFx.name() == "VST: ReaControlMIDI (Cockos)");
       });
 
-      test("Set fx chain chunk", [&fxChain, &track] {
+      testWithUntil("Set fx chain chunk", [getFxChain, getTrack](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
+        auto track = getTrack();
         auto otherFxChain = fxChain.isInputFx() ? track.normalFxChain() : track.inputFxChain();
         string prefix = fxChain.isInputFx() ? "<FXCHAIN" : "<FXCHAIN_REC";
         auto fxChainChunk = prefix + R"foo(
@@ -1128,8 +1268,9 @@ namespace reaplus {
         assertTrue(fxChain.fxCount() == 2, "FX not in normal chain anymore");
       });
 
-      test("Query fx floating window", [&fxChain] {
+      test("Query fx floating window", [getFxChain] {
         // Given
+        auto fxChain = getFxChain();
         auto fx = *fxChain.fxByIndex(0);
 
         // When
@@ -1143,8 +1284,9 @@ namespace reaplus {
         }
       });
 
-      test("Show fx in floating window", [&fxChain] {
+      test("Show fx in floating window", [getFxChain] {
         // Given
+        auto fxChain = getFxChain();
         auto fx = *fxChain.fxByIndex(0);
 
         // When
@@ -1162,8 +1304,9 @@ namespace reaplus {
         }
       });
 
-      test("Add track JS fx by original name", [&fxChain] {
+      testWithUntil("Add track JS fx by original name", [getFxChain](auto testIsOver) {
         // Given
+        auto fxChain = getFxChain();
 
         // When
         auto fx = fxChain.addFxByOriginalName("phaser");
@@ -1183,8 +1326,10 @@ namespace reaplus {
         assertTrue(*fxChain.firstFxByName("phaser") == *fx);
       });
 
-      test("Add track JS fx by original name", [&fxChain, &track] {
+      test("Query track JS fx by index", [getFxChain, getTrack] {
         // Given
+        auto fxChain = getFxChain();
+        auto track = getTrack();
 
         // When
         auto fx = fxChain.fxByIndex(2);
@@ -1214,13 +1359,17 @@ namespace reaplus {
       });
     };
 
-    {
-      fxTests(firstTrack(), firstTrack().normalFxChain());
-      auto secondTrack = *Reaper::instance().currentProject().trackByIndex(1);
-      fxTests(secondTrack, secondTrack.inputFxChain());
-    }
+    fxTests(
+        [this] { return firstTrack(); },
+        [this] { return firstTrack().normalFxChain(); }
+    );
 
-    test("Insert track at", [] {
+    fxTests(
+        [this] { return secondTrack(); },
+        [this] { return secondTrack().normalFxChain(); }
+    );
+
+    testWithUntil("Insert track at", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
       auto firstTrack = *project.trackByIndex(0);
@@ -1281,7 +1430,7 @@ namespace reaplus {
       const auto label = Reaper::instance().currentProject().labelOfNextRedoableAction();
 
       // Then
-      assertTrue(firstTrack().name() == "", "Undo was not executed or undoable didn't really work");
+      assertTrue(firstTrack().name().empty(), "Undo was not executed or undoable didn't really work");
       assertTrue(label && *label == "ReaPlus integration test operation", "Label was wrong");
     });
 
@@ -1326,7 +1475,7 @@ namespace reaplus {
       assertTrue(tempo.normalizedValue() == 119.0 / 959);
     });
 
-    test("Set project tempo", [] {
+    testWithUntil("Set project tempo", [](auto testIsOver) {
       // Given
 
       // When
@@ -1348,71 +1497,88 @@ namespace reaplus {
 
   }
 
-  void ReaPlusIntegrationTest::test(const std::string& name, std::function<void(void)> code) const {
-    testWithLifetime(name, [code](composite_subscription) { code(); });
-  }
-
-  void ReaPlusIntegrationTest::testWithLifetime(const std::string& name,
-      std::function<void(rxcpp::composite_subscription)> code) const {
-    log("\n\n## ");
-    log(name);
-    composite_subscription lifetime;
-    try {
-      code(lifetime);
-      lifetime.unsubscribe();
-      log("\nSuccessful");
-    } catch (const std::exception& e) {
-      lifetime.unsubscribe();
-      log("\nFailed");
-      if (std::strlen(e.what()) > 0) {
-        log(":");
-        log(e.what());
-      }
-      if (stopOnFailure_) {
-        throw e;
-      }
-    }
+  void ReaPlusIntegrationTest::test(const std::string& name, std::function<void(void)> code) {
+    testInternal(name, [code](observable<bool>) {
+      code();
+      return observable<>::just(true);
+    });
   }
 
   void ReaPlusIntegrationTest::testWithUntil(const std::string& name,
-      std::function<void(rxcpp::observable<bool>)> code) const {
-    log("\n\n## ");
-    log(name);
-    rxcpp::subjects::subject<bool> testIsOver;
-    try {
-      code(testIsOver.get_observable());
-      testIsOver.get_subscriber().on_next(true);
-      log("\nSuccessful");
-    } catch (const std::exception& e) {
-      testIsOver.get_subscriber().on_next(true);
-      log("\nFailed");
-      if (std::strlen(e.what()) > 0) {
-        log(":");
-        log(e.what());
-      }
-      if (stopOnFailure_) {
-        throw e;
-      }
+      std::function<void(rxcpp::observable<bool>)> code) {
+    testInternal(name, [code](observable<bool> testIsOver) {
+      code(testIsOver);
+      return observable<>::just(true);
+    });
+  }
+  void ReaPlusIntegrationTest::testAndWait(const std::string& name,
+      std::function<rxcpp::observable<bool>(void)> code) {
+    testInternal(name, [code](observable<bool>) {
+      return code();
+    });
+  }
+  void ReaPlusIntegrationTest::testInternal(const std::string& name,
+      std::function<rxcpp::observable<bool>(rxcpp::observable<bool>)> code) {
+    stepQueue_.push(TestStep(name, std::move(code)));
+  }
+
+  void ReaPlusIntegrationTest::processSuccess() {
+    log("\nSuccessful");
+  }
+
+  void ReaPlusIntegrationTest::processFailure(const std::exception& e) {
+    log("\nFailed");
+    if (std::strlen(e.what()) > 0) {
+      log(":");
+      log(e.what());
     }
   }
 
-  ReaPlusIntegrationTest::ReaPlusIntegrationTest(bool stopOnFailure) : stopOnFailure_(stopOnFailure) {
+  void ReaPlusIntegrationTest::logHeading(const std::string& name) {
+    log("\n\n## ");
+    log(name);
   }
 
-  void ReaPlusIntegrationTest::execute() const {
+  void ReaPlusIntegrationTest::execute() {
     Reaper::instance().clearConsole();
+    stepQueue_ = {};
     log("# Testing ReaPlus");
     try {
       tests();
-      if (stopOnFailure_) {
-        log("\n\nAll tests successfully executed");
-      }
+      executeNextStep();
     } catch (const std::exception&) {
-      log("\n\nFurther execution of tests stopped");
+      log("\n\nFailure while building test steps");
+    }
+  }
+  void ReaPlusIntegrationTest::executeNextStep() {
+    if (stepQueue_.empty()) {
+      log("\n\nAll tests successfully executed");
+    } else {
+      const auto& step = stepQueue_.front();
+      logHeading(step.getName());
+      rxcpp::subjects::subject<bool> testIsOver;
+      const auto op = step.getOperation();
+      try {
+        const auto testFinished = op(testIsOver.get_observable()).take(1);
+        testFinished.subscribe([this, testIsOver](bool successful) {
+          testIsOver.get_subscriber().on_next(true);
+          if (successful) {
+            processSuccess();
+            stepQueue_.pop();
+            Reaper::instance().executeLaterInMainThread([this] {
+              executeNextStep();
+            });
+          } else {
+            log("\nAsync result different than expected");
+          }
+        });
+      } catch (const std::exception& e) {
+        processFailure(e);
+      }
     }
   }
 
-  void ReaPlusIntegrationTest::log(const std::string& msg) const {
+  void ReaPlusIntegrationTest::log(const std::string& msg) {
     Reaper::instance().showConsoleMessage(msg);
   }
 
@@ -1425,5 +1591,20 @@ namespace reaplus {
   Track ReaPlusIntegrationTest::firstTrack() {
     auto project = Reaper::instance().currentProject();
     return *project.firstTrack();
+  }
+
+  Track ReaPlusIntegrationTest::secondTrack() {
+    auto project = Reaper::instance().currentProject();
+    return *project.trackByIndex(1);
+  }
+
+  TestStep::TestStep(const std::string& name, TestStep::Operation operation)
+      : name_(name), operation_(operation) {
+  }
+  std::string TestStep::getName() const {
+    return name_;
+  }
+  TestStep::Operation TestStep::getOperation() const {
+    return operation_;
   }
 }

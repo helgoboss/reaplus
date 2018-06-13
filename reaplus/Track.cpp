@@ -76,6 +76,9 @@ namespace reaplus {
     // CSurf_OnVolumeChangeEx has a slightly lower precision than setting D_VOL directly. The return value
     // reflects the cropped value. The precision became much better with REAPER 5.28.
     reaper::CSurf_OnVolumeChangeEx(mediaTrack(), reaperValue, false, false);
+    // Setting the volume programmatically doesn't trigger SetSurfaceVolume in HelperControlSurface so we need
+    // to notify manually
+    reaper::CSurf_SetSurfaceVolume(mediaTrack(), reaperValue, nullptr);
   }
 
   Volume Track::volume() const {
@@ -90,6 +93,9 @@ namespace reaplus {
     loadAndCheckIfNecessaryOrComplain();
     const double reaperValue = Pan(normalizedValue).reaperValue();
     reaper::CSurf_OnPanChangeEx(mediaTrack(), reaperValue, false, false);
+    // Setting the pan programmatically doesn't trigger SetSurfacePan in HelperControlSurface so we need
+    // to notify manually
+    reaper::CSurf_SetSurfacePan(mediaTrack(), normalizedValue, nullptr);
   }
 
   Pan Track::pan() const {
