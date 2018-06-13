@@ -370,14 +370,14 @@ namespace reaplus {
 
   void Track::mute() {
     loadAndCheckIfNecessaryOrComplain();
-    // TODO Add second version with surface mute
     reaper::SetMediaTrackInfo_Value(mediaTrack(), "B_MUTE", 1);
+    reaper::CSurf_SetSurfaceMute(mediaTrack(), true, nullptr);
   }
 
   void Track::unmute() {
     loadAndCheckIfNecessaryOrComplain();
-    // TODO Add second version with surface mute
     reaper::SetMediaTrackInfo_Value(mediaTrack(), "B_MUTE", 0);
+    reaper::CSurf_SetSurfaceMute(mediaTrack(), false, nullptr);
   }
 
   bool Track::isSolo() const {
@@ -387,14 +387,14 @@ namespace reaplus {
 
   void Track::solo() {
     loadAndCheckIfNecessaryOrComplain();
-    // TODO Add second version with surface solo
     reaper::SetMediaTrackInfo_Value(mediaTrack(), "I_SOLO", 1);
+    reaper::CSurf_SetSurfaceSolo(mediaTrack(), true, nullptr);
   }
 
   void Track::unsolo() {
     loadAndCheckIfNecessaryOrComplain();
-    // TODO Add second version with surface solo
     reaper::SetMediaTrackInfo_Value(mediaTrack(), "I_SOLO", 0);
+    reaper::CSurf_SetSurfaceSolo(mediaTrack(), false, nullptr);
   }
 
   void Track::loadAndCheckIfNecessaryOrComplain() const {
