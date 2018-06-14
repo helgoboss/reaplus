@@ -1,7 +1,7 @@
 #include "Chunk.h"
 #include <cmath>
 #include <cstring>
-
+#include <utility>
 using boost::none;
 using boost::string_ref;
 using boost::optional;
@@ -13,7 +13,7 @@ namespace reaplus {
     return content_;
   }
 
-  Chunk::Chunk(std::shared_ptr<string> content) : content_(content) {
+  Chunk::Chunk(std::shared_ptr<string> content) : content_(std::move(content)) {
   }
 
   ChunkRegion Chunk::region() const {
@@ -205,11 +205,11 @@ namespace reaplus {
   }
 
   void Chunk::insertBeforeRegion(ChunkRegion region, const string& chunk) {
-    insertBeforeRegion(region, chunk.c_str());
+    insertBeforeRegion(std::move(region), chunk.c_str());
   }
 
   void Chunk::insertBeforeRegionAsBlock(ChunkRegion region, const string& chunk) {
-    insertBeforeRegionAsBlock(region, chunk.c_str());
+    insertBeforeRegionAsBlock(std::move(region), chunk.c_str());
   }
 
   void Chunk::insertBeforeRegionAsBlock(ChunkRegion region, const char* chunk) {
@@ -223,19 +223,19 @@ namespace reaplus {
   }
 
   void Chunk::insertAfterRegionAsBlock(ChunkRegion region, const string& chunk) {
-    insertAfterRegionAsBlock(region, chunk.c_str());
+    insertAfterRegionAsBlock(std::move(region), chunk.c_str());
   }
 
   void Chunk::insertAfterRegion(ChunkRegion region, const string& chunk) {
-    insertAfterRegion(region, chunk.c_str());
+    insertAfterRegion(std::move(region), chunk.c_str());
   }
 
   void Chunk::encloseRegion(const string& prefix, ChunkRegion region, const string& suffix) {
-    encloseRegion(prefix.c_str(), region, suffix.c_str());
+    encloseRegion(prefix.c_str(), std::move(region), suffix.c_str());
   }
 
   void Chunk::replaceRegion(ChunkRegion region, const string& chunk) {
-    replaceRegion(region, chunk.c_str());
+    replaceRegion(std::move(region), chunk.c_str());
   }
 
   void Chunk::deleteRegion(ChunkRegion region) {
@@ -243,7 +243,7 @@ namespace reaplus {
     content_->erase(region.startPos(), region.length());
   }
 
-  ChunkRegion::ChunkRegion(Chunk parentChunk, size_t startPos, size_t length) : parentChunk_(parentChunk),
+  ChunkRegion::ChunkRegion(Chunk parentChunk, size_t startPos, size_t length) : parentChunk_(std::move(parentChunk)),
       startPos_(startPos), length_(length) {
   }
 

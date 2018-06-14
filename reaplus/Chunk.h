@@ -10,7 +10,7 @@ namespace reaplus {
 
   class Chunk {
   public:
-    Chunk(std::shared_ptr<std::string> content);
+    explicit Chunk(std::shared_ptr<std::string> content);
 
     std::shared_ptr<std::string> content() const;
 

@@ -34,9 +34,9 @@ namespace reaplus {
     // TODO But currently only mainSection supported. How support other sections?
     boost::optional<std::string> commandName_;
   public:
-    virtual std::unique_ptr<Parameter> clone() const override;
+    std::unique_ptr<Parameter> clone() const override;
 
-    virtual ParameterType parameterType() const override;
+    ParameterType parameterType() const override;
 
     long commandId() const;
 
@@ -65,13 +65,13 @@ namespace reaplus {
   protected:
     Action(Section section, long commandId, boost::optional<int> index);
 
-    Action(std::string commandName);
+    explicit Action(std::string commandName);
 
   private:
     static bool containsDigitsOnly(const std::string& text);
     static std::string fixCommandName(const std::string& commandName);
 
-    virtual bool equals(const Parameter& other) const override;
+    bool equals(const Parameter& other) const override;
 
     boost::optional<int> findIndex() const;
 

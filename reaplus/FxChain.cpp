@@ -1,7 +1,7 @@
 #include "FxChain.h"
 #include "Fx.h"
 #include <reaper_plugin_functions.h>
-
+#include <utility>
 using rxcpp::observable;
 using rxcpp::subscriber;
 using boost::optional;
@@ -41,7 +41,7 @@ namespace reaplus {
                       : reaper::TrackFX_GetCount(track_.mediaTrack());
   }
 
-  FxChain::FxChain(Track track, bool isInputFx) : track_(track), isInputFx_(isInputFx) {
+  FxChain::FxChain(Track track, bool isInputFx) : track_(std::move(track)), isInputFx_(isInputFx) {
 
   }
 

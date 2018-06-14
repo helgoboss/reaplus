@@ -25,6 +25,14 @@ namespace reaplus {
   void ReaPlusIntegrationTest::tests() {
     // TODO Test tracksReordered event (how to test that?)
 
+    test("Sandbox", [] {
+      void* positiveInt = new int(5);
+      const auto positiveUnsignedInt = *static_cast<unsigned int*>(positiveInt);
+      const int negativeInt = -5;
+      const auto negativeUnsignedInt = static_cast<unsigned int>(negativeInt);
+      Reaper::instance().showConsoleMessage(std::to_string(positiveUnsignedInt) + " vs. " + std::to_string(negativeUnsignedInt));
+    });
+
     testWithUntil("Create empty project in new tab", [](auto testIsOver) {
       // Given
       const auto currentProjectBefore = Reaper::instance().currentProject();

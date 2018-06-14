@@ -1,5 +1,5 @@
 #include "HelperControlSurface.h"
-
+#include <utility>
 #include "TrackSend.h"
 #include "Reaper.h"
 #include "TrackVolume.h"
@@ -40,13 +40,17 @@ namespace reaplus {
     reaper::plugin_register("-csurf_inst", this);
   }
 
-  rxcpp::subscription HelperControlSurface::enqueueCommand(function<void(void)> command) {
+  rxcpp::composite_subscription HelperControlSurface::enqueueCommand(function<void(void)> command) {
     rxcpp::composite_subscription subscription;
     const auto& worker = mainThreadCoordinator_.get_worker();
     worker.schedule(
-        rxcpp::schedulers::make_schedulable(worker, subscription, [command](const rxcpp::schedulers::schedulable&) {
-          command();
-        })
+        rxcpp::schedulers::make_schedulable(
+            worker,
+            subscription,
+            [command = std::move(command)](const rxcpp::schedulers::schedulable&) {
+              command();
+            }
+        )
     );
     return subscription;
   }
@@ -125,7 +129,7 @@ namespace reaplus {
     return fxParameterValueChangedSubject_.get_observable();
   }
 
-  void HelperControlSurface::SetTrackTitle(MediaTrack* trackid, const char* title) {
+  void HelperControlSurface::SetTrackTitle(MediaTrack* trackid, const char*) {
     if (state() == State::PropagatingTrackSetChanges) {
       numTrackSetChangesLeftToBePropagated_--;
     } else {
@@ -151,7 +155,7 @@ namespace reaplus {
               }
             }
             {
-              const int recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+              const auto recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
               if (td->recinput != recinput) {
                 td->recinput = recinput;
                 trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
@@ -163,9 +167,9 @@ namespace reaplus {
       }
       case CSURF_EXT_SETFXPARAM: {
         const auto mediaTrack = (MediaTrack*) parm1;
-        const auto fxAndParamIndex = (int*) parm2;
-        const int fxIndex = (*fxAndParamIndex >> 16) & 0xffff;
-        const int paramIndex = *fxAndParamIndex & 0xffff;
+        const auto fxAndParamIndex = *static_cast<int*>(parm2);
+        const int fxIndex = (fxAndParamIndex >> 16) & 0xffff; // NOLINT
+        const int paramIndex = fxAndParamIndex & 0xffff; // NOLINT
         // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
         const Track track(mediaTrack, nullptr);
         const double paramValue = *(double*) parm3;
@@ -230,7 +234,6 @@ namespace reaplus {
       }
       case CSURF_EXT_SETBPMANDPLAYRATE: {
         if (parm1) {
-          const double bpm = *(double*) parm1;
           masterTempoChangedSubject_.get_subscriber().on_next(true);
           // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
           // So that's okay for "touched".
@@ -309,7 +312,7 @@ namespace reaplus {
   void HelperControlSurface::detectTrackSetChanges() {
     const auto project = Reaper::instance().currentProject();
     auto& oldTrackDatas = trackDataByMediaTrackByReaProject_[project.reaProject()];
-    const int oldTrackCount = (int) oldTrackDatas.size();
+    const auto oldTrackCount = (int) oldTrackDatas.size();
     const int newTrackCount = project.trackCount();
     if (newTrackCount < oldTrackCount) {
       removeInvalidMediaTracks(project, oldTrackDatas);
@@ -349,7 +352,7 @@ namespace reaplus {
       const auto mediaTrack = it->first;
       if (reaper::ValidatePtr2(project.reaProject(), (void*) mediaTrack, "MediaTrack*")) {
         auto& trackData = it->second;
-        const int newNumber = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
+        const auto newNumber = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
         if (newNumber != trackData.number) {
           tracksHaveBeenReordered = true;
           trackData.number = newNumber;
@@ -511,35 +514,11 @@ namespace reaplus {
     }
   }
 
-  void HelperControlSurface::CloseNoReset() {
-    bool dummy = false;
-  }
-
-  void HelperControlSurface::SetPlayState(bool play, bool pause, bool rec) {
-    bool dummy = false;
-  }
-
-  void HelperControlSurface::SetRepeatState(bool rep) {
-    bool dummy = false;
-  }
-
-  void HelperControlSurface::SetAutoMode(int mode) {
-    bool dummy = false;
-  }
-
-  void HelperControlSurface::ResetCachedVolPanStates() {
-    bool dummy = false;
-  }
-
-  void HelperControlSurface::OnTrackSelection(MediaTrack* trackid) {
-    bool dummy = false;
-  }
-
   bool HelperControlSurface::detectFxChangesOnTrack(Track track,
       set<string>& oldFxGuids,
       bool isInputFx,
       bool notifyListenersAboutChanges) {
-    const int oldFxCount = (int) oldFxGuids.size();
+    const auto oldFxCount = (int) oldFxGuids.size();
     const int newFxCount = (isInputFx ? track.inputFxChain() : track.normalFxChain()).fxCount();
     if (newFxCount < oldFxCount) {
       removeInvalidFx(track, oldFxGuids, isInputFx, notifyListenersAboutChanges);
@@ -638,7 +617,7 @@ namespace reaplus {
   }
 
   bool HelperControlSurface::isProbablyInputFx(Track track, int fxIndex) const {
-    return isProbablyInputFx(track, fxIndex, -1, -1);
+    return isProbablyInputFx(std::move(track), fxIndex, -1, -1);
   }
 
   rx::observable<Parameter*> HelperControlSurface::parameterValueChangedUnsafe() const {

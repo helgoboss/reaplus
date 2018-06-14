@@ -18,11 +18,11 @@ namespace reaplus {
     int index_;
   public:
 
-    virtual std::unique_ptr<Parameter> clone() const override;
+    std::unique_ptr<Parameter> clone() const override;
 
-    virtual Track track() const override;
+    Track track() const override;
 
-    virtual ParameterType parameterType() const override;
+    ParameterType parameterType() const override;
 
     int index() const;
     std::string name() const;
@@ -42,8 +42,7 @@ namespace reaplus {
     FxParameter(Fx fx, int index);
 
   private:
-    virtual bool equals(const Parameter& other) const override;
-    std::pair<double, double> unnormalizedMinAndMaxValue() const;
+    bool equals(const Parameter& other) const override;
   };
 }
 

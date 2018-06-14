@@ -99,45 +99,33 @@ namespace reaplus {
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
-    ~HelperControlSurface();
+    ~HelperControlSurface() override;
 
-    virtual void SetSurfacePan(MediaTrack* trackid, double pan) override;
+    void SetSurfacePan(MediaTrack* trackid, double pan) override;
 
-    virtual void SetSurfaceVolume(MediaTrack* trackid, double volume) override;
+    void SetSurfaceVolume(MediaTrack* trackid, double volume) override;
 
-    const char* GetTypeString();
+    const char* GetTypeString() override;
 
-    const char* GetDescString();
+    const char* GetDescString() override;
 
-    const char* GetConfigString();
+    const char* GetConfigString() override;
 
-    virtual void SetTrackListChange() override;
+    void SetTrackListChange() override;
 
-    void Run();
+    void Run() override;
 
-    virtual int Extended(int call, void* parm1, void* parm2, void* parm3) override;
+    int Extended(int call, void* parm1, void* parm2, void* parm3) override;
 
-    virtual void SetTrackTitle(MediaTrack* trackid, const char* title) override;
+    void SetTrackTitle(MediaTrack* trackid, const char* title) override;
 
-    virtual void SetSurfaceMute(MediaTrack* trackid, bool mute) override;
+    void SetSurfaceMute(MediaTrack* trackid, bool mute) override;
 
-    virtual void SetSurfaceSelected(MediaTrack* trackid, bool selected) override;
+    void SetSurfaceSelected(MediaTrack* trackid, bool selected) override;
 
-    virtual void SetSurfaceSolo(MediaTrack* trackid, bool solo) override;
+    void SetSurfaceSolo(MediaTrack* trackid, bool solo) override;
 
-    virtual void SetSurfaceRecArm(MediaTrack* trackid, bool recarm) override;
-
-    virtual void CloseNoReset() override;
-
-    virtual void SetPlayState(bool play, bool pause, bool rec) override;
-
-    virtual void SetRepeatState(bool rep) override;
-
-    virtual void SetAutoMode(int mode) override;
-
-    virtual void ResetCachedVolPanStates() override;
-
-    virtual void OnTrackSelection(MediaTrack* trackid) override;
+    void SetSurfaceRecArm(MediaTrack* trackid, bool recarm) override;
 
   protected:
 
@@ -213,7 +201,7 @@ namespace reaplus {
 
     rxcpp::observable<bool> masterTempoTouched() const;
 
-    rxcpp::subscription enqueueCommand(std::function<void(void)> command);
+    rxcpp::composite_subscription enqueueCommand(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 

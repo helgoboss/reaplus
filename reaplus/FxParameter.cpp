@@ -1,4 +1,6 @@
 #include "FxParameter.h"
+#include <memory> 
+#include <utility> 
 #include "ModelUtil.h"
 #include "HelperControlSurface.h"
 #include "utility.h"
@@ -9,7 +11,7 @@ using std::string;
 using std::unique_ptr;
 
 namespace reaplus {
-  FxParameter::FxParameter(Fx fx, int index) : fx_(fx), index_(index) {
+  FxParameter::FxParameter(Fx fx, int index) : fx_(std::move(fx)), index_(index) {
   }
 
   int FxParameter::index() const {
@@ -91,13 +93,6 @@ namespace reaplus {
     return lhs.fx_ == rhs.fx_ && lhs.index_ == rhs.index_;
   }
 
-  std::pair<double, double> FxParameter::unnormalizedMinAndMaxValue() const {
-    double minValue = 0.0;
-    double maxValue = 1.0;
-    reaper::TrackFX_GetParamEx(fx().track().mediaTrack(), fx().queryIndex(), index(), &minValue, &maxValue, nullptr);
-    return std::make_pair(minValue, maxValue);
-  }
-
   double FxParameter::reaperValue() const {
     return reaper::TrackFX_GetParamNormalized(fx_.track().mediaTrack(), fx_.queryIndex(), index_);
   }
@@ -107,7 +102,7 @@ namespace reaplus {
   }
 
   bool FxParameter::equals(const Parameter& other) const {
-    auto& o = static_cast<const FxParameter&>(other);
+    auto& o = dynamic_cast<const FxParameter&>(other);
     // TODO Do we still need the specialized == operator implementation if we already have the polymorphic one?
     return *this == o;
   }
@@ -117,7 +112,7 @@ namespace reaplus {
   }
 
   unique_ptr<Parameter> FxParameter::clone() const {
-    return unique_ptr<FxParameter>(new FxParameter(*this));
+    return std::make_unique<FxParameter>(*this);
   }
 
   bool FxParameter::isAvailable() const {

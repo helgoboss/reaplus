@@ -3,7 +3,7 @@
 #include "ModelUtil.h"
 #include "FxChain.h"
 #include <regex>
-
+#include <utility>
 #include "reaper_plugin_functions.h"
 
 #include "utility.h"
@@ -17,9 +17,6 @@ using std::pair;
 using std::string;
 
 namespace reaplus {
-  std::regex VST_LINE_REGEX("<VST \".*?\" ([^.]*).*");
-  // FIXME What about JS effects with space inside?
-  std::regex JS_LINE_REGEX("<JS ([^ ]+).*");
 
   int Fx::index() const {
     if (!isLoadedAndAtCorrectIndex()) {
@@ -56,7 +53,7 @@ namespace reaplus {
     return lhs.track_ == rhs.track_ && lhs.isInputFx_ == rhs.isInputFx_ && lhs.guid_ == rhs.guid_;
   }
 
-  Fx::Fx(Track track, string guid, bool isInputFx) : track_(track), guid_(guid), isInputFx_(isInputFx), index_(-1) {
+  Fx::Fx(Track track, string guid, bool isInputFx) : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx), index_(-1) {
   }
 
   string Fx::guid(Track track, int index, bool isInputFx) {
@@ -73,7 +70,7 @@ namespace reaplus {
     return (isInputFx ? 0x1000000 : 0) + index;
   }
 
-  Fx::Fx(Track track, string guid, int index, bool isInputFx) : track_(track), guid_(guid), isInputFx_(isInputFx),
+  Fx::Fx(Track track, string guid, int index, bool isInputFx) : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx),
       index_(index) {
   }
 
@@ -226,6 +223,9 @@ namespace reaplus {
   }
 
   string Fx::fileNameWithoutExtension(ChunkRegion firstLineOfTagChunk) {
+    static const std::regex VST_LINE_REGEX("<VST \".*?\" ([^.]*).*");
+    // FIXME What about JS effects with space inside?
+    static const std::regex JS_LINE_REGEX("<JS ([^ ]+).*");
     const auto regex = *firstLineOfTagChunk.tagName() == "VST" ? VST_LINE_REGEX : JS_LINE_REGEX;
     // FIXME Add type enumeration (JS, VST etc.)
     std::smatch match;

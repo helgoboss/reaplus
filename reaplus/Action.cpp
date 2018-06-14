@@ -1,7 +1,8 @@
 #include <reaper_plugin.h>
-#include <stdexcept>
+#include <memory>
 #include <regex>
 #include <cstring>
+#include <utility>
 #include "Action.h"
 #include "ModelUtil.h"
 #include "HelperControlSurface.h"
@@ -15,10 +16,8 @@ using std::string;
 using std::unique_ptr;
 
 namespace reaplus {
-  static std::regex NON_DIGIT_REGEX("[^0-9]");
-
   Action::Action(Section section, long commandId, boost::optional<int> index) : commandName_(none),
-      runtimeData_(RuntimeData(section, commandId, index)) {
+      runtimeData_(RuntimeData(section, commandId, std::move(index))) {
   }
 
   long Action::commandId() const {
@@ -86,7 +85,7 @@ namespace reaplus {
           project ? project->reaProject() : nullptr
       );
     } else {
-      int val = static_cast<int>(std::round(normalizedValue * 127));
+      auto val = static_cast<int>(std::round(normalizedValue * 127));
       int valhw = -1;
       int relmode = 0;
       // reaper::kbd_RunCommandThroughHooks(section_.sectionInfo(), &actionCommandId, &val, &valhw, &relmode, reaper::GetMainHwnd());
@@ -104,7 +103,7 @@ namespace reaplus {
   }
 
   void Action::invoke(boost::optional<Project> project) {
-    invoke(1, false, project);
+    invoke(1, false, std::move(project));
   }
 
   bool Action::isOn() const {
@@ -135,13 +134,13 @@ namespace reaplus {
   }
 
   bool Action::equals(const Parameter& other) const {
-    auto& o = static_cast<const Action&>(other);
+    auto& o = dynamic_cast<const Action&>(other);
     // TODO Do we still need the specialized == operator implementation if we already have the polymorphic one?
     return *this == o;
   }
 
   unique_ptr<Parameter> Action::clone() const {
-    return unique_ptr<Action>(new Action(*this));
+    return std::make_unique<Action>(*this);
   }
 
   Section Action::section() const {
@@ -176,7 +175,7 @@ namespace reaplus {
   }
 
   Action::RuntimeData::RuntimeData(Section section, long commandId, boost::optional<int> cachedIndex) :
-      section(section), commandId(commandId), cachedIndex(cachedIndex) {
+      section(section), commandId(commandId), cachedIndex(std::move(cachedIndex)) {
 
   }
 
@@ -193,6 +192,7 @@ namespace reaplus {
     }
   }
   bool Action::containsDigitsOnly(const string& text) {
+    static const std::regex NON_DIGIT_REGEX("[^0-9]");
     return !std::regex_search(text, NON_DIGIT_REGEX);
   }
 

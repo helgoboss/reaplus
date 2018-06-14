@@ -8,7 +8,7 @@ namespace reaplus {
   private:
     GUID data_;
   public:
-    Guid(GUID data);
+    explicit Guid(GUID data);
     GUID data() const;
     std::string toString() const;
   };
