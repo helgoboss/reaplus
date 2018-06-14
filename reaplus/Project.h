@@ -14,7 +14,7 @@ namespace reaplus {
   private:
     ReaProject* reaProject_;
   public:
-    Project(ReaProject* reaProject);
+    explicit Project(ReaProject* reaProject);
     int index() const;
     int trackCount() const;
     bool isAvailable() const;

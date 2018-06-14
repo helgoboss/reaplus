@@ -1,9 +1,9 @@
 #include "TrackArm.h"
-
+#include <memory> #include <utility>
 using std::unique_ptr;
 
 namespace reaplus {
-  TrackArm::TrackArm(Track track) : track_(track) {
+  TrackArm::TrackArm(Track track) : track_(std::move(track)) {
 
   }
 
@@ -16,12 +16,12 @@ namespace reaplus {
   }
 
   bool TrackArm::equals(const Parameter& other) const {
-    auto& o = static_cast<const TrackArm&>(other);
+    auto& o = dynamic_cast<const TrackArm&>(other);
     return track_ == o.track_;
   }
 
   unique_ptr<Parameter> TrackArm::clone() const {
-    return unique_ptr<TrackArm>(new TrackArm(*this));
+    return std::make_unique<TrackArm>(*this);
   }
 
 }

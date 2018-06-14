@@ -75,7 +75,7 @@ namespace reaplus {
       // Don't know for sure but might be that REAPER doesn't copy the acceleratorRegister_ on registration. So copying (in particular after registration) is forbidden.
       Command(const Command& that) = delete;
 
-      Command(const Command&& that);
+      Command(Command&& that) noexcept;
 
       void registerIt();
 
@@ -243,9 +243,9 @@ namespace reaplus {
 
     rxcpp::observable<bool> masterTempoTouched() const;
 
-    rxcpp::subscription executeLaterInMainThread(std::function<void(void)> command);
+    rxcpp::composite_subscription executeLaterInMainThread(std::function<void(void)> command);
 
-    rxcpp::subscription executeWhenInMainThread(std::function<void(void)> command);
+    rxcpp::composite_subscription executeWhenInMainThread(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 

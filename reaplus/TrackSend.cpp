@@ -1,5 +1,5 @@
 #include "TrackSend.h"
-#include "ModelUtil.h"
+#include <utility> #include "ModelUtil.h"
 #include "utility.h"
 #include "HelperControlSurface.h"
 
@@ -10,7 +10,7 @@ using std::string;
 namespace reaplus {
 
   TrackSend::TrackSend(Track sourceTrack, int index)
-      : sourceTrack_(sourceTrack), targetTrack_(boost::none), index_(index) {
+      : sourceTrack_(std::move(sourceTrack)), targetTrack_(boost::none), index_(index) {
   }
 
   Track TrackSend::sourceTrack() const {
@@ -162,8 +162,10 @@ namespace reaplus {
     }
   }
 
-  TrackSend::TrackSend(Track sourceTrack, Track targetTrack, boost::optional<int> index) : sourceTrack_(sourceTrack),
-      targetTrack_(targetTrack), index_(index) {
+  TrackSend::TrackSend(Track sourceTrack, Track targetTrack, boost::optional<int> index) :
+      sourceTrack_(std::move(sourceTrack)),
+      targetTrack_(targetTrack),
+      index_(std::move(index)) {
 
   }
 

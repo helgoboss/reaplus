@@ -116,6 +116,6 @@ namespace reaplus {
   MidiMessage::fourteenBitCc(int channel, int ccNumber, int ccValue, int frameOffset) {
     const MidiMessage msbMessage = simple(MidiMessageType::Cc, channel, ccNumber, ccValue >> 7, frameOffset);
     const MidiMessage lsbMessage = simple(MidiMessageType::Cc, channel, ccNumber + 32, ccValue & 0x7F, frameOffset);
-    return std::pair<MidiMessage, MidiMessage>(msbMessage, lsbMessage);
+    return std::make_pair(msbMessage, lsbMessage);
   }
 }

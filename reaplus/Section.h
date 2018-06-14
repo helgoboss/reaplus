@@ -19,7 +19,7 @@ namespace reaplus {
     Action actionByIndex(int index) const;
     friend bool operator==(const Section& lhs, const Section& rhs);
   protected:
-    Section(KbdSectionInfo* sectionInfo);
+    explicit Section(KbdSectionInfo* sectionInfo);
   private:
     Action actionByIndexUnchecked(int index) const;
   };

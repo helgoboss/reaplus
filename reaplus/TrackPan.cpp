@@ -1,9 +1,9 @@
 #include "TrackPan.h"
-
+#include <memory> #include <utility>
 using std::unique_ptr;
 
 namespace reaplus {
-  TrackPan::TrackPan(Track track) : track_(track) {
+  TrackPan::TrackPan(Track track) : track_(std::move(track)) {
 
   }
 
@@ -16,12 +16,12 @@ namespace reaplus {
   }
 
   bool TrackPan::equals(const Parameter& other) const {
-    auto& o = static_cast<const TrackPan&>(other);
+    auto& o = dynamic_cast<const TrackPan&>(other);
     return track_ == o.track_;
   }
 
   unique_ptr<Parameter> TrackPan::clone() const {
-    return unique_ptr<TrackPan>(new TrackPan(*this));
+    return std::make_unique<TrackPan>(*this);
   }
 
 }

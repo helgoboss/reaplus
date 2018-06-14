@@ -9,7 +9,7 @@ namespace reaplus {
   private:
     int id_;
   public:
-    MidiOutputDevice(int id);
+    explicit MidiOutputDevice(int id);
 
     int id() const;
 

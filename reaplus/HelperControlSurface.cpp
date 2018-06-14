@@ -168,8 +168,8 @@ namespace reaplus {
       case CSURF_EXT_SETFXPARAM: {
         const auto mediaTrack = (MediaTrack*) parm1;
         const auto fxAndParamIndex = *static_cast<int*>(parm2);
-        const int fxIndex = (fxAndParamIndex >> 16) & 0xffff; // NOLINT
-        const int paramIndex = fxAndParamIndex & 0xffff; // NOLINT
+        const int fxIndex = (fxAndParamIndex >> 16) & 0xffff;
+        const int paramIndex = fxAndParamIndex & 0xffff;
         // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
         const Track track(mediaTrack, nullptr);
         const double paramValue = *(double*) parm3;

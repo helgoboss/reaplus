@@ -21,7 +21,7 @@ namespace reaplus {
     friend bool operator==(const RecordingInput& lhs, const RecordingInput& rhs);
 
   protected:
-    RecordingInput(int recInputIndex);
+    explicit RecordingInput(int recInputIndex);
   };
 
   class MidiRecordingInput : public RecordingInput {
@@ -36,9 +36,9 @@ namespace reaplus {
     boost::optional<MidiInputDevice> device() const;
     boost::optional<int> channel() const;
 
-    virtual RecordingInputType type() const override;
+    RecordingInputType type() const override;
 
   protected:
-    MidiRecordingInput(int recInputIndex);
+    explicit MidiRecordingInput(int recInputIndex);
   };
 }

@@ -1,4 +1,5 @@
 #include "IncomingMidiEvent.h"
+#include <utility>
 
 namespace reaplus {
   MidiInputDevice IncomingMidiEvent::inputDevice() const {
@@ -10,7 +11,7 @@ namespace reaplus {
   }
 
   IncomingMidiEvent::IncomingMidiEvent(MidiInputDevice inputDevice, MidiMessage message) : inputDevice_(inputDevice),
-      message_(message) {
+      message_(std::move(message)) {
 
   }
 }

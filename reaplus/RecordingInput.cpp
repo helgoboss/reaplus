@@ -15,7 +15,7 @@ namespace reaplus {
   }
 
   boost::optional<MidiInputDevice> MidiRecordingInput::device() const {
-    int rawDeviceId = (int) std::floor(midiRecInputIndex() / 32.0);
+    const auto rawDeviceId = (int) std::floor(midiRecInputIndex() / 32.0);
     return rawDeviceId == 63 ? boost::none : boost::make_optional(MidiInputDevice(rawDeviceId));
   }
 

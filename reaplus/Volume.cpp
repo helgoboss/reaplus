@@ -5,8 +5,11 @@
 
 #include "reaper_plugin_functions.h"
 
+namespace {
+  const double LN10_OVER_TWENTY = 0.11512925464970228420089957273422;
+}
+
 namespace reaplus {
-  const double Volume::LN10_OVER_TWENTY = 0.11512925464970228420089957273422;
 
   Volume::Volume(double normalizedValue) : normalizedValue_(normalizedValue) {
   }

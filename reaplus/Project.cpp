@@ -36,7 +36,7 @@ namespace reaplus {
 
   Track Project::trackByGuid(const string& guid) const {
     complainIfNotAvailable();
-    return Track(reaProject_, guid);
+    return Track(Project(reaProject_), guid);
   }
 
   int Project::index() const {
@@ -71,7 +71,7 @@ namespace reaplus {
   }
 
   bool reaplus::operator!=(const Project& lhs, const Project& rhs) {
-    return !(lhs.reaProject_ == rhs.reaProject_);
+    return lhs.reaProject_ != rhs.reaProject_;
   }
 
   optional<Track> Project::trackByIndex(int index) const {

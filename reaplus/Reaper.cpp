@@ -11,7 +11,7 @@
 #include "IncomingMidiEvent.h"
 #include "HelperControlSurface.h"
 #include <reaper_plugin_functions.h>
-
+#include <utility>
 using rxcpp::subscriber;
 using boost::none;
 using std::string;
@@ -46,13 +46,14 @@ namespace reaplus {
   RegisteredAction Reaper::registerAction(const string& commandId, const string& description,
       function<void()> operation, function<bool()> isOn) {
     const int commandIndex = reaper::plugin_register("command_id", (void*) commandId.c_str());
-    auto pair = commandByIndex_.emplace(commandIndex, Command(commandIndex, description, operation, isOn));
+    auto pair = commandByIndex_.emplace(commandIndex, Command(commandIndex, description, std::move(operation),
+        std::move(isOn)));
     Command& command = pair.first->second;
     command.registerIt();
     return RegisteredAction(commandIndex);
   }
 
-  bool Reaper::staticHookCommand(int commandIndex, [[maybe_unused]] int flag) {
+  bool Reaper::staticHookCommand(int commandIndex, int) {
     auto& commandByIndex = Reaper::instance().commandByIndex_;
     if (commandByIndex.count(commandIndex)) {
       auto& command = commandByIndex.at(commandIndex);
@@ -63,7 +64,7 @@ namespace reaplus {
     }
   }
 
-  void Reaper::staticHookPostCommand(int commandId, int flag) {
+  void Reaper::staticHookPostCommand(int commandId, int) {
     auto action = Reaper::instance().mainSection().actionByCommandId(commandId);
     instance().actionInvokedSubject_.get_subscriber().on_next(action);
   }
@@ -180,14 +181,17 @@ namespace reaplus {
   }
 
   Reaper::Command::Command(int commandIndex, std::string description, std::function<void()> operation,
-      std::function<bool()> isOn) : description_(description), operation_(operation), isOn_(isOn) {
+      std::function<bool()> isOn) : description_(std::move(description)), operation_(std::move(operation)),
+      isOn_(std::move(isOn)) {
     acceleratorRegister_.desc = description_.c_str();
     acceleratorRegister_.accel.cmd = (WORD) commandIndex;
   }
 
-  Reaper::Command::Command(const Reaper::Command&& that) : description_(std::move(that.description_)),
-      operation_(std::move(that.operation_)), isOn_(std::move(that.isOn_)),
-      acceleratorRegister_(std::move(that.acceleratorRegister_)) {
+  Reaper::Command::Command(Reaper::Command&& that) noexcept :
+      description_(std::move(that.description_)),
+      operation_(std::move(that.operation_)),
+      isOn_(std::move(that.isOn_)),
+      acceleratorRegister_(that.acceleratorRegister_) {
     // We must not let the old acceleratorRegister point to the address of the string which doesn't exist anymore
     acceleratorRegister_.desc = description_.c_str();
   }
@@ -326,7 +330,7 @@ namespace reaplus {
   }
 
   Action Reaper::actionByCommandName(string commandName) const {
-    return Action(commandName);
+    return Action(std::move(commandName));
   }
 
   rxcpp::observable<IncomingMidiEvent> Reaper::incomingMidiEvents() const {
@@ -341,7 +345,7 @@ namespace reaplus {
     return sampleCounter_;
   }
 
-  void Reaper::processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t* reg) {
+  void Reaper::processAudioBuffer(bool isPost, int len, double, struct audio_hook_register_t*) {
     if (!isPost) {
       auto& reaper = Reaper::instance();
       // For each open MIDI device
@@ -499,14 +503,14 @@ namespace reaplus {
     return HelperControlSurface::instance().masterTempoTouched();
   }
 
-  rxcpp::subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
-    return HelperControlSurface::instance().enqueueCommand(command);
+  rxcpp::composite_subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
+    return HelperControlSurface::instance().enqueueCommand(std::move(command));
   }
 
-  rxcpp::subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
+  rxcpp::composite_subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
     if (std::this_thread::get_id() == idOfMainThread_) {
       command();
-      return rxcpp::subscription();
+      return rxcpp::composite_subscription();
     } else {
       return executeLaterInMainThread(command);
     }
@@ -525,7 +529,7 @@ namespace reaplus {
   }
 
   void Reaper::stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message) {
-    const int mode = static_cast<int>(target);
+    const auto mode = static_cast<int>(target);
     reaper::StuffMIDIMessage(mode, message.statusByte(), message.dataByte1(), message.dataByte2());
   }
 }

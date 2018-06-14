@@ -89,7 +89,7 @@ namespace reaplus {
     rxcpp::subjects::subject<bool> masterTempoChangedSubject_;
     rxcpp::subjects::subject<bool> masterTempoTouchedSubject_;
     rxcpp::subjects::behavior<Project> activeProjectBehavior_;
-    typedef std::unordered_map<MediaTrack*, TrackData> TrackDataMap;
+    using TrackDataMap = std::unordered_map<MediaTrack*, TrackData>;
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
     rxcpp::schedulers::relaxed_run_loop mainThreadRunLoop_;

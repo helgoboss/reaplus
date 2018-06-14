@@ -5,7 +5,7 @@ namespace reaplus {
   private:
     int commandIndex_;
   public:
-    RegisteredAction(int commandIndex);
+    explicit RegisteredAction(int commandIndex);
 
     void unregister();
   };

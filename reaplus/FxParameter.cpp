@@ -1,6 +1,6 @@
 #include "FxParameter.h"
-#include <memory> 
-#include <utility> 
+#include <memory>
+#include <utility>
 #include "ModelUtil.h"
 #include "HelperControlSurface.h"
 #include "utility.h"

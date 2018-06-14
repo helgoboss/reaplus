@@ -1,9 +1,9 @@
 #include "TrackMute.h"
-
+#include <memory> #include <utility>
 using std::unique_ptr;
 
 namespace reaplus {
-  TrackMute::TrackMute(Track track) : track_(track) {
+  TrackMute::TrackMute(Track track) : track_(std::move(track)) {
 
   }
 
@@ -16,12 +16,12 @@ namespace reaplus {
   }
 
   bool TrackMute::equals(const Parameter& other) const {
-    auto& o = static_cast<const TrackMute&>(other);
+    auto& o = dynamic_cast<const TrackMute&>(other);
     return track_ == o.track_;
   }
 
   unique_ptr<Parameter> TrackMute::clone() const {
-    return unique_ptr<TrackMute>(new TrackMute(*this));
+    return std::make_unique<TrackMute>(*this);
   }
 
 }

@@ -8,7 +8,7 @@ namespace reaplus {
     double bpm_;
   public:
     static Tempo ofNormalizedValue(double normalizedValue);
-    Tempo(double bpm);
+    explicit Tempo(double bpm);
     double normalizedValue() const;
     double bpm() const;
     std::string toString() const;

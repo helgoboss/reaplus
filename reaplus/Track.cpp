@@ -1,5 +1,5 @@
 #include <memory>
-#include "Track.h"
+#include <utility> #include "Track.h"
 #include "Fx.h"
 #include "TrackSend.h"
 #include "HelperControlSurface.h"
@@ -131,16 +131,16 @@ namespace reaplus {
             return reaper::ValidatePtr2(p.reaProject(), mediaTrack_, "MediaTrack*");
           })
           .map([](Project p) {
-            return shared_ptr<Project>(new Project(p));
+            return boost::make_optional(p);
           })
-          .default_if_empty((shared_ptr<Project>) nullptr)
+          .default_if_empty((boost::optional<Project>) none)
           .as_blocking()
           .first();
-      if (otherProject == nullptr) {
-        return nullptr;
-      } else {
+      if (otherProject) {
         // Speed up validation process for next check
         return otherProject->reaProject();
+      } else {
+        return nullptr;
       }
     }
   }
@@ -269,7 +269,7 @@ namespace reaplus {
     reaper::SetMediaTrackInfo_Value(mediaTrack_, "I_RECINPUT", midiRecordingInput.recInputIndex());
     // Only for triggering notification (as manual setting the rec input would also trigger it)
     // This doesn't work for other surfaces but they are also not interested in record input changes.
-    int recMon = (int) reaper::GetMediaTrackInfo_Value(mediaTrack_, "I_RECMON");
+    auto recMon = (int) reaper::GetMediaTrackInfo_Value(mediaTrack_, "I_RECMON");
     HelperControlSurface::instance().Extended(CSURF_EXT_SETINPUTMONITOR, (void*) mediaTrack_, (void*) &recMon, nullptr);
   }
 
@@ -335,8 +335,8 @@ namespace reaplus {
     }
   }
 
-  Track::Track(Project project, string guid) : reaProject_(project.reaProject()), guid_(guid), mediaTrack_(nullptr) {
-
+  Track::Track(Project project, string guid) : reaProject_(project.reaProject()), guid_(std::move(guid)),
+      mediaTrack_(nullptr) {
   }
 
   bool Track::loadByGuid() const {
@@ -452,7 +452,7 @@ namespace reaplus {
   }
 
   TrackSend Track::sendByTargetTrack(Track targetTrack) const {
-    return TrackSend(*this, targetTrack, boost::none);
+    return TrackSend(*this, std::move(targetTrack), boost::none);
   }
 
   TrackSend Track::addSendTo(Track targetTrack) {

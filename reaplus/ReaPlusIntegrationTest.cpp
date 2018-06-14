@@ -30,7 +30,8 @@ namespace reaplus {
       const auto positiveUnsignedInt = *static_cast<unsigned int*>(positiveInt);
       const int negativeInt = -5;
       const auto negativeUnsignedInt = static_cast<unsigned int>(negativeInt);
-      Reaper::instance().showConsoleMessage(std::to_string(positiveUnsignedInt) + " vs. " + std::to_string(negativeUnsignedInt));
+      Reaper::instance().showConsoleMessage(
+          std::to_string(positiveUnsignedInt) + " vs. " + std::to_string(negativeUnsignedInt));
     });
 
     testWithUntil("Create empty project in new tab", [](auto testIsOver) {
@@ -1839,8 +1840,8 @@ namespace reaplus {
     return *project.trackByIndex(1);
   }
 
-  TestStep::TestStep(const std::string& name, TestStep::Operation operation)
-      : name_(name), operation_(operation) {
+  TestStep::TestStep(std::string name, TestStep::Operation operation)
+      : name_(std::move(name)), operation_(std::move(operation)) {
   }
   std::string TestStep::getName() const {
     return name_;

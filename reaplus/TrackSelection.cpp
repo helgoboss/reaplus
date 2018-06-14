@@ -1,9 +1,9 @@
 #include "TrackSelection.h"
-
+#include <memory> #include <utility>
 using std::unique_ptr;
 
 namespace reaplus {
-  TrackSelection::TrackSelection(Track track) : track_(track) {
+  TrackSelection::TrackSelection(Track track) : track_(std::move(track)) {
 
   }
 
@@ -16,12 +16,12 @@ namespace reaplus {
   }
 
   bool TrackSelection::equals(const Parameter& other) const {
-    auto& o = static_cast<const TrackSelection&>(other);
+    auto& o = dynamic_cast<const TrackSelection&>(other);
     return track_ == o.track_;
   }
 
   unique_ptr<Parameter> TrackSelection::clone() const {
-    return unique_ptr<TrackSelection>(new TrackSelection(*this));
+    return std::make_unique<TrackSelection>(*this);
   }
 
 }

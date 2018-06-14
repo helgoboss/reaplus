@@ -53,7 +53,8 @@ namespace reaplus {
     return lhs.track_ == rhs.track_ && lhs.isInputFx_ == rhs.isInputFx_ && lhs.guid_ == rhs.guid_;
   }
 
-  Fx::Fx(Track track, string guid, bool isInputFx) : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx), index_(-1) {
+  Fx::Fx(Track track, string guid, bool isInputFx)
+      : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx), index_(-1) {
   }
 
   string Fx::guid(Track track, int index, bool isInputFx) {
@@ -70,7 +71,8 @@ namespace reaplus {
     return (isInputFx ? 0x1000000 : 0) + index;
   }
 
-  Fx::Fx(Track track, string guid, int index, bool isInputFx) : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx),
+  Fx::Fx(Track track, string guid, int index, bool isInputFx)
+      : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx),
       index_(index) {
   }
 

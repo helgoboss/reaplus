@@ -48,7 +48,7 @@ namespace reaplus {
     unsigned char channel() const;
     friend bool operator==(const MidiMessage& lhs, const MidiMessage& rhs);
   private:
-    MidiMessage(const MIDI_event_t& event);
+    explicit MidiMessage(const MIDI_event_t& event);
   };
 }
 

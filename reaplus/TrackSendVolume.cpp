@@ -1,10 +1,10 @@
 #include "TrackSendVolume.h"
-
+#include <memory> #include <utility>
 using std::unique_ptr;
 
 namespace reaplus {
 
-  TrackSendVolume::TrackSendVolume(TrackSend trackSend) : trackSend_(trackSend) {
+  TrackSendVolume::TrackSendVolume(TrackSend trackSend) : trackSend_(std::move(trackSend)) {
 
   }
 
@@ -17,7 +17,7 @@ namespace reaplus {
   }
 
   bool TrackSendVolume::equals(const Parameter& other) const {
-    auto& o = static_cast<const TrackSendVolume&>(other);
+    auto& o = dynamic_cast<const TrackSendVolume&>(other);
     return trackSend_ == o.trackSend_;
   }
 
@@ -26,7 +26,7 @@ namespace reaplus {
   }
 
   unique_ptr<Parameter> TrackSendVolume::clone() const {
-    return unique_ptr<TrackSendVolume>(new TrackSendVolume(*this));
+    return std::make_unique<TrackSendVolume>(*this);
   }
 
 }

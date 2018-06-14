@@ -9,7 +9,7 @@ namespace reaplus {
   public:
     static Pan ofReaperValue(double reaperValue);
     static Pan ofPanExpression(const std::string& panExpression);
-    Pan(double normalizedValue);
+    explicit Pan(double normalizedValue);
     double normalizedValue() const;
     double reaperValue() const;
     std::string toString() const;

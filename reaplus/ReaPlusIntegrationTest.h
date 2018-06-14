@@ -9,11 +9,11 @@ namespace reaplus {
   class Track;
   class TestStep {
   private:
-    typedef std::function<rxcpp::observable<bool>(rxcpp::observable<bool>)> Operation;
+    using Operation = std::function<rxcpp::observable<bool>(rxcpp::observable<bool>)>;
     const std::string name_;
     const Operation operation_;
   public:
-    TestStep(const std::string& name, Operation operation);
+    TestStep(std::string name, Operation operation);
     std::string getName() const;
     Operation getOperation() const;
   };
