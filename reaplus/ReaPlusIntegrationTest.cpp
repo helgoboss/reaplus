@@ -172,6 +172,36 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    test("Query track input monitoring", [] {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      auto mode = track.inputMonitoringMode();
+
+      // Then
+      assertTrue(mode == InputMonitoringMode::Normal, "Wrong input monitoring mode");
+    });
+
+    testWithUntil("Set track input monitoring", [](auto testIsOver) {
+      // Given
+      auto track = firstTrack();
+
+      // When
+      optional<Track> eventTrack;
+      int count = 0;
+      Reaper::instance().trackInputMonitoringChanged().take_until(testIsOver).subscribe([&](Track t) {
+        count++;
+        eventTrack = t;
+      });
+      track.setInputMonitoringMode(InputMonitoringMode::NotWhenPlaying);
+
+      // Then
+      assertTrue(track.inputMonitoringMode() == InputMonitoringMode::NotWhenPlaying, "Wrong input monitoring mode");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrack == track, "Track event wrong");
+    });
+
     test("Query track recording input", [] {
       // Given
       auto track = firstTrack();

@@ -17,6 +17,11 @@ namespace reaplus {
   class Fx;
   class FxChain;
   class TrackSend;
+  enum class InputMonitoringMode {
+    Off,
+    Normal,
+    NotWhenPlaying
+  };
   class Track {
     friend class Project;
   private:
@@ -42,6 +47,8 @@ namespace reaplus {
     // Returns nullptr if no recording input selected
     std::unique_ptr<RecordingInput> recordingInput() const;
     void setRecordingInput(MidiRecordingInput midiRecordingInput);
+    InputMonitoringMode inputMonitoringMode() const;
+    void setInputMonitoringMode(InputMonitoringMode inputMonitoringMode);
     bool isMasterTrack() const;
     void setVolume(double normalizedValue);
     Volume volume() const;

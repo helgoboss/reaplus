@@ -269,10 +269,21 @@ namespace reaplus {
     loadAndCheckIfNecessaryOrComplain();
     reaper::SetMediaTrackInfo_Value(mediaTrack_, "I_RECINPUT", midiRecordingInput.recInputIndex());
     // Only for triggering notification (as manual setting the rec input would also trigger it)
+    // This doesn't work for other surfaces but they are also not interested in record input changes.
     int recMon = (int) reaper::GetMediaTrackInfo_Value(mediaTrack_, "I_RECMON");
     HelperControlSurface::instance().Extended(CSURF_EXT_SETINPUTMONITOR, (void*) mediaTrack_, (void*) &recMon, nullptr);
-    // This doesn't work in one test case unfortunately
-//    reaper::CSurf_OnInputMonitorChangeEx(mediaTrack_, recMon, false);
+  }
+
+  InputMonitoringMode Track::inputMonitoringMode() const {
+    loadAndCheckIfNecessaryOrComplain();
+    const int recMon = *(int*) reaper::GetSetMediaTrackInfo(mediaTrack_, "I_RECMON", nullptr);
+    return static_cast<InputMonitoringMode>(recMon);
+  }
+
+  void Track::setInputMonitoringMode(InputMonitoringMode inputMonitoringMode) {
+    loadAndCheckIfNecessaryOrComplain();
+    const int recMon = static_cast<int>(inputMonitoringMode);
+    reaper::CSurf_OnInputMonitorChangeEx(mediaTrack_, recMon, false);
   }
 
   AutomationMode Track::automationMode() const {

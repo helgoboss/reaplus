@@ -236,7 +236,9 @@ namespace reaplus {
       if (parm1) {
         const double bpm = *(double*) parm1;
         masterTempoChangedSubject_.get_subscriber().on_next(true);
-        // FIXME
+        // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
+        // So that's okay for "touched".
+        // TODO What about gradual tempo changes?
         masterTempoTouchedSubject_.get_subscriber().on_next(true);
       }
       return 0;
