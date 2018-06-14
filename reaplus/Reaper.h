@@ -10,6 +10,7 @@
 #include <boost/optional.hpp>
 #include "RegisteredAction.h"
 #include "AutomationMode.h"
+#include "MidiMessage.h"
 #include "Guid.h"
 
 namespace reaplus {
@@ -42,6 +43,12 @@ namespace reaplus {
     Ignore,
     Yes,
     No
+  };
+
+  enum class StuffMidiMessageTarget {
+    VirtualMidiKeyboard,
+    MidiAsControlInputQueue,
+    VirtualMidiKeyboardOnCurrentChannel
   };
 
   class Reaper {
@@ -250,6 +257,8 @@ namespace reaplus {
     HWND mainWindow() const;
 
     uint64_t sampleCounter() const;
+
+    void stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message);
 
   private:
     Reaper();

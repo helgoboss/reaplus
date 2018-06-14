@@ -526,6 +526,11 @@ namespace reaplus {
   HWND Reaper::mainWindow() const {
     return reaper::GetMainHwnd();
   }
+
+  void Reaper::stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message) {
+    const int mode = static_cast<int>(target);
+    reaper::StuffMIDIMessage(mode, message.statusByte(), message.dataByte1(), message.dataByte2());
+  }
 }
 
 

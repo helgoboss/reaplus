@@ -28,6 +28,10 @@ namespace reaplus {
     }
   }
 
+  bool operator==(const MidiMessage& lhs, const MidiMessage& rhs) {
+    return lhs.frameOffset_ == rhs.frameOffset_ && lhs.bytes_ == rhs.bytes_;
+  }
+
   MidiMessageType MidiMessage::type() const {
     // Truncate low nibble from status byte
     const auto lowNibble = (unsigned char) (statusByte() & 0xf0);

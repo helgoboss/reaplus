@@ -9,6 +9,7 @@
 #include "Fx.h"
 #include "FxParameter.h"
 #include "MidiInputDevice.h"
+#include "IncomingMidiEvent.h"
 #include "MidiOutputDevice.h"
 #include <cstring>
 #include <reaper_plugin_functions.h>
@@ -22,13 +23,7 @@ using std::function;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() {
-    // TODO to be tested
-    /**
-     *    - MidiMessage
-          - All events
-          - Reaper::sampleCounter
-     */
-
+    // TODO Test tracksReordered event (how to test that?)
 
     testWithUntil("Create empty project in new tab", [](auto testIsOver) {
       // Given
@@ -1610,6 +1605,23 @@ namespace reaplus {
       Reaper::instance().midiOutputDeviceById(0).isAvailable();
 
       // Then
+    });
+
+    testAndWait("Stuff MIDI messages", [] {
+      // Given
+      const auto msg = MidiMessage::noteOn(0, 64, 100, 0);
+
+      // When
+      const auto observable = Reaper::instance().incomingMidiEvents().map([](IncomingMidiEvent evt) {
+        return evt.message().type() == MidiMessageType::NoteOn
+            && evt.message().channel() == 0
+            && evt.message().note() == 64
+            && evt.message().velocity() == 100
+            && evt.inputDevice().id() == 62
+            && Reaper::instance().sampleCounter() > 0;
+      });
+      Reaper::instance().stuffMidiMessage(StuffMidiMessageTarget::VirtualMidiKeyboard, msg);
+      return observable;
     });
 
     testWithUntil("Use undoable", [](auto testIsOver) {
