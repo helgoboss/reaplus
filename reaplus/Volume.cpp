@@ -10,7 +10,7 @@ namespace reaplus {
 
   Volume::Volume(double normalizedValue) : normalizedValue_(normalizedValue) {
   }
-  
+
   Volume Volume::ofReaperValue(double reaperValue) {
     return Volume::ofDb(std::log(reaperValue) / LN10_OVER_TWENTY);
   }

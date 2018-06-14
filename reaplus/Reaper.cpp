@@ -22,7 +22,6 @@ using std::unique_ptr;
 using rxcpp::observable;
 using boost::optional;
 
-
 namespace reaplus {
   std::unique_ptr<Reaper> Reaper::INSTANCE = nullptr;
 
@@ -127,8 +126,8 @@ namespace reaplus {
       } else {
         // Track exists in this project
         const auto track = normalizedTrackIndex == -1
-                     ? Reaper::instance().currentProject().masterTrack()
-                     : *Reaper::instance().currentProject().trackByIndex(normalizedTrackIndex);
+                           ? Reaper::instance().currentProject().masterTrack()
+                           : *Reaper::instance().currentProject().trackByIndex(normalizedTrackIndex);
         if (const auto fx = track.fxByQueryIndex(fxQueryIndex)) {
           return fx->parameterByIndex(paramIndex);
         } else {
@@ -186,7 +185,7 @@ namespace reaplus {
     acceleratorRegister_.accel.cmd = (WORD) commandIndex;
   }
 
-  Reaper::Command::Command(const Reaper::Command&& that)  : description_(std::move(that.description_)),
+  Reaper::Command::Command(const Reaper::Command&& that) : description_(std::move(that.description_)),
       operation_(std::move(that.operation_)), isOn_(std::move(that.isOn_)),
       acceleratorRegister_(std::move(that.acceleratorRegister_)) {
     // We must not let the old acceleratorRegister point to the address of the string which doesn't exist anymore
@@ -199,33 +198,31 @@ namespace reaplus {
     int fxNumber;
     const int result = reaper::GetFocusedFX(&trackNumber, &itemNumber, &fxNumber);
     switch (result) {
-    case 1: {
-      // We don't know the project so we must check each project
-      return projectsWithCurrentOneFirst()
-          .map([trackNumber, fxNumber](Project p) -> boost::optional<Fx> {
-            if (const auto track = p.trackByIndex(trackNumber)) {
-              if (const auto fx = track->normalFxChain().fxByIndex(fxNumber)) {
-                if (fx->windowHasFocus()) {
-                  return fx;
+      case 1: {
+        // We don't know the project so we must check each project
+        return projectsWithCurrentOneFirst()
+            .map([trackNumber, fxNumber](Project p) -> boost::optional<Fx> {
+              if (const auto track = p.trackByIndex(trackNumber)) {
+                if (const auto fx = track->normalFxChain().fxByIndex(fxNumber)) {
+                  if (fx->windowHasFocus()) {
+                    return fx;
+                  } else {
+                    return none;
+                  }
                 } else {
                   return none;
                 }
               } else {
                 return none;
               }
-            } else {
-              return none;
-            }
-          })
-          .default_if_empty(boost::optional<Fx>())
-          .as_blocking()
-          .first();
-    }
-    case 0:
-    case 2:
-      return none;
-    default:
-      return none;
+            })
+            .default_if_empty(boost::optional<Fx>())
+            .as_blocking()
+            .first();
+      }
+      case 0:
+      case 2:return none;
+      default:return none;
     }
   }
 
@@ -312,7 +309,7 @@ namespace reaplus {
   }
 
   optional<Project> Reaper::projectByIndex(int index) const {
-	auto reaProject = reaper::EnumProjects(index, nullptr, 0);
+    auto reaProject = reaper::EnumProjects(index, nullptr, 0);
     if (reaProject == nullptr) {
       return none;
     } else {

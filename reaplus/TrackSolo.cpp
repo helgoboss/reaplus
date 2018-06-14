@@ -15,7 +15,6 @@ namespace reaplus {
     return ParameterType::TrackSolo;
   }
 
-
   bool TrackSolo::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackSolo&>(other);
     return track_ == o.track_;
@@ -24,8 +23,6 @@ namespace reaplus {
   unique_ptr<Parameter> TrackSolo::clone() const {
     return unique_ptr<TrackSolo>(new TrackSolo(*this));
   }
-
-
 
 }
 

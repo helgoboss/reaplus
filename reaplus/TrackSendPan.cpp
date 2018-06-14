@@ -4,7 +4,7 @@ using std::unique_ptr;
 
 namespace reaplus {
 
-  TrackSendPan::TrackSendPan(TrackSend trackSend): trackSend_(trackSend) {
+  TrackSendPan::TrackSendPan(TrackSend trackSend) : trackSend_(trackSend) {
 
   }
 
@@ -12,11 +12,9 @@ namespace reaplus {
     return trackSend_;
   }
 
-
   ParameterType TrackSendPan::parameterType() const {
     return ParameterType::TrackSendPan;
   }
-
 
   bool TrackSendPan::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackSendPan&>(other);
@@ -27,11 +25,8 @@ namespace reaplus {
     return trackSend_.sourceTrack();
   }
 
-
   unique_ptr<Parameter> TrackSendPan::clone() const {
     return unique_ptr<TrackSendPan>(new TrackSendPan(*this));
   }
-
-
 
 }

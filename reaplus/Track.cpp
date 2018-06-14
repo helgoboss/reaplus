@@ -19,7 +19,6 @@ using std::string;
 using std::function;
 using std::unique_ptr;
 
-
 namespace reaplus {
 
   const int Track::MAX_CHUNK_SIZE = 1000000;
@@ -50,7 +49,7 @@ namespace reaplus {
 
   int Track::index() const {
     loadAndCheckIfNecessaryOrComplain();
-    auto ipTrackNumber = (int)(size_t) reaper::GetSetMediaTrackInfo(mediaTrack(), "IP_TRACKNUMBER", nullptr);
+    auto ipTrackNumber = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack(), "IP_TRACKNUMBER", nullptr);
     if (ipTrackNumber == -1) {
       // Master track indicator
       return -1;
@@ -134,7 +133,7 @@ namespace reaplus {
           .map([](Project p) {
             return shared_ptr<Project>(new Project(p));
           })
-          .default_if_empty((shared_ptr<Project>)nullptr)
+          .default_if_empty((shared_ptr<Project>) nullptr)
           .as_blocking()
           .first();
       if (otherProject == nullptr) {
@@ -476,6 +475,5 @@ namespace reaplus {
   optional<ChunkRegion> Track::autoArmChunkLine(Chunk chunk) {
     return chunk.region().findLineStartingWith("AUTO_RECARM 1");
   }
-
 
 }

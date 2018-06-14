@@ -3,7 +3,7 @@
 #include "Parameter.h"
 
 namespace reaplus {
-  class MasterTempo: public Parameter {
+  class MasterTempo : public Parameter {
   public:
     virtual std::unique_ptr<Parameter> clone() const override;
 

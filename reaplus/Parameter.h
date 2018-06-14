@@ -29,7 +29,7 @@ namespace reaplus {
   };
 
   // FIXME Factor out into separate file
-  class TrackParameter: public Parameter {
+  class TrackParameter : public Parameter {
   public:
     virtual bool isTrackParameter() const override;
 

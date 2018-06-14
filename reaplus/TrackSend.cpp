@@ -9,7 +9,8 @@ using std::string;
 
 namespace reaplus {
 
-  TrackSend::TrackSend(Track sourceTrack, int index): sourceTrack_(sourceTrack), targetTrack_(boost::none), index_(index) {
+  TrackSend::TrackSend(Track sourceTrack, int index)
+      : sourceTrack_(sourceTrack), targetTrack_(boost::none), index_(index) {
   }
 
   Track TrackSend::sourceTrack() const {
@@ -70,7 +71,8 @@ namespace reaplus {
   }
 
   MediaTrack* TrackSend::targetMediaTrack(Track sourceTrack, int sendIndex) {
-    auto targetMediaTrack = (MediaTrack*) reaper::GetSetTrackSendInfo(sourceTrack.mediaTrack(), 0, sendIndex, "P_DESTTRACK", nullptr);
+    auto targetMediaTrack =
+        (MediaTrack*) reaper::GetSetTrackSendInfo(sourceTrack.mediaTrack(), 0, sendIndex, "P_DESTTRACK", nullptr);
     return targetMediaTrack;
   }
 
@@ -114,7 +116,6 @@ namespace reaplus {
       }
     }
   }
-
 
   bool TrackSend::isIndexBased() const {
     return !targetTrack_.is_initialized();
@@ -162,7 +163,7 @@ namespace reaplus {
   }
 
   TrackSend::TrackSend(Track sourceTrack, Track targetTrack, boost::optional<int> index) : sourceTrack_(sourceTrack),
-      targetTrack_(targetTrack), index_(index)  {
+      targetTrack_(targetTrack), index_(index) {
 
   }
 

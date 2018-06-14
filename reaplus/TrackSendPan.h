@@ -4,7 +4,7 @@
 #include "TrackSend.h"
 
 namespace reaplus {
-  class TrackSendPan: public TrackParameter {
+  class TrackSendPan : public TrackParameter {
   private:
     TrackSend trackSend_;
   public:

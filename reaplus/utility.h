@@ -15,8 +15,6 @@
 #include "swell/swell.h"
 #endif
 
-
-
 namespace reaplus {
   std::string convertGuidToString(const GUID& guid);
 

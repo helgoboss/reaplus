@@ -67,7 +67,10 @@ namespace reaplus {
       std::function<bool()> isOn_;
       gaccel_register_t acceleratorRegister_;
     public:
-      Command(int commandIndex, std::string description, std::function<void()> operation, std::function<bool()> isOn = nullptr);
+      Command(int commandIndex,
+          std::string description,
+          std::function<void()> operation,
+          std::function<bool()> isOn = nullptr);
 
       // Don't know for sure but might be that REAPER doesn't copy the acceleratorRegister_ on registration. So copying (in particular after registration) is forbidden.
       Command(const Command& that) = delete;
@@ -84,7 +87,6 @@ namespace reaplus {
 
       bool isOn() const;
     };
-
 
     static std::unique_ptr<Reaper> INSTANCE;
     std::thread::id idOfMainThread_;
@@ -171,7 +173,6 @@ namespace reaplus {
     // actually existing at runtime. That way we would support (still) unloaded Actions.
     // TODO Don't automatically interpret command name as commandId
     Action actionByCommandName(std::string commandName) const;
-
 
     rxcpp::observable<Parameter*> parameterValueChangedUnsafe() const;
 
@@ -270,7 +271,7 @@ namespace reaplus {
     static bool staticHookCommand(int commandIndex, int flag);
     // Only for main section
     static int staticToggleAction(int commandIndex);
-    static void processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t *reg);
+    static void processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t* reg);
   };
 }
 

@@ -14,7 +14,7 @@ namespace reaplus {
   }
 
   MidiMessage::MidiMessage(unsigned char statusByte, unsigned char dataByte1, unsigned char dataByte2,
-                           int frameOffset) : frameOffset_(frameOffset) {
+      int frameOffset) : frameOffset_(frameOffset) {
     bytes_.reserve((size_t) 3);
     bytes_.push_back(statusByte);
     bytes_.push_back(dataByte1);

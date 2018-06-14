@@ -10,7 +10,7 @@ namespace reaplus {
   }
 
   IncomingMidiEvent::IncomingMidiEvent(MidiInputDevice inputDevice, MidiMessage message) : inputDevice_(inputDevice),
-    message_(message){
+      message_(message) {
 
   }
 }

@@ -4,7 +4,7 @@
 #include "Track.h"
 
 namespace reaplus {
-  class TrackMute: public TrackParameter {
+  class TrackMute : public TrackParameter {
   private:
     Track track_;
   public:

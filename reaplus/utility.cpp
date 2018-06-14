@@ -7,7 +7,6 @@
 using std::string;
 using std::function;
 
-
 namespace reaplus {
   string convertGuidToString(const GUID& guid) {
     string guidString = toString(64, [&guid](char* buffer, int maxSize) {
@@ -18,7 +17,6 @@ namespace reaplus {
     guidString.erase(0, 1);
     return guidString;
   }
-
 
   string toString(int maxSize, function<void(char*, int)> fillBuffer) {
     // TODO Can this be implemented in a better way?

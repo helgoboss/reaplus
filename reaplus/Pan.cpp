@@ -8,12 +8,12 @@
 namespace reaplus {
   Pan::Pan(double normalizedValue) : normalizedValue_(normalizedValue) {
   }
-  
+
   Pan Pan::ofReaperValue(double reaperValue) {
     return Pan(ModelUtil::mapValueInRangeToNormalizedValue(reaperValue, -1, 1));
   }
 
-  Pan Pan::ofPanExpression(const std::string &panExpression) {
+  Pan Pan::ofPanExpression(const std::string& panExpression) {
     const double reaperValue = reaper::parsepanstr(panExpression.c_str());
     return Pan::ofReaperValue(reaperValue);
   }

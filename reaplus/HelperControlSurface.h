@@ -95,7 +95,8 @@ namespace reaplus {
     rxcpp::schedulers::relaxed_run_loop mainThreadRunLoop_;
     rxcpp::observe_on_one_worker mainThreadCoordination_ =
         rxcpp::observe_on_one_worker(rxcpp::schedulers::make_relaxed_run_loop(mainThreadRunLoop_));
-    rxcpp::observe_on_one_worker::coordinator_type mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
+    rxcpp::observe_on_one_worker::coordinator_type
+        mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
 
   public:
     ~HelperControlSurface();
@@ -234,9 +235,15 @@ namespace reaplus {
     void detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges);
 
     // Returns true if FX was added or removed
-    bool detectFxChangesOnTrack(Track track, std::set<std::string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges);
+    bool detectFxChangesOnTrack(Track track,
+        std::set<std::string>& oldFxGuids,
+        bool isInputFx,
+        bool notifyListenersAboutChanges);
 
-    void removeInvalidFx(Track track, std::set<std::string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges);
+    void removeInvalidFx(Track track,
+        std::set<std::string>& oldFxGuids,
+        bool isInputFx,
+        bool notifyListenersAboutChanges);
 
     void addMissingFx(Track track, std::set<std::string>& fxGuids, bool isInputFx, bool notifyListenersAboutChanges);
 

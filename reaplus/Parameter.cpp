@@ -13,7 +13,6 @@ namespace reaplus {
     return false;
   }
 
-
   bool TrackParameter::isTrackParameter() const {
     return true;
   }

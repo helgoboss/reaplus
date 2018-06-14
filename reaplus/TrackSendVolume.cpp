@@ -4,7 +4,7 @@ using std::unique_ptr;
 
 namespace reaplus {
 
-  TrackSendVolume::TrackSendVolume(TrackSend trackSend): trackSend_(trackSend) {
+  TrackSendVolume::TrackSendVolume(TrackSend trackSend) : trackSend_(trackSend) {
 
   }
 
@@ -12,11 +12,9 @@ namespace reaplus {
     return trackSend_;
   }
 
-
   ParameterType TrackSendVolume::parameterType() const {
     return ParameterType::TrackSendVolume;
   }
-
 
   bool TrackSendVolume::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackSendVolume&>(other);
@@ -27,11 +25,8 @@ namespace reaplus {
     return trackSend_.sourceTrack();
   }
 
-
   unique_ptr<Parameter> TrackSendVolume::clone() const {
     return unique_ptr<TrackSendVolume>(new TrackSendVolume(*this));
   }
-
-
 
 }

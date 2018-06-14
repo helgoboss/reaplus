@@ -21,7 +21,7 @@ namespace reaplus {
 
   optional<Fx> FxChain::fxByIndex(int index) const {
     if (index >= 0 && index < fxCount()) {
-      return Fx(track_,  Fx::guid(track_, index, isInputFx_), index, isInputFx_);
+      return Fx(track_, Fx::guid(track_, index, isInputFx_), index, isInputFx_);
     } else {
       return none;
     }
@@ -37,7 +37,8 @@ namespace reaplus {
   }
 
   int FxChain::fxCount() const {
-    return isInputFx_ ? reaper::TrackFX_GetRecCount(track_.mediaTrack()) : reaper::TrackFX_GetCount(track_.mediaTrack());
+    return isInputFx_ ? reaper::TrackFX_GetRecCount(track_.mediaTrack())
+                      : reaper::TrackFX_GetCount(track_.mediaTrack());
   }
 
   FxChain::FxChain(Track track, bool isInputFx) : track_(track), isInputFx_(isInputFx) {
@@ -61,7 +62,7 @@ namespace reaplus {
     if (fxIndex == -1) {
       return boost::none;
     } else {
-      return Fx(track_,  Fx::guid(track_, fxIndex, isInputFx_), fxIndex, isInputFx_);
+      return Fx(track_, Fx::guid(track_, fxIndex, isInputFx_), fxIndex, isInputFx_);
     }
   }
 
@@ -70,7 +71,7 @@ namespace reaplus {
     if (fxIndex == -1) {
       return boost::none;
     } else {
-      return Fx(track_,  Fx::guid(track_, fxIndex, isInputFx_), fxIndex, isInputFx_);
+      return Fx(track_, Fx::guid(track_, fxIndex, isInputFx_), fxIndex, isInputFx_);
     }
   }
 
@@ -81,7 +82,6 @@ namespace reaplus {
   bool reaplus::operator!=(const FxChain& lhs, const FxChain& rhs) {
     return !(lhs == rhs);
   }
-
 
   boost::optional<ChunkRegion> FxChain::chunk() const {
     return findChunkRegion(track_.chunk());

@@ -28,7 +28,8 @@ namespace reaplus {
 
   std::string Action::name() const {
     loadIfNecessaryOrComplain();
-    return std::string(reaper::kbd_getTextFromCmd((DWORD) runtimeData_->commandId, runtimeData_->section.sectionInfo()));
+    return std::string(
+        reaper::kbd_getTextFromCmd((DWORD) runtimeData_->commandId, runtimeData_->section.sectionInfo()));
   }
 
   std::string Action::commandName() const {
@@ -76,13 +77,27 @@ namespace reaplus {
       int valhw = 0;
       int relmode = 2;
       // reaper::kbd_RunCommandThroughHooks(section_.sectionInfo(), &actionCommandId, &val, &valhw, &relmode, reaper::GetMainHwnd());
-      reaper::KBD_OnMainActionEx(actionCommandId, val, valhw, relmode, reaper::GetMainHwnd(), project ? project->reaProject() : nullptr);
+      reaper::KBD_OnMainActionEx(
+          actionCommandId,
+          val,
+          valhw,
+          relmode,
+          reaper::GetMainHwnd(),
+          project ? project->reaProject() : nullptr
+      );
     } else {
       int val = static_cast<int>(std::round(normalizedValue * 127));
       int valhw = -1;
       int relmode = 0;
       // reaper::kbd_RunCommandThroughHooks(section_.sectionInfo(), &actionCommandId, &val, &valhw, &relmode, reaper::GetMainHwnd());
-      reaper::KBD_OnMainActionEx(actionCommandId, val, valhw, relmode, reaper::GetMainHwnd(), project ? project->reaProject() : nullptr);
+      reaper::KBD_OnMainActionEx(
+          actionCommandId,
+          val,
+          valhw,
+          relmode,
+          reaper::GetMainHwnd(),
+          project ? project->reaProject() : nullptr
+      );
       // Main_OnCommandEx would trigger the actionInvoked event but it has not enough parameters for passing values etc.
 //      reaper::Main_OnCommandEx(actionCommandId, 0, project ? project->reaProject() : nullptr);
     }
@@ -115,7 +130,6 @@ namespace reaplus {
     }
   }
 
-
   ParameterType Action::parameterType() const {
     return ParameterType::Action;
   }
@@ -125,7 +139,6 @@ namespace reaplus {
     // TODO Do we still need the specialized == operator implementation if we already have the polymorphic one?
     return *this == o;
   }
-
 
   unique_ptr<Parameter> Action::clone() const {
     return unique_ptr<Action>(new Action(*this));
@@ -143,7 +156,8 @@ namespace reaplus {
   bool Action::isAvailable() const {
     if (runtimeData_) {
       // See if we can get a description. If yes, the action actually exists. If not, then not.
-      const auto text = reaper::kbd_getTextFromCmd((DWORD) runtimeData_->commandId, runtimeData_->section.sectionInfo());
+      const auto text =
+          reaper::kbd_getTextFromCmd((DWORD) runtimeData_->commandId, runtimeData_->section.sectionInfo());
       return text != nullptr && std::strlen(text) > 0;
     } else {
       return loadByCommandName();
@@ -160,7 +174,6 @@ namespace reaplus {
       return true;
     }
   }
-
 
   Action::RuntimeData::RuntimeData(Section section, long commandId, boost::optional<int> cachedIndex) :
       section(section), commandId(commandId), cachedIndex(cachedIndex) {
@@ -188,6 +201,5 @@ namespace reaplus {
       throw std::logic_error("Action not loadable");
     }
   }
-
 
 }

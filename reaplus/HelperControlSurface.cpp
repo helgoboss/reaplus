@@ -24,7 +24,6 @@ using std::string;
 using std::set;
 using std::unique_ptr;
 
-
 namespace reaplus {
   std::unique_ptr<HelperControlSurface> HelperControlSurface::INSTANCE = nullptr;
 
@@ -68,12 +67,11 @@ namespace reaplus {
     const auto fixedNow = mainThreadRunLoop_.now();
     const auto maxExecutionTime = std::chrono::milliseconds(50);
     while (mainThreadRunLoop_.now() - fixedNow <= maxExecutionTime
-           && !mainThreadRunLoop_.empty()
-           && mainThreadRunLoop_.peek().when <= fixedNow) {
+        && !mainThreadRunLoop_.empty()
+        && mainThreadRunLoop_.peek().when <= fixedNow) {
       mainThreadRunLoop_.dispatch();
     }
   }
-
 
   void HelperControlSurface::SetSurfaceVolume(MediaTrack* trackid, double volume) {
     if (state() != State::PropagatingTrackSetChanges) {
@@ -90,7 +88,6 @@ namespace reaplus {
     }
   }
 
-
   void HelperControlSurface::SetSurfacePan(MediaTrack* trackid, double pan) {
     if (state() != State::PropagatingTrackSetChanges) {
       if (auto td = findTrackDataByTrack(trackid)) {
@@ -105,7 +102,6 @@ namespace reaplus {
       }
     }
   }
-
 
   HelperControlSurface& HelperControlSurface::instance() {
     static Guard guard;
@@ -125,7 +121,7 @@ namespace reaplus {
     Reaper::destroyInstance();
   }
 
-  rx::observable <FxParameter> HelperControlSurface::fxParameterValueChanged() const {
+  rx::observable<FxParameter> HelperControlSurface::fxParameterValueChanged() const {
     return fxParameterValueChangedSubject_.get_observable();
   }
 
@@ -143,108 +139,107 @@ namespace reaplus {
 
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     switch (call) {
-    case CSURF_EXT_SETINPUTMONITOR: {
-      if (state() != State::PropagatingTrackSetChanges) {
+      case CSURF_EXT_SETINPUTMONITOR: {
+        if (state() != State::PropagatingTrackSetChanges) {
+          const auto mediaTrack = (MediaTrack*) parm1;
+          if (auto td = findTrackDataByTrack(mediaTrack)) {
+            {
+              const auto recmonitor = (int*) parm2;
+              if (td->recmonitor != *recmonitor) {
+                td->recmonitor = *recmonitor;
+                trackInputMonitoringChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+              }
+            }
+            {
+              const int recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+              if (td->recinput != recinput) {
+                td->recinput = recinput;
+                trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+              }
+            }
+          }
+        }
+        return 0;
+      }
+      case CSURF_EXT_SETFXPARAM: {
         const auto mediaTrack = (MediaTrack*) parm1;
-        if (auto td = findTrackDataByTrack(mediaTrack)) {
-          {
-            const auto recmonitor = (int*) parm2;
-            if (td->recmonitor != *recmonitor) {
-              td->recmonitor = *recmonitor;
-              trackInputMonitoringChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
-            }
+        const auto fxAndParamIndex = (int*) parm2;
+        const int fxIndex = (*fxAndParamIndex >> 16) & 0xffff;
+        const int paramIndex = *fxAndParamIndex & 0xffff;
+        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+        const Track track(mediaTrack, nullptr);
+        const double paramValue = *(double*) parm3;
+        // TODO In the ReaPlus integration test, there's one test where this heuristic doesn't work. Deal with it!
+        const bool isInputFx = isProbablyInputFx(track, fxIndex, paramIndex, paramValue);
+        const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+        if (const auto fx = fxChain.fxByIndex(fxIndex)) {
+          const auto fxParam = fx->parameterByIndex(paramIndex);
+          fxParameterValueChangedSubject_.get_subscriber().on_next(fxParam);
+          if (fxHasBeenTouchedJustAMomentAgo_) {
+            fxHasBeenTouchedJustAMomentAgo_ = false;
+            fxParameterTouchedSubject_.get_subscriber().on_next(fxParam);
           }
-          {
-            const int recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
-            if (td->recinput != recinput) {
-              td->recinput = recinput;
-              trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
-            }
+        }
+        return 0;
+      }
+      case CSURF_EXT_SETFXENABLED: {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        const auto fxIndex = *(int*) parm2;
+        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+        const Track track(mediaTrack, nullptr);
+        const bool isInputFx = isProbablyInputFx(track, fxIndex);
+        const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+        if (const auto fx = fxChain.fxByIndex(fxIndex)) {
+          fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
+        }
+        return 0;
+      }
+      case CSURF_EXT_SETSENDVOLUME:
+      case CSURF_EXT_SETSENDPAN: {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        const int sendIdx = *(int*) parm2;
+        const Track track(mediaTrack, nullptr);
+        const auto trackSend = track.indexBasedSendByIndex(sendIdx);
+        if (call == CSURF_EXT_SETSENDVOLUME) {
+          trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
+          // Send volume touch event only if not automated
+          if (!trackParameterIsAutomated(track, "Send Volume")) {
+            trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
+          }
+        } else if (call == CSURF_EXT_SETSENDPAN) {
+          trackSendPanChangedSubject_.get_subscriber().on_next(trackSend);
+          // Send pan touch event only if not automated
+          if (!trackParameterIsAutomated(track, "Send Pan")) {
+            trackSendPanTouchedSubject_.get_subscriber().on_next(trackSend);
           }
         }
+        return 0;
       }
-      return 0;
-    }
-    case CSURF_EXT_SETFXPARAM: {
-      const auto mediaTrack = (MediaTrack*) parm1;
-      const auto fxAndParamIndex = (int*) parm2;
-      const int fxIndex = (*fxAndParamIndex >> 16) & 0xffff;
-      const int paramIndex = *fxAndParamIndex & 0xffff;
-      // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-      const Track track(mediaTrack, nullptr);
-      const double paramValue = *(double*) parm3;
-      // TODO In the ReaPlus integration test, there's one test where this heuristic doesn't work. Deal with it!
-      const bool isInputFx = isProbablyInputFx(track, fxIndex, paramIndex, paramValue);
-      const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-      if (const auto fx = fxChain.fxByIndex(fxIndex)) {
-        const auto fxParam = fx->parameterByIndex(paramIndex);
-        fxParameterValueChangedSubject_.get_subscriber().on_next(fxParam);
-        if (fxHasBeenTouchedJustAMomentAgo_) {
-          fxHasBeenTouchedJustAMomentAgo_ = false;
-          fxParameterTouchedSubject_.get_subscriber().on_next(fxParam);
+      case CSURF_EXT_SETFOCUSEDFX: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
+      case CSURF_EXT_SETFXOPEN: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
+      case CSURF_EXT_SETFXCHANGE: {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        if (mediaTrack) {
+          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
         }
+        return 0;
       }
-      return 0;
-    }
-    case CSURF_EXT_SETFXENABLED: {
-      const auto mediaTrack = (MediaTrack*) parm1;
-      const auto fxIndex = *(int*) parm2;
-      // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-      const Track track(mediaTrack, nullptr);
-      const bool isInputFx = isProbablyInputFx(track, fxIndex);
-      const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-      if (const auto fx = fxChain.fxByIndex(fxIndex)) {
-        fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
+      case CSURF_EXT_SETLASTTOUCHEDFX: {
+        fxHasBeenTouchedJustAMomentAgo_ = true;
+        return 0;
       }
-      return 0;
-    }
-    case CSURF_EXT_SETSENDVOLUME:
-    case CSURF_EXT_SETSENDPAN: {
-      const auto mediaTrack = (MediaTrack*) parm1;
-      const int sendIdx = *(int*) parm2;
-      const Track track(mediaTrack, nullptr);
-      const auto trackSend = track.indexBasedSendByIndex(sendIdx);
-      if (call == CSURF_EXT_SETSENDVOLUME) {
-        trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
-        // Send volume touch event only if not automated
-        if (!trackParameterIsAutomated(track, "Send Volume")) {
-          trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
+      case CSURF_EXT_SETBPMANDPLAYRATE: {
+        if (parm1) {
+          const double bpm = *(double*) parm1;
+          masterTempoChangedSubject_.get_subscriber().on_next(true);
+          // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
+          // So that's okay for "touched".
+          // TODO What about gradual tempo changes?
+          masterTempoTouchedSubject_.get_subscriber().on_next(true);
         }
-      } else if (call == CSURF_EXT_SETSENDPAN) {
-        trackSendPanChangedSubject_.get_subscriber().on_next(trackSend);
-        // Send pan touch event only if not automated
-        if (!trackParameterIsAutomated(track, "Send Pan")) {
-          trackSendPanTouchedSubject_.get_subscriber().on_next(trackSend);
-        }
+        return 0;
       }
-      return 0;
-    }
-    case CSURF_EXT_SETFOCUSEDFX: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
-    case CSURF_EXT_SETFXOPEN: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
-    case CSURF_EXT_SETFXCHANGE: {
-      const auto mediaTrack = (MediaTrack*) parm1;
-      if (mediaTrack) {
-        detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
-      }
-      return 0;
-    }
-    case CSURF_EXT_SETLASTTOUCHEDFX: {
-      fxHasBeenTouchedJustAMomentAgo_ = true;
-      return 0;
-    }
-    case CSURF_EXT_SETBPMANDPLAYRATE: {
-      if (parm1) {
-        const double bpm = *(double*) parm1;
-        masterTempoChangedSubject_.get_subscriber().on_next(true);
-        // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
-        // So that's okay for "touched".
-        // TODO What about gradual tempo changes?
-        masterTempoTouchedSubject_.get_subscriber().on_next(true);
-      }
-      return 0;
-    }
-    default:
-      return 0;
+      default:return 0;
     }
 
   }
@@ -454,19 +449,19 @@ namespace reaplus {
     }
   }
 
-  rx::observable <Track> HelperControlSurface::trackRemoved() const {
+  rx::observable<Track> HelperControlSurface::trackRemoved() const {
     return trackRemovedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackAdded() const {
+  rx::observable<Track> HelperControlSurface::trackAdded() const {
     return trackAddedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackVolumeChanged() const {
+  rx::observable<Track> HelperControlSurface::trackVolumeChanged() const {
     return trackVolumeChangedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackPanChanged() const {
+  rx::observable<Track> HelperControlSurface::trackPanChanged() const {
     return trackPanChangedSubject_.get_observable();
   }
 
@@ -478,7 +473,7 @@ namespace reaplus {
     return trackInputChangedSubject_.get_observable();
   }
 
-  rx::observable <TrackSend> HelperControlSurface::trackSendVolumeChanged() const {
+  rx::observable<TrackSend> HelperControlSurface::trackSendVolumeChanged() const {
     return trackSendVolumeChangedSubject_.get_observable();
   }
 
@@ -498,7 +493,7 @@ namespace reaplus {
     HelperControlSurface::instance();
   }
 
-  rx::observable <Track> HelperControlSurface::fxReordered() const {
+  rx::observable<Track> HelperControlSurface::fxReordered() const {
     return fxReorderedSubject_.get_observable();
   }
 
@@ -506,8 +501,10 @@ namespace reaplus {
     if (track.isAvailable()) {
       MediaTrack* mediaTrack = track.mediaTrack();
       auto& fxChainPair = fxChainPairByMediaTrack_[mediaTrack];
-      const bool addedOrRemovedOutputFx = detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false, notifyListenersAboutChanges);
-      const bool addedOrRemovedInputFx = detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true, notifyListenersAboutChanges);
+      const bool addedOrRemovedOutputFx =
+          detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false, notifyListenersAboutChanges);
+      const bool addedOrRemovedInputFx =
+          detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true, notifyListenersAboutChanges);
       if (notifyListenersAboutChanges && !addedOrRemovedInputFx && !addedOrRemovedOutputFx) {
         fxReorderedSubject_.get_subscriber().on_next(track);
       }
@@ -538,7 +535,10 @@ namespace reaplus {
     bool dummy = false;
   }
 
-  bool HelperControlSurface::detectFxChangesOnTrack(Track track, set<string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
+  bool HelperControlSurface::detectFxChangesOnTrack(Track track,
+      set<string>& oldFxGuids,
+      bool isInputFx,
+      bool notifyListenersAboutChanges) {
     const int oldFxCount = (int) oldFxGuids.size();
     const int newFxCount = (isInputFx ? track.inputFxChain() : track.normalFxChain()).fxCount();
     if (newFxCount < oldFxCount) {
@@ -553,8 +553,10 @@ namespace reaplus {
     }
   }
 
-
-  void HelperControlSurface::removeInvalidFx(Track track, std::set<string>& oldFxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
+  void HelperControlSurface::removeInvalidFx(Track track,
+      std::set<string>& oldFxGuids,
+      bool isInputFx,
+      bool notifyListenersAboutChanges) {
     const auto newFxGuids = fxGuidsOnTrack(track, isInputFx);
     for (auto it = oldFxGuids.begin(); it != oldFxGuids.end();) {
       const string oldFxGuid = *it;
@@ -570,7 +572,10 @@ namespace reaplus {
     }
   }
 
-  void HelperControlSurface::addMissingFx(Track track, std::set<string>& fxGuids, bool isInputFx, bool notifyListenersAboutChanges) {
+  void HelperControlSurface::addMissingFx(Track track,
+      std::set<string>& fxGuids,
+      bool isInputFx,
+      bool notifyListenersAboutChanges) {
     const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
     fxChain.fxs().subscribe([this, &fxGuids, notifyListenersAboutChanges](Fx fx) {
       bool wasInserted = fxGuids.insert(fx.guid()).second;
@@ -589,15 +594,15 @@ namespace reaplus {
     return fxGuids;
   }
 
-  rx::observable <Fx> HelperControlSurface::fxAdded() const {
+  rx::observable<Fx> HelperControlSurface::fxAdded() const {
     return fxAddedSubject_.get_observable();
   }
 
-  rx::observable <Fx> HelperControlSurface::fxRemoved() const {
+  rx::observable<Fx> HelperControlSurface::fxRemoved() const {
     return fxRemovedSubject_.get_observable();
   }
 
-  rx::observable <Project> HelperControlSurface::tracksReordered() const {
+  rx::observable<Project> HelperControlSurface::tracksReordered() const {
     return tracksReorderedSubject_.get_observable();
   }
 
@@ -702,24 +707,24 @@ namespace reaplus {
         }));
   }
 
-  rx::observable <FxParameter> HelperControlSurface::fxParameterTouched() const {
+  rx::observable<FxParameter> HelperControlSurface::fxParameterTouched() const {
     return fxParameterTouchedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackVolumeTouched() const {
+  rx::observable<Track> HelperControlSurface::trackVolumeTouched() const {
     return trackVolumeTouchedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackPanTouched() const {
+  rx::observable<Track> HelperControlSurface::trackPanTouched() const {
     return trackPanTouchedSubject_.get_observable();
   }
 
-  rx::observable <Track> HelperControlSurface::trackArmTouched() const {
+  rx::observable<Track> HelperControlSurface::trackArmTouched() const {
     // So far there is no automation envelope for track arm, so touched = changed
     return trackArmChanged();
   }
 
-  rx::observable <TrackSend> HelperControlSurface::trackSendVolumeTouched() const {
+  rx::observable<TrackSend> HelperControlSurface::trackSendVolumeTouched() const {
     return trackSendVolumeTouchedSubject_.get_observable();
   }
 
@@ -728,14 +733,14 @@ namespace reaplus {
       // There's at least one automation lane for this parameter
       auto automationMode = track.effectiveAutomationMode();
       switch (automationMode) {
-      case AutomationMode::Bypass:
-      case AutomationMode::TrimRead:
-      case AutomationMode::Write:
-        // Is not automated
-        return false;
-      default:
-        // Is automated
-        return true;
+        case AutomationMode::Bypass:
+        case AutomationMode::TrimRead:
+        case AutomationMode::Write:
+          // Is not automated
+          return false;
+        default:
+          // Is automated
+          return true;
       }
     } else {
       return false;

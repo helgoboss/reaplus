@@ -15,7 +15,7 @@ namespace reaplus {
     Toggle
   };
 
-  class Action: public Parameter {
+  class Action : public Parameter {
     friend class Section;
     friend class Reaper;
   private:

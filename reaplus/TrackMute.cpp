@@ -15,7 +15,6 @@ namespace reaplus {
     return ParameterType::TrackMute;
   }
 
-
   bool TrackMute::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackMute&>(other);
     return track_ == o.track_;
@@ -24,8 +23,6 @@ namespace reaplus {
   unique_ptr<Parameter> TrackMute::clone() const {
     return unique_ptr<TrackMute>(new TrackMute(*this));
   }
-
-
 
 }
 

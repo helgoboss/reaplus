@@ -1,7 +1,7 @@
 #pragma once
 
 namespace reaplus {
-  enum class AutomationMode: int {
+  enum class AutomationMode : int {
     NoOverride = -1,
     TrimRead = 0,
     Read = 1,

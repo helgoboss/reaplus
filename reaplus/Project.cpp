@@ -14,9 +14,8 @@ using std::unique_ptr;
 using rxcpp::observable;
 using boost::optional;
 
-
 namespace reaplus {
-  Project::Project(ReaProject* reaProject): reaProject_(reaProject) {
+  Project::Project(ReaProject* reaProject) : reaProject_(reaProject) {
   }
 
   observable<Track> Project::tracks() const {
@@ -172,7 +171,6 @@ namespace reaplus {
   bool Project::isAvailable() const {
     return reaper::ValidatePtr2(nullptr, reaProject_, "ReaProject*");
   }
-
 
   void Project::undoable(const std::string& label, std::function<void(void)> command) {
     if (reaper::GetCurrentProjectInLoadSave() == nullptr) {

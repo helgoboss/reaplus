@@ -15,7 +15,6 @@ namespace reaplus {
     return ParameterType::TrackArm;
   }
 
-
   bool TrackArm::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackArm&>(other);
     return track_ == o.track_;
@@ -24,8 +23,6 @@ namespace reaplus {
   unique_ptr<Parameter> TrackArm::clone() const {
     return unique_ptr<TrackArm>(new TrackArm(*this));
   }
-
-
 
 }
 

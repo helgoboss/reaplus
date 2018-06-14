@@ -11,7 +11,7 @@ namespace reaplus {
     Continuous
   };
 
-  class FxParameter: public TrackParameter {
+  class FxParameter : public TrackParameter {
     friend class Fx;
   private:
     Fx fx_;

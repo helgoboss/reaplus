@@ -46,8 +46,11 @@ namespace reaplus {
   optional<ChunkRegion> ChunkRegion::findFirstTagNamed(size_t relativeSearchStartPos, const string& tagName) const {
     if (isValid()) {
       const string tagOpenerWithNewLine = string("\n<") + tagName;
-      const size_t tagOpenerWithNewLinePos = findFollowedByOneOf(tagOpenerWithNewLine, string(" \n"),
-          relativeSearchStartPos);
+      const size_t tagOpenerWithNewLinePos = findFollowedByOneOf(
+          tagOpenerWithNewLine,
+          string(" \n"),
+          relativeSearchStartPos
+      );
       if (tagOpenerWithNewLinePos == string::npos) {
         return none;
       } else {
@@ -64,8 +67,8 @@ namespace reaplus {
         return parseTagStartingFrom(relativeSearchStartPos);
       } else {
         const string tagOpenerWithNewLine = string("\n<");
-        const size_t superRelativeTagOpenerWithNewLinePos = content().substr(relativeSearchStartPos).find(
-            tagOpenerWithNewLine);
+        const size_t superRelativeTagOpenerWithNewLinePos =
+            content().substr(relativeSearchStartPos).find(tagOpenerWithNewLine);
         if (superRelativeTagOpenerWithNewLinePos == string::npos) {
           return none;
         } else {
@@ -475,7 +478,7 @@ namespace reaplus {
   }
 
   bool ChunkRegion::isValid() const {
-    return length_ > 0 && startPos_ + length_ <= parentChunk_.content()->length();  
+    return length_ > 0 && startPos_ + length_ <= parentChunk_.content()->length();
   }
 
   optional<ChunkRegion> ChunkRegion::findFirstString(const string& needle) const {
@@ -521,7 +524,7 @@ namespace reaplus {
 
   bool ChunkRegion::endsWith(const string& needle) const {
     if (isValid()) {
-        return content().substr(content().length() - needle.length()) == needle;
+      return content().substr(content().length() - needle.length()) == needle;
     } else {
       return false;
     }

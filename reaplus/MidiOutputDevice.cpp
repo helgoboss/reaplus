@@ -2,7 +2,6 @@
 #include <reaplus/utility.h>
 #include <reaper_plugin_functions.h>
 
-
 namespace reaplus {
   MidiOutputDevice::MidiOutputDevice(int id) : id_(id) {
   }
@@ -20,8 +19,8 @@ namespace reaplus {
   bool MidiOutputDevice::isAvailable() const {
     return reaper::GetMIDIOutputName(id_, nullptr, 0);
   }
-  
-  void MidiOutputDevice::send(const MidiMessage &message) const {
+
+  void MidiOutputDevice::send(const MidiMessage& message) const {
     if (auto midiOutput = load()) {
       midiOutput->Send(message.statusByte(), message.dataByte1(), message.dataByte2(), message.frameOffset());
     }

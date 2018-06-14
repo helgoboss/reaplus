@@ -15,7 +15,6 @@ namespace reaplus {
     return ParameterType::TrackPan;
   }
 
-
   bool TrackPan::equals(const Parameter& other) const {
     auto& o = static_cast<const TrackPan&>(other);
     return track_ == o.track_;
@@ -24,8 +23,6 @@ namespace reaplus {
   unique_ptr<Parameter> TrackPan::clone() const {
     return unique_ptr<TrackPan>(new TrackPan(*this));
   }
-
-
 
 }
 

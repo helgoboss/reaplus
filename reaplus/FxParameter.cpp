@@ -40,7 +40,7 @@ namespace reaplus {
   std::string FxParameter::formatNormalizedValue(double normalizedValue) const {
     return reaplus::toString(256, [this, normalizedValue](char* buffer, int maxSize) {
       reaper::TrackFX_FormatParamValueNormalized(fx_.track().mediaTrack(), fx_.queryIndex(), index_, normalizedValue,
-        buffer, maxSize);
+          buffer, maxSize);
     });
   }
 
@@ -87,7 +87,6 @@ namespace reaplus {
     }
   }
 
-
   bool operator==(const FxParameter& lhs, const FxParameter& rhs) {
     return lhs.fx_ == rhs.fx_ && lhs.index_ == rhs.index_;
   }
@@ -113,11 +112,9 @@ namespace reaplus {
     return *this == o;
   }
 
-
   Track FxParameter::track() const {
     return fx_.track();
   }
-
 
   unique_ptr<Parameter> FxParameter::clone() const {
     return unique_ptr<FxParameter>(new FxParameter(*this));
@@ -126,6 +123,5 @@ namespace reaplus {
   bool FxParameter::isAvailable() const {
     return fx_.isAvailable() && index_ < fx_.parameterCount();
   }
-
 
 }

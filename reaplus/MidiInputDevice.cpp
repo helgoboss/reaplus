@@ -2,7 +2,6 @@
 #include <reaplus/utility.h>
 #include <reaper_plugin_functions.h>
 
-
 namespace reaplus {
   MidiInputDevice::MidiInputDevice(int id) : id_(id) {
   }
