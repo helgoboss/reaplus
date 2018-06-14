@@ -15,7 +15,7 @@ private:
     // don't allow this instance to copy/move since it owns current_thread queue
     // for the thread it is constructed on.
     relaxed_run_loop(const this_type&);
-    relaxed_run_loop(this_type&&);
+    relaxed_run_loop(const this_type&&);
 
     typedef scheduler::clock_type clock_type;
     typedef detail::schedulable_queue<detail::time_schedulable<scheduler_base::clock_type::time_point>> queue_type;
@@ -51,11 +51,11 @@ public:
     clock_type::time_point now() const {
         return clock_type::now();
     }
-    
+
     composite_subscription get_subscription() const {
         return state->lifetime;
     }
-    
+
     bool empty() const {
         return state->q.empty();
     }

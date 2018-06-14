@@ -52,7 +52,7 @@ namespace reaplus {
     return RegisteredAction(commandIndex);
   }
 
-  bool Reaper::staticHookCommand(int commandIndex, int flag) {
+  bool Reaper::staticHookCommand(int commandIndex, [[maybe_unused]] int flag) {
     auto& commandByIndex = Reaper::instance().commandByIndex_;
     if (commandByIndex.count(commandIndex)) {
       auto& command = commandByIndex.at(commandIndex);
