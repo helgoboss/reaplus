@@ -53,10 +53,10 @@ namespace reaplus {
 
   bool operator==(const TrackSend& lhs, const TrackSend& rhs) {
     if (lhs.sourceTrack_ == rhs.sourceTrack_) {
-      if (lhs.isIndexBased() && rhs.isIndexBased()) {
-        return *lhs.index_ == *rhs.index_;
-      } else if (!lhs.isIndexBased() && !rhs.isIndexBased()) {
+      if (lhs.targetTrack_ && rhs.targetTrack_) {
         return *lhs.targetTrack_ == *rhs.targetTrack_;
+      } else if (lhs.index_ && rhs.index_) {
+        return *lhs.index_ == *rhs.index_;
       } else {
         return false;
       }

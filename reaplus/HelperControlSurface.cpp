@@ -290,7 +290,8 @@ namespace reaplus {
   }
 
   rxcpp::observable<Project> HelperControlSurface::projectSwitched() const {
-    return activeProjectBehavior_.get_observable();
+    // A behavior always sends the current value on subscribe. We are not interested in that, not at all!
+    return activeProjectBehavior_.get_observable().skip(1);
   }
 
   void HelperControlSurface::SetTrackListChange() {

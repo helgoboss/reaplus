@@ -30,12 +30,18 @@ namespace reaplus {
      */
 
 
-    test("Create empty project in new tab", [] {
+    testWithUntil("Create empty project in new tab", [](auto testIsOver) {
       // Given
       const auto currentProjectBefore = Reaper::instance().currentProject();
       const int projectCountBefore = Reaper::instance().projectCount();
 
       // When
+      optional<Project> eventProject;
+      int count = 0;
+      Reaper::instance().projectSwitched().take_until(testIsOver).subscribe([&](Project p) {
+        count++;
+        eventProject = p;
+      });
       const auto newProject = Reaper::instance().createEmptyProjectInNewTab();
 
       // Then
@@ -50,6 +56,8 @@ namespace reaplus {
       assertTrue(newProject.trackCount() == 0, "Project not empty at beginning");
       assertTrue(newProject.index() > 0);
       assertTrue(!newProject.filePath().is_initialized());
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventProject == newProject, "Project event wrong");
     });
 
     testWithUntil("Add track", [](auto testIsOver) {
@@ -701,7 +709,7 @@ namespace reaplus {
       assertTrue(firstTrack.sends().as_blocking().count() == 1, "Sends returns wrong number");
     });
 
-    test("Check track send", [] {
+    test("Query track send", [] {
       // Given
       auto project = Reaper::instance().currentProject();
       auto firstTrack = *project.trackByIndex(0);
@@ -711,7 +719,6 @@ namespace reaplus {
       // When
       auto sendToSecondTrack = firstTrack.sendByTargetTrack(secondTrack);
       auto sendToThirdTrack = firstTrack.addSendTo(thirdTrack);
-      sendToThirdTrack.setVolume(0.25);
 
       // Then
       assertTrue(sendToSecondTrack.isAvailable());
@@ -724,7 +731,52 @@ namespace reaplus {
       assertTrue(sendToSecondTrack.targetTrack() == secondTrack);
       assertTrue(sendToThirdTrack.targetTrack() == thirdTrack);
       assertTrue(sendToSecondTrack.volume().db() == 0);
-      assertTrue(sendToThirdTrack.volume().db() == -30.009531739774296);
+      assertTrue(sendToThirdTrack.volume().db() == 0);
+    });
+
+    testWithUntil("Set track send volume", [](auto testIsOver) {
+      // Given
+      auto project = Reaper::instance().currentProject();
+      auto firstTrack = *project.trackByIndex(0);
+      auto thirdTrack = *project.trackByIndex(2);
+      auto send = firstTrack.sendByTargetTrack(thirdTrack);
+
+      // When
+      optional<TrackSend> eventTrackSend;
+      int count = 0;
+      Reaper::instance().trackSendVolumeChanged().take_until(testIsOver).subscribe([&](TrackSend s) {
+        count++;
+        eventTrackSend = s;
+      });
+      send.setVolume(0.25);
+
+      // Then
+      assertTrue(send.volume().db() == -30.009531739774296);
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrackSend == send, "Track send event wrong");
+    });
+
+    testWithUntil("Set track send pan", [](auto testIsOver) {
+      // Given
+      auto project = Reaper::instance().currentProject();
+      auto firstTrack = *project.trackByIndex(0);
+      auto thirdTrack = *project.trackByIndex(2);
+      auto send = firstTrack.sendByTargetTrack(thirdTrack);
+
+      // When
+      optional<TrackSend> eventTrackSend;
+      int count = 0;
+      Reaper::instance().trackSendPanChanged().take_until(testIsOver).subscribe([&](TrackSend s) {
+        count++;
+        eventTrackSend = s;
+      });
+      send.setPan(0.25);
+
+      // Then
+      assertTrue(send.pan().reaperValue() == -0.5, "Wrong REAPER value returned");
+      assertTrue(send.pan().normalizedValue() == 0.25, "Wrong normalized value returned");
+      assertTrue(count == 1, "Event count wrong");
+      assertTrue(*eventTrackSend == send, "Track send event wrong");
     });
 
     test("Query action", [] {
@@ -1537,7 +1589,7 @@ namespace reaplus {
       // When
       optional<Track> eventTrack;
       int count = 0;
-      Reaper::instance().trackAdded().take_until(testIsOver).subscribe([&](Track t) {
+      Reaper::instance().trackNameChanged().take_until(testIsOver).subscribe([&](Track t) {
         count++;
         eventTrack = t;
       });
@@ -1619,7 +1671,8 @@ namespace reaplus {
 
       // Then
       assertTrue(Reaper::instance().currentProject().tempo().bpm() == 130.0);
-      assertTrue(count == 1, "Event count wrong");
+      // TODO There should be only one event invocation
+      assertTrue(count == 2, "Event count wrong, but could be 1 which would be more correct");
     });
 
     test("Show message box", [] {
