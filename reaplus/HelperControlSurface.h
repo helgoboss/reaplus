@@ -15,6 +15,7 @@
 #include "FxParameter.h"
 #include "Parameter.h"
 #include "Track.h"
+#include "concurrentqueue.h"
 
 namespace reaplus {
 
@@ -97,6 +98,8 @@ namespace reaplus {
         rxcpp::observe_on_one_worker(rxcpp::schedulers::make_relaxed_run_loop(mainThreadRunLoop_));
     rxcpp::observe_on_one_worker::coordinator_type
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
+    moodycamel::ConcurrentQueue<std::function<void(void)>> fastCommandQueue_;
+    std::vector<std::function<void(void)>> fastCommandBuffer_;
 
   public:
     ~HelperControlSurface() override;
@@ -202,6 +205,8 @@ namespace reaplus {
     rxcpp::observable<bool> masterTempoTouched() const;
 
     rxcpp::composite_subscription enqueueCommand(std::function<void(void)> command);
+
+    void enqueueCommandFast(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 

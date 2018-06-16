@@ -506,6 +506,9 @@ namespace reaplus {
   rxcpp::composite_subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
     return HelperControlSurface::instance().enqueueCommand(std::move(command));
   }
+  void Reaper::executeLaterInMainThreadFast(std::function<void(void)> command) {
+    HelperControlSurface::instance().enqueueCommandFast(std::move(command));
+  }
 
   rxcpp::composite_subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
     if (std::this_thread::get_id() == idOfMainThread_) {

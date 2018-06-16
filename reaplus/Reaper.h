@@ -245,6 +245,8 @@ namespace reaplus {
 
     rxcpp::composite_subscription executeLaterInMainThread(std::function<void(void)> command);
 
+    void executeLaterInMainThreadFast(std::function<void(void)> command);
+
     rxcpp::composite_subscription executeWhenInMainThread(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
