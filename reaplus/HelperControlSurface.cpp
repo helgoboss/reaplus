@@ -24,17 +24,12 @@ using std::string;
 using std::set;
 using std::unique_ptr;
 
-namespace {
-  constexpr auto FAST_COMMAND_BUFFER_SIZE = 100;
-}
-
 namespace reaplus {
   std::unique_ptr<HelperControlSurface> HelperControlSurface::INSTANCE = nullptr;
 
   HelperControlSurface::HelperControlSurface() :
       activeProjectBehavior_(Reaper::instance().currentProject()),
-      fastCommandQueue_(1000),
-      fastCommandBuffer_(FAST_COMMAND_BUFFER_SIZE) {
+      fastCommandQueue_(1000) {
     reaper::plugin_register("csurf_inst", this);
     // REAPER doesn't seem to call this automatically when the surface is registered. In our case it's important
     // to call this not at the first change of something (e.g. arm button pressed) but immediately. Because it

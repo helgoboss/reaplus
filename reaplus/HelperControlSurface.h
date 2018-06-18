@@ -5,6 +5,7 @@
 #include <set>
 #include <memory>
 #include <vector>
+#include <array>
 #include <string>
 #include <mutex>
 #include "reaper_plugin.h"
@@ -60,6 +61,7 @@ namespace reaplus {
     };
 
     static std::unique_ptr<HelperControlSurface> INSTANCE;
+    static constexpr int FAST_COMMAND_BUFFER_SIZE = 100;
     int numTrackSetChangesLeftToBePropagated_ = 0;
     rxcpp::subjects::subject<FxParameter> fxParameterValueChangedSubject_;
     rxcpp::subjects::subject<FxParameter> fxParameterTouchedSubject_;
@@ -99,7 +101,7 @@ namespace reaplus {
     rxcpp::observe_on_one_worker::coordinator_type
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
     moodycamel::ConcurrentQueue<std::function<void(void)>> fastCommandQueue_;
-    std::vector<std::function<void(void)>> fastCommandBuffer_;
+    std::array<std::function<void(void)>, FAST_COMMAND_BUFFER_SIZE> fastCommandBuffer_;
 
   public:
     ~HelperControlSurface() override;
