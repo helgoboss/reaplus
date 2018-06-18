@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <array>
 #include <reaper_plugin.h>
 
 namespace reaplus {
@@ -17,8 +17,9 @@ namespace reaplus {
   class MidiMessage {
     friend class Reaper;
   private:
+    static constexpr int MAX_NUM_BYTES = 3;
     int frameOffset_;
-    std::vector<unsigned char> bytes_;
+    std::array<unsigned char, MAX_NUM_BYTES> bytes_;
   public:
     static MidiMessage noteOn(int channel, int noteNumber, int velocity, int frameOffset);
     static MidiMessage noteOff(int channel, int noteNumber, int velocity, int frameOffset);
@@ -27,6 +28,7 @@ namespace reaplus {
     static MidiMessage channelAftertouch(int channel, int aftertouchValue, int frameOffset);
     static MidiMessage polyphonicAftertouch(int channel, int noteNumber, int aftertouchValue, int frameOffset);
     static MidiMessage programChange(int channel, int programIndex, int frameOffset);
+    static MidiMessage empty();
     static inline MidiMessage simple(MidiMessageType type, int channel, int data1, int data2, int frameOffset);
 //    static MidiMessage rpn(int channel, int rpnNumber, int rpnValue, int frameOffset);
 //    static MidiMessage nrpn(int channel, int nrpnNumber, int nrpnValue, int frameOffset);
@@ -43,6 +45,7 @@ namespace reaplus {
     bool isNoteOn() const;
     bool isNoteOff() const;
     bool isNote() const;
+    bool isEmpty() const;
     unsigned char note() const;
     unsigned char velocity() const;
     unsigned char channel() const;

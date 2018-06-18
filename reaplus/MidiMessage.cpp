@@ -1,3 +1,4 @@
+#include <reaper_plugin.h>
 #include "MidiMessage.h"
 
 namespace reaplus {
@@ -15,16 +16,14 @@ namespace reaplus {
 
   MidiMessage::MidiMessage(unsigned char statusByte, unsigned char dataByte1, unsigned char dataByte2,
       int frameOffset) : frameOffset_(frameOffset) {
-    bytes_.reserve((size_t) 3);
-    bytes_.push_back(statusByte);
-    bytes_.push_back(dataByte1);
-    bytes_.push_back(dataByte2);
+    bytes_[0] = statusByte;
+    bytes_[1] = dataByte1;
+    bytes_[2] = dataByte2;
   }
 
   MidiMessage::MidiMessage(const MIDI_event_t& event) : frameOffset_(event.frame_offset) {
-    bytes_.reserve((size_t) event.size);
-    for (int i = 0; i < event.size; i++) {
-      bytes_.push_back(event.midi_message[i]);
+    for (int i = 0; i < MAX_NUM_BYTES; i++) {
+      bytes_[i] = i < event.size ? event.midi_message[i] : static_cast<unsigned char>(0);
     }
   }
 
@@ -82,6 +81,12 @@ namespace reaplus {
         static_cast<unsigned char>(data2),
         frameOffset
     );
+  }
+  MidiMessage MidiMessage::empty() {
+    return MidiMessage(0, 0, 0, 0);
+  }
+  bool MidiMessage::isEmpty() const {
+    return statusByte() == 0;
   }
 
   MidiMessage MidiMessage::noteOn(int channel, int noteNumber, int velocity, int frameOffset) {
