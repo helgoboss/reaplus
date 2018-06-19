@@ -243,6 +243,8 @@ namespace reaplus {
 
     rxcpp::observable<bool> masterTempoTouched() const;
 
+    rxcpp::observable<bool> mainThreadIdle() const;
+
     rxcpp::composite_subscription executeLaterInMainThread(std::function<void(void)> command);
 
     void executeLaterInMainThreadFast(std::function<void(void)> command);

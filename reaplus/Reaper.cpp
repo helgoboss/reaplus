@@ -502,6 +502,9 @@ namespace reaplus {
   rxcpp::observable<bool> Reaper::masterTempoTouched() const {
     return HelperControlSurface::instance().masterTempoTouched();
   }
+  rxcpp::observable<bool> Reaper::mainThreadIdle() const {
+    return HelperControlSurface::instance().mainThreadIdle();
+  }
 
   rxcpp::composite_subscription Reaper::executeLaterInMainThread(std::function<void(void)> command) {
     return HelperControlSurface::instance().enqueueCommand(std::move(command));

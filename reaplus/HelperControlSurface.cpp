@@ -74,12 +74,13 @@ namespace reaplus {
   }
 
   void HelperControlSurface::Run() {
+    // Invoke custom idle code
+    mainThreadIdleSubject_.get_subscriber().on_next(true);
     // Process items from fast queue
     const auto count = fastCommandQueue_.try_dequeue_bulk(fastCommandBuffer_.begin(), FAST_COMMAND_BUFFER_SIZE);
     for (auto i = 0; i < count; i++) {
       fastCommandBuffer_.at(i)();
     }
-
     // Process items from slow queue
     const auto fixedNow = mainThreadRunLoop_.now();
     const auto maxExecutionTime = std::chrono::milliseconds(50);
@@ -718,6 +719,9 @@ namespace reaplus {
 
   rx::observable<TrackSend> HelperControlSurface::trackSendVolumeTouched() const {
     return trackSendVolumeTouchedSubject_.get_observable();
+  }
+  rxcpp::observable<bool> HelperControlSurface::mainThreadIdle() const {
+    return mainThreadIdleSubject_.get_observable();
   }
 
   bool HelperControlSurface::trackParameterIsAutomated(Track track, string parameterName) const {
