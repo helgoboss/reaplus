@@ -7,6 +7,7 @@
 #include <rxcpp/rx.hpp>
 #include <boost/optional.hpp>
 #include "Tempo.h"
+#include "Playrate.h"
 
 namespace reaplus {
   class Track;
@@ -44,6 +45,8 @@ namespace reaplus {
     boost::optional<std::string> filePath() const;
     Tempo tempo() const;
     void setTempo(double bpm, bool wantUndo);
+    Playrate playrate() const;
+    void setPlayrate(double playrate);
     void markAsDirty();
     void undoable(const std::string& label, std::function<void(void)> command);
     void undo();

@@ -25,8 +25,8 @@ namespace reaplus {
 
   std::string Tempo::toStringWithoutUnit() const {
     // @closureIsSafe
-    return helgoboss::toString(8, [this](char* buffer, int maxSize) {
-      sprintf(buffer, "%.2f", bpm_);
+    return helgoboss::toString(10, [this](char* buffer, int maxSize) {
+      sprintf(buffer, "%.4f", bpm_);
     });
   }
 }

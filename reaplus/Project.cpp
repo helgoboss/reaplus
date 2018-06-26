@@ -219,5 +219,14 @@ namespace reaplus {
     reaper::SetCurrentBPM(reaProject_, bpm, wantUndo);
   }
 
+  Playrate Project::playrate() const {
+    complainIfNotAvailable();
+    return Playrate(reaper::Master_GetPlayRate(reaProject_));
+  }
+
+  void Project::setPlayrate(double playrate) {
+    // FIXME This is not project-specific
+    reaper::CSurf_OnPlayRateChange(playrate);
+  }
 }
 

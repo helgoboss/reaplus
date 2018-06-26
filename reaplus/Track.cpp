@@ -1,5 +1,6 @@
 #include <memory>
-#include <utility> #include "Track.h"
+#include <utility>
+#include "Track.h"
 #include "Fx.h"
 #include "TrackSend.h"
 #include "HelperControlSurface.h"

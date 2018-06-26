@@ -91,6 +91,8 @@ namespace reaplus {
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
     rxcpp::subjects::subject<bool> masterTempoChangedSubject_;
     rxcpp::subjects::subject<bool> masterTempoTouchedSubject_;
+    rxcpp::subjects::subject<bool> masterPlayrateChangedSubject_;
+    rxcpp::subjects::subject<bool> masterPlayrateTouchedSubject_;
     rxcpp::subjects::subject<bool> mainThreadIdleSubject_;
     rxcpp::subjects::behavior<Project> activeProjectBehavior_;
     using TrackDataMap = std::unordered_map<MediaTrack*, TrackData>;
@@ -206,6 +208,10 @@ namespace reaplus {
     rxcpp::observable<bool> masterTempoChanged() const;
 
     rxcpp::observable<bool> masterTempoTouched() const;
+
+    rxcpp::observable<bool> masterPlayrateChanged() const;
+
+    rxcpp::observable<bool> masterPlayrateTouched() const;
 
     rxcpp::observable<bool> mainThreadIdle() const;
 

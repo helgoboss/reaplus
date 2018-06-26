@@ -502,6 +502,15 @@ namespace reaplus {
   rxcpp::observable<bool> Reaper::masterTempoTouched() const {
     return HelperControlSurface::instance().masterTempoTouched();
   }
+
+  rxcpp::observable<bool> Reaper::masterPlayrateChanged() const {
+    return HelperControlSurface::instance().masterPlayrateChanged();
+  }
+
+  rxcpp::observable<bool> Reaper::masterPlayrateTouched() const {
+    return HelperControlSurface::instance().masterPlayrateTouched();
+  }
+
   rxcpp::observable<bool> Reaper::mainThreadIdle() const {
     return HelperControlSurface::instance().mainThreadIdle();
   }

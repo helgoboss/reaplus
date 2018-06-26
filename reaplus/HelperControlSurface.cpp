@@ -6,6 +6,7 @@
 #include "TrackPan.h"
 #include "TrackSendVolume.h"
 #include "MasterTempo.h"
+#include "MasterPlayrate.h"
 #include "TrackArm.h"
 #include "TrackMute.h"
 #include "TrackSolo.h"
@@ -254,6 +255,11 @@ namespace reaplus {
           // TODO What about gradual tempo changes?
           masterTempoTouchedSubject_.get_subscriber().on_next(true);
         }
+        if (parm2) {
+          masterPlayrateChangedSubject_.get_subscriber().on_next(true);
+          // FIXME What about playrate automation?
+          masterPlayrateTouchedSubject_.get_subscriber().on_next(true);
+        }
         return 0;
       }
       default:return 0;
@@ -267,6 +273,14 @@ namespace reaplus {
 
   rxcpp::observable<bool> HelperControlSurface::masterTempoTouched() const {
     return masterTempoTouchedSubject_.get_observable();
+  }
+
+  rxcpp::observable<bool> HelperControlSurface::masterPlayrateChanged() const {
+    return masterPlayrateChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<bool> HelperControlSurface::masterPlayrateTouched() const {
+    return masterPlayrateTouchedSubject_.get_observable();
   }
 
   rxcpp::observable<Track> HelperControlSurface::trackInputMonitoringChanged() const {
@@ -659,6 +673,9 @@ namespace reaplus {
         .merge(masterTempoChanged().map([](bool) -> Parameter* {
           return new MasterTempo();
         }))
+        .merge(masterPlayrateChanged().map([](bool) -> Parameter* {
+          return new MasterPlayrate();
+        }))
         .merge(trackSendPanChanged().map([this](TrackSend trackSend) -> Parameter* {
           return new TrackSendPan(trackSend);
         }))
@@ -691,6 +708,9 @@ namespace reaplus {
         }))
         .merge(masterTempoTouched().map([](bool) -> Parameter* {
           return new MasterTempo();
+        }))
+        .merge(masterPlayrateTouched().map([](bool) -> Parameter* {
+          return new MasterPlayrate();
         }))
         .merge(trackSendPanTouched().map([this](TrackSend trackSend) -> Parameter* {
           return new TrackSendPan(trackSend);

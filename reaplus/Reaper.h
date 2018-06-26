@@ -243,6 +243,10 @@ namespace reaplus {
 
     rxcpp::observable<bool> masterTempoTouched() const;
 
+    rxcpp::observable<bool> masterPlayrateChanged() const;
+
+    rxcpp::observable<bool> masterPlayrateTouched() const;
+
     rxcpp::observable<bool> mainThreadIdle() const;
 
     rxcpp::composite_subscription executeLaterInMainThread(std::function<void(void)> command);
