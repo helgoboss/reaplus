@@ -217,6 +217,8 @@ namespace reaplus {
 
     rxcpp::observable<Fx> fxEnabledChanged() const;
 
+    rxcpp::observable<Fx> fxEnabledTouched() const;
+
     rxcpp::observable<Track> fxReordered() const;
 
     rxcpp::observable<Track> trackInputMonitoringChanged() const;

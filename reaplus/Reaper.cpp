@@ -451,6 +451,10 @@ namespace reaplus {
     return HelperControlSurface::instance().fxEnabledChanged();
   }
 
+  rxcpp::observable<Fx> Reaper::fxEnabledTouched() const {
+    return HelperControlSurface::instance().fxEnabledTouched();
+  }
+
   rxcpp::observable<Fx> Reaper::fxRemoved() const {
     return HelperControlSurface::instance().fxRemoved();
   }

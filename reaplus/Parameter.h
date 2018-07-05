@@ -16,7 +16,8 @@ namespace reaplus {
     TrackSolo,
     TrackSendPan,
     MasterTempo,
-    MasterPlayrate
+    MasterPlayrate,
+    FxEnable,
   };
 
   class Parameter {

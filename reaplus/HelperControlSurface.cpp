@@ -12,6 +12,7 @@
 #include "TrackSolo.h"
 #include "TrackSelection.h"
 #include "TrackSendPan.h"
+#include "FxEnable.h"
 #include "reaper_plugin_functions.h"
 #include "utility.h"
 
@@ -154,6 +155,10 @@ namespace reaplus {
 
   rxcpp::observable<Fx> HelperControlSurface::fxEnabledChanged() const {
     return fxEnabledChangedSubject_.get_observable();
+  }
+
+  rxcpp::observable<Fx> HelperControlSurface::fxEnabledTouched() const {
+    return fxEnabledChanged();
   }
 
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
@@ -652,6 +657,9 @@ namespace reaplus {
     return fxParameterValueChanged().map([this](FxParameter fxParam) -> Parameter* {
           return new FxParameter(fxParam);
         })
+        .merge(fxEnabledChanged().map([this](Fx fx) -> Parameter* {
+          return new FxEnable(fx);
+        }))
         .merge(trackVolumeChanged().map([this](Track track) -> Parameter* {
           return new TrackVolume(track);
         }))
@@ -688,6 +696,9 @@ namespace reaplus {
     return fxParameterTouched().map([this](FxParameter fxParam) -> Parameter* {
           return new FxParameter(fxParam);
         })
+        .merge(fxEnabledTouched().map([this](Fx fx) -> Parameter* {
+          return new FxEnable(fx);
+        }))
         .merge(trackVolumeTouched().map([this](Track track) -> Parameter* {
           return new TrackVolume(track);
         }))
