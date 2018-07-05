@@ -18,6 +18,7 @@ namespace reaplus {
     MasterTempo,
     MasterPlayrate,
     FxEnable,
+    FxPreset
   };
 
   class Parameter {

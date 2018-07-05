@@ -60,6 +60,8 @@ namespace reaplus {
     bool presetIsDirty() const;
     std::string presetName() const;
     int presetCount() const;
+    int presetIndex() const;
+    void loadPreset(int presetIndex);
     friend bool operator==(const Fx& lhs, const Fx& rhs);
     friend bool operator!=(const Fx& lhs, const Fx& rhs);
   protected:

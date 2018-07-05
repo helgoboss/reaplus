@@ -1,5 +1,4 @@
 #include "FxEnable.h"
-#include <memory>
 using std::unique_ptr;
 
 namespace reaplus {

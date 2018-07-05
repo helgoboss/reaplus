@@ -132,6 +132,16 @@ namespace reaplus {
     return presetCount;
   }
 
+  int Fx::presetIndex() const {
+    loadIfNecessaryOrComplain();
+    return reaper::TrackFX_GetPresetIndex(track_.mediaTrack(), queryIndex(), nullptr);
+  }
+
+  void Fx::loadPreset(int presetIndex) {
+    loadIfNecessaryOrComplain();
+    reaper::TrackFX_SetPresetByIndex(track_.mediaTrack(), queryIndex(), presetIndex);
+  }
+
   bool reaplus::operator!=(const Fx& lhs, const Fx& rhs) {
     return !(lhs == rhs);
   }
