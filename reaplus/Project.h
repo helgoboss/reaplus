@@ -20,9 +20,10 @@ namespace reaplus {
     int trackCount() const;
     bool isAvailable() const;
     rxcpp::observable<Track> tracks() const;
-    int selectedTrackCount() const;
-    rxcpp::observable<Track> selectedTracks() const;
-    boost::optional<Track> firstSelectedTrack() const;
+    int selectedTrackCount(bool wantMaster = false) const;
+    rxcpp::observable<Track> selectedTracks(bool wantMaster = false) const;
+    boost::optional<Track> firstSelectedTrack(bool wantMaster = false) const;
+    void unselectAllTracks();
     // This returns a non-optional in order to support not-yet-loaded tracks. GUID is a perfectly stable
     // identifier of a track!
     Track trackByGuid(const std::string& guid) const;

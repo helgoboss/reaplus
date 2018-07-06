@@ -115,20 +115,25 @@ namespace reaplus {
     return Track(mediaTrack, reaProject());
   }
 
-  rxcpp::observable<Track> Project::selectedTracks() const {
+  rxcpp::observable<Track> Project::selectedTracks(bool wantMaster) const {
     complainIfNotAvailable();
-    return observable<>::create<Track>([this](subscriber<Track> s) {
+    return observable<>::create<Track>([this, wantMaster](subscriber<Track> s) {
       const int count = selectedTrackCount();
       for (int i = 0; i < count && s.is_subscribed(); i++) {
-        auto mediaTrack = reaper::GetSelectedTrack2(reaProject_, i, false);
+        auto mediaTrack = reaper::GetSelectedTrack2(reaProject_, i, wantMaster);
         s.on_next(Track(mediaTrack, reaProject()));
       }
       s.on_completed();
     });
   }
 
-  boost::optional<Track> Project::firstSelectedTrack() const {
-    const auto mediaTrack = reaper::GetSelectedTrack2(reaProject_, 0, false);
+  void Project::unselectAllTracks() {
+    // TODO No project context
+    reaper::SetOnlyTrackSelected(nullptr);
+  }
+
+  boost::optional<Track> Project::firstSelectedTrack(bool wantMaster) const {
+    const auto mediaTrack = reaper::GetSelectedTrack2(reaProject_, 0, wantMaster);
     if (mediaTrack) {
       return Track(mediaTrack, reaProject_);
     } else {
@@ -136,8 +141,8 @@ namespace reaplus {
     }
   }
 
-  int Project::selectedTrackCount() const {
-    return reaper::CountSelectedTracks2(reaProject_, false);
+  int Project::selectedTrackCount(bool wantMaster) const {
+    return reaper::CountSelectedTracks2(reaProject_, wantMaster);
   }
 
   void Project::removeTrack(Track track) {

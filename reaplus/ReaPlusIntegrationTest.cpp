@@ -425,6 +425,23 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    testWithUntil("Select master track", [](auto testIsOver) {
+      // Given
+      auto project = Reaper::instance().currentProject();
+      auto masterTrack = project.masterTrack();
+
+      // When
+      project.unselectAllTracks();
+      project.masterTrack().select();
+
+      // Then
+      assertTrue(masterTrack.isSelected(), "Master track was not selected");
+      assertTrue(project.selectedTrackCount(true) == 1);
+      assertTrue(project.firstSelectedTrack(true).is_initialized());
+      assertTrue(project.firstSelectedTrack(true)->isMasterTrack());
+      assertTrue(project.selectedTracks(true).as_blocking().count() == 1);
+    });
+
     test("Query track auto arm mode", [] {
       // Given
       auto track = firstTrack();
