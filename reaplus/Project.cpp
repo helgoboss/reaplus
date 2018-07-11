@@ -118,7 +118,7 @@ namespace reaplus {
   rxcpp::observable<Track> Project::selectedTracks(bool wantMaster) const {
     complainIfNotAvailable();
     return observable<>::create<Track>([this, wantMaster](subscriber<Track> s) {
-      const int count = selectedTrackCount();
+      const int count = selectedTrackCount(wantMaster);
       for (int i = 0; i < count && s.is_subscribed(); i++) {
         auto mediaTrack = reaper::GetSelectedTrack2(reaProject_, i, wantMaster);
         s.on_next(Track(mediaTrack, reaProject()));
