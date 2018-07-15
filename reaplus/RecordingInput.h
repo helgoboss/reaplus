@@ -27,6 +27,7 @@ namespace reaplus {
   class MidiRecordingInput : public RecordingInput {
     friend class RecordingInput;
   public:
+    // TODO Rename 'from' to 'of'
     static MidiRecordingInput fromAllDevicesAndChannels();
     static MidiRecordingInput fromAllChannelsOfDevice(int deviceId);
     static MidiRecordingInput fromAllDevicesWithChannel(int channel);
