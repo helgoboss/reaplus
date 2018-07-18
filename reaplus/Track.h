@@ -22,15 +22,18 @@ namespace reaplus {
     Normal,
     NotWhenPlaying
   };
+  // Tiny, not so expensive to copy wrapper around REAPER MediaTrack*.
   class Track {
     friend class Project;
   private:
+    // TODO Do we really need this pointer? Makes copying a tiny bit more expensive than just copying a MediaTrack*.
     mutable ReaProject* reaProject_;
     // Only filled if track loaded.
     mutable MediaTrack* mediaTrack_;
     // Possible states:
     // a) guid, project, !mediaTrack (guid-based and not yet loaded)
     // b) guid, mediaTrack (guid-based and loaded)
+    // TODO This is not super cheap to copy. Do we really need to initialize this eagerly?
     std::string guid_;
   public:
     static int const MAX_CHUNK_SIZE;
