@@ -7,6 +7,7 @@ namespace reaplus {
   public:
     explicit RegisteredAction(int commandIndex);
 
+    // TODO Use RAII
     void unregister();
   };
 }

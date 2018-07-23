@@ -46,8 +46,10 @@ namespace reaplus {
   RegisteredAction Reaper::registerAction(const string& commandId, const string& description,
       function<void()> operation, function<bool()> isOn) {
     const int commandIndex = reaper::plugin_register("command_id", (void*) commandId.c_str());
-    auto pair = commandByIndex_.emplace(commandIndex, Command(commandIndex, description, std::move(operation),
-        std::move(isOn)));
+    auto pair = commandByIndex_.emplace(
+        commandIndex,
+        Command(commandIndex, description, std::move(operation), std::move(isOn))
+    );
     Command& command = pair.first->second;
     command.registerIt();
     return RegisteredAction(commandIndex);
@@ -97,6 +99,10 @@ namespace reaplus {
 
   Reaper::Reaper() {
     idOfMainThread_ = std::this_thread::get_id();
+    projectConfigExtension_.ProcessExtensionLine = &processExtensionLine;
+    projectConfigExtension_.BeginLoadProjectState = &beginLoadProjectState;
+    projectConfigExtension_.SaveExtensionConfig = &saveExtensionConfig;
+    reaper::plugin_register("projectconfig", (void*) &projectConfigExtension_);
     reaper::plugin_register("hookcommand", (void*) &staticHookCommand);
     reaper::plugin_register("toggleaction", (void*) &staticToggleAction);
     reaper::plugin_register("hookpostcommand", (void*) &staticHookPostCommand);
@@ -110,6 +116,7 @@ namespace reaplus {
     reaper::plugin_register("-hookpostcommand", (void*) &staticHookPostCommand);
     reaper::plugin_register("-toggleaction", (void*) &staticToggleAction);
     reaper::plugin_register("-hookcommand", (void*) &staticHookCommand);
+    reaper::plugin_register("-projectconfig", (void*) &projectConfigExtension_);
   }
 
   optional<FxParameter> Reaper::lastTouchedFxParameter() const {
@@ -368,6 +375,37 @@ namespace reaplus {
         }
       }
       reaper.sampleCounter_ += len;
+    }
+  }
+
+  void Reaper::registerProjectConfigExtension(ProjectConfigExtension extension) {
+    projectConfigExtensions_.emplace_back(std::move(extension));
+  }
+
+  bool Reaper::processExtensionLine(const char* line,
+      ProjectStateContext* ctx,
+      bool isUndo,
+      struct project_config_extension_t* reg) {
+    auto& reaper = Reaper::instance();
+    for (ProjectConfigExtension& extension : reaper.projectConfigExtensions_) {
+      if (extension.processExtensionLine(line, ctx, isUndo, reg)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void Reaper::beginLoadProjectState(bool isUndo, struct project_config_extension_t* reg) {
+    auto& reaper = Reaper::instance();
+    for (ProjectConfigExtension& extension : reaper.projectConfigExtensions_) {
+      extension.beginLoadProjectState(isUndo, reg);
+    }
+  }
+
+  void Reaper::saveExtensionConfig(ProjectStateContext* ctx, bool isUndo, struct project_config_extension_t* reg) {
+    auto& reaper = Reaper::instance();
+    for (ProjectConfigExtension& extension : reaper.projectConfigExtensions_) {
+      extension.saveExtensionConfig(ctx, isUndo, reg);
     }
   }
 

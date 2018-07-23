@@ -51,6 +51,13 @@ namespace reaplus {
     VirtualMidiKeyboardOnCurrentChannel
   };
 
+  struct ProjectConfigExtension {
+    std::function<bool(const char*, ProjectStateContext*, bool, struct project_config_extension_t*)>
+        processExtensionLine;
+    std::function<void(bool, struct project_config_extension_t*)> beginLoadProjectState;
+    std::function<void(ProjectStateContext*, bool, struct project_config_extension_t*)> saveExtensionConfig;
+  };
+
   class Reaper {
     friend class RegisteredAction;
 
@@ -91,7 +98,9 @@ namespace reaplus {
     static std::unique_ptr<Reaper> INSTANCE;
     std::thread::id idOfMainThread_;
     audio_hook_register_t audioHook_;
+    project_config_extension_t projectConfigExtension_;
     std::unordered_map<int, Command> commandByIndex_;
+    std::vector<ProjectConfigExtension> projectConfigExtensions_;
     rxcpp::subjects::subject<IncomingMidiEvent> incomingMidiEventsSubject_;
     rxcpp::subjects::subject<Action> actionInvokedSubject_;
     uint64_t sampleCounter_ = 0;
@@ -114,6 +123,10 @@ namespace reaplus {
 
     RegisteredAction registerAction(const std::string& commandId, const std::string& description,
         std::function<void()> operation, std::function<bool()> isOn = nullptr);
+
+    // TODO Make it unregisterable
+    // TODO Make it more intuitive (like registering actions)
+    void registerProjectConfigExtension(ProjectConfigExtension extension);
 
     boost::optional<FxParameter> lastTouchedFxParameter() const;
 
@@ -281,7 +294,12 @@ namespace reaplus {
     static bool staticHookCommand(int commandIndex, int flag);
     // Only for main section
     static int staticToggleAction(int commandIndex);
+
     static void processAudioBuffer(bool isPost, int len, double srate, struct audio_hook_register_t* reg);
+    static bool processExtensionLine(const char* line, ProjectStateContext* ctx, bool isUndo,
+        struct project_config_extension_t* reg);
+    static void beginLoadProjectState(bool isUndo, struct project_config_extension_t* reg);
+    static void saveExtensionConfig(ProjectStateContext* ctx, bool isUndo, struct project_config_extension_t* reg);
   };
 }
 
