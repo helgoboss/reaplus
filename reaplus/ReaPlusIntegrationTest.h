@@ -23,11 +23,11 @@ namespace reaplus {
     std::queue<TestStep> stepQueue_;
   public:
     void execute();
-    void tests();
   private:
     static void assertTrue(bool expression, const std::string& errorMsg = "");
     static Track firstTrack();
     static Track secondTrack();
+    void tests();
     void executeNextStep();
     void test(const std::string& name, std::function<void(void)> code);
     void testWithUntil(const std::string& name, std::function<void(rxcpp::observable<bool>)> code);
