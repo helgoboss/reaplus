@@ -17,7 +17,9 @@ namespace reaplus {
   }
 
   bool MidiOutputDevice::isAvailable() const {
-    return reaper::GetMIDIOutputName(id_, nullptr, 0);
+    // In REAPER 5.94 GetMIDIOutputName doesn't accept nullptr as name buffer on OS X
+    char dummy[1];
+    return reaper::GetMIDIOutputName(id_, dummy, 0);
   }
 
   void MidiOutputDevice::send(const MidiMessage& message) const {
