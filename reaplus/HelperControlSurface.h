@@ -258,12 +258,19 @@ namespace reaplus {
 
     bool isProbablyInputFx(Track track, int fxIndex, int paramIndex, double fxValue) const;
 
-    bool isProbablyInputFx(Track track, int fxIndex) const;
-
     bool trackParameterIsAutomated(Track track, std::string parameterName) const;
 
     State state() const;
 
     TrackData* findTrackDataByTrack(MediaTrack* mediaTrack);
+
+    // From REAPER > 5.95, parmFxIndex should be interpreted as query index. For earlier versions it's a normal index
+    // - which unfortunately doesn't contain information if the FX is on the normal FX chain or the input FX chain.
+    // In this case a heuristic is applied to determine which chain it is. It gets more accurate when paramIndex
+    // and paramValue are supplied.
+    boost::optional<Fx> getFxFromParmFxIndex(const Track& track, int parmFxIndex, int paramIndex = -1,
+        int paramValue = -1) const;
+
+    void fxParamSet(void* parm1, void* parm2, void* parm3, bool isInputFxIfSupported);
   };
 }

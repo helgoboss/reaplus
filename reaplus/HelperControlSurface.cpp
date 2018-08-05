@@ -167,6 +167,17 @@ namespace reaplus {
     return fxEnabledChanged();
   }
 
+  boost::optional<Fx> HelperControlSurface::getFxFromParmFxIndex(const Track& track, int parmFxIndex,
+      int paramIndex, int paramValue) const {
+    if (supportsDetectionOfInputFx_) {
+      return track.fxByQueryIndex(parmFxIndex);
+    } else {
+      const bool isInputFx = isProbablyInputFx(track, parmFxIndex, paramIndex, paramValue);
+      const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+      return fxChain.fxByIndex(parmFxIndex);
+    }
+  }
+
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     switch (call) {
       case CSURF_EXT_SETINPUTMONITOR: {
@@ -192,24 +203,11 @@ namespace reaplus {
         return 0;
       }
       case CSURF_EXT_SETFXPARAM: {
-        const auto mediaTrack = (MediaTrack*) parm1;
-        const auto fxAndParamIndex = *static_cast<int*>(parm2);
-        const int fxIndex = (fxAndParamIndex >> 16) & 0xffff;
-        const int paramIndex = fxAndParamIndex & 0xffff;
-        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-        const Track track(mediaTrack, nullptr);
-        const double paramValue = *(double*) parm3;
-        // TODO In the ReaPlus integration test, there's one test where this heuristic doesn't work. Deal with it!
-        const bool isInputFx = isProbablyInputFx(track, fxIndex, paramIndex, paramValue);
-        const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-        if (const auto fx = fxChain.fxByIndex(fxIndex)) {
-          const auto fxParam = fx->parameterByIndex(paramIndex);
-          fxParameterValueChangedSubject_.get_subscriber().on_next(fxParam);
-          if (fxHasBeenTouchedJustAMomentAgo_) {
-            fxHasBeenTouchedJustAMomentAgo_ = false;
-            fxParameterTouchedSubject_.get_subscriber().on_next(fxParam);
-          }
-        }
+        fxParamSet(parm1, parm2, parm3, false);
+        return 0;
+      }
+      case CSURF_EXT_SETFXPARAM_RECFX: {
+        fxParamSet(parm1, parm2, parm3, true);
         return 0;
       }
       case CSURF_EXT_SETFXENABLED: {
@@ -217,9 +215,7 @@ namespace reaplus {
         const auto fxIndex = *(int*) parm2;
         // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
         const Track track(mediaTrack, nullptr);
-        const bool isInputFx = isProbablyInputFx(track, fxIndex);
-        const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-        if (const auto fx = fxChain.fxByIndex(fxIndex)) {
+        if (const auto fx = getFxFromParmFxIndex(track, fxIndex)) {
           fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
         }
         return 0;
@@ -276,6 +272,27 @@ namespace reaplus {
       default:return 0;
     }
 
+  }
+  void HelperControlSurface::fxParamSet(void* parm1, void* parm2, void* parm3, bool isInputFxIfSupported) {
+    const auto mediaTrack = (MediaTrack*) parm1;
+    const auto fxAndParamIndex = *static_cast<int*>(parm2);
+    const int fxIndex = (fxAndParamIndex >> 16) & 0xffff;
+    const int paramIndex = fxAndParamIndex & 0xffff;
+    // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+    const Track track(mediaTrack, nullptr);
+    const double paramValue = *(double*) parm3;
+    const bool isInputFx = supportsDetectionOfInputFx_
+                           ? isInputFxIfSupported
+                           : isProbablyInputFx(track, fxIndex, paramIndex, paramValue);
+    const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
+    if (const auto fx = fxChain.fxByIndex(fxIndex)) {
+      const auto fxParam = fx->parameterByIndex(paramIndex);
+      fxParameterValueChangedSubject_.get_subscriber().on_next(fxParam);
+      if (fxHasBeenTouchedJustAMomentAgo_) {
+        fxHasBeenTouchedJustAMomentAgo_ = false;
+        fxParameterTouchedSubject_.get_subscriber().on_next(fxParam);
+      }
+    }
   }
 
   rxcpp::observable<bool> HelperControlSurface::masterTempoChanged() const {
@@ -653,10 +670,6 @@ namespace reaplus {
       // Should not happen. In this case, an FX yet unknown to Realearn has sent a parameter change
       return false;
     }
-  }
-
-  bool HelperControlSurface::isProbablyInputFx(Track track, int fxIndex) const {
-    return isProbablyInputFx(std::move(track), fxIndex, -1, -1);
   }
 
   rx::observable<Parameter*> HelperControlSurface::parameterValueChangedUnsafe() const {
