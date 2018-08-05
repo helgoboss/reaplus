@@ -39,7 +39,7 @@ namespace reaplus {
     static int const MAX_CHUNK_SIZE;
     static std::string getMediaTrackGuid(MediaTrack* mediaTrack);
     // mediaTrack must not be null
-    // reaProject can be null but should be set (for performance reasons)
+    // reaProject can be null but providing it can speed things up quite much for REAPER versions < 5.95
     Track(MediaTrack* mediaTrack, ReaProject* reaProject);
     MediaTrack* mediaTrack() const;
     std::string guid() const;

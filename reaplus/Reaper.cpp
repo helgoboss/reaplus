@@ -125,6 +125,7 @@ namespace reaplus {
     int trackIndex;
     int fxQueryIndex;
     int paramIndex;
+    // fxQueryIndex is only a real query index since REAPER 5.95, before it didn't say if it's input FX or normal one!
     bool isValid = reaper::GetLastTouchedFX(&trackIndex, &fxQueryIndex, &paramIndex);
     if (isValid) {
       int normalizedTrackIndex = trackIndex - 1;

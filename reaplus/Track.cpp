@@ -32,6 +32,9 @@ namespace reaplus {
       // (this constructor) but has rendered invalid in the meantime. Now there would not be any way to compare them
       // because I can neither compare MediaTrack* pointers nor GUIDs. Except I extract the GUID eagerly.
       guid_(Track::getMediaTrackGuid(mediaTrack)) {
+    // In REAPER < 5.95 this returns nullptr. That means we might need to use findContainingProject logic at a later
+    // point.
+    reaProject_ = (ReaProject*) reaper::GetSetMediaTrackInfo(mediaTrack, "P_PROJECT", nullptr);
   }
 
   MediaTrack* Track::mediaTrack() const {
