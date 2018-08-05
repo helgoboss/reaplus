@@ -284,6 +284,8 @@ namespace reaplus {
 
     void stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message);
 
+    std::string getVersion() const;
+
   private:
     Reaper();
     Reaper(const Reaper&);

@@ -589,6 +589,10 @@ namespace reaplus {
     const auto mode = static_cast<int>(target);
     reaper::StuffMIDIMessage(mode, message.statusByte(), message.dataByte1(), message.dataByte2());
   }
+
+  std::string Reaper::getVersion() const {
+    return reaper::GetAppVersion();
+  }
 }
 
 

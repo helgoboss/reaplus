@@ -105,6 +105,7 @@ namespace reaplus {
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
     moodycamel::ConcurrentQueue<std::function<void(void)>> fastCommandQueue_;
     std::array<std::function<void(void)>, FAST_COMMAND_BUFFER_SIZE> fastCommandBuffer_;
+    bool supportsDetectionOfInputFx_ = false;
 
   public:
     ~HelperControlSurface() override;

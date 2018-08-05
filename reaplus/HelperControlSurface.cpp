@@ -32,7 +32,13 @@ namespace reaplus {
   HelperControlSurface::HelperControlSurface() :
       activeProjectBehavior_(Reaper::instance().currentProject()),
       fastCommandQueue_(1000) {
+    // Detect features
+    const string reaperVersion = reaper::GetAppVersion();
+    supportsDetectionOfInputFx_ = reaperVersion >= "5.95";
+
+    // Register
     reaper::plugin_register("csurf_inst", this);
+
     // REAPER doesn't seem to call this automatically when the surface is registered. In our case it's important
     // to call this not at the first change of something (e.g. arm button pressed) but immediately. Because it
     // captures the initial project/track/FX state. If we don't do this immediately, then it happens that change
