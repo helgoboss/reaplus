@@ -17,6 +17,12 @@ namespace reaplus {
   }
 
   bool MidiInputDevice::isAvailable() const {
+    char dummy[2];
+    const bool connected = reaper::GetMIDIInputName(id_, dummy, 2);
+    return connected || dummy[0] != '\0';
+  }
+
+  bool MidiInputDevice::isConnected() const {
     // In REAPER 5.94 GetMIDIInputName doesn't accept nullptr as name buffer on OS X
     char dummy[1];
     return reaper::GetMIDIInputName(id_, dummy, 0);
