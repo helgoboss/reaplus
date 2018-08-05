@@ -24,7 +24,7 @@ namespace reaplus {
   public:
     void execute();
   private:
-    static void assertTrue(bool expression, const std::string& errorMsg = "");
+    static void assertTrue(bool expression, const std::string& errorMsg = "", const std::string& minReaperVersion = "");
     static Track firstTrack();
     static Track secondTrack();
     void tests();

@@ -38,6 +38,7 @@ namespace reaplus {
     // Returns -1 if no step size (continuous character)
     double stepSize() const;
     friend bool operator==(const FxParameter& lhs, const FxParameter& rhs);
+    friend bool operator!=(const FxParameter& lhs, const FxParameter& rhs);
   protected:
     FxParameter(Fx fx, int index);
 

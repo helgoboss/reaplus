@@ -93,6 +93,10 @@ namespace reaplus {
     return lhs.fx_ == rhs.fx_ && lhs.index_ == rhs.index_;
   }
 
+  bool operator!=(const FxParameter& lhs, const FxParameter& rhs) {
+    return !(lhs == rhs);
+  }
+
   double FxParameter::reaperValue() const {
     return reaper::TrackFX_GetParamNormalized(fx_.track().mediaTrack(), fx_.queryIndex(), index_);
   }

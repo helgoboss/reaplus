@@ -1286,10 +1286,12 @@ namespace reaplus {
 
         // Then
         auto lastTouchedFxParam = Reaper::instance().lastTouchedFxParameter();
-        // FIXME We should also make this work for input FX!
-        if (!fxChain.isInputFx()) {
-          assertTrue(lastTouchedFxParam.is_initialized(), "No last touched FX param");
-          assertTrue(*lastTouchedFxParam == p, "Last touched FX param not correct");
+        if (fxChain.isInputFx() && Reaper::instance().getVersion() < "5.95") {
+            assertTrue(!lastTouchedFxParam.is_initialized(),
+                "Last touched FX param on input FX chain set in REAPER < 5.95. Impossible!");
+        } else {
+            assertTrue(lastTouchedFxParam.is_initialized() && *lastTouchedFxParam == p,
+                "Last touched FX param incorrect");
         }
         assertTrue(p.formattedValue() == "-4.44");
         assertTrue(p.normalizedValue() == 0.30000001192092896);
@@ -1298,6 +1300,37 @@ namespace reaplus {
         // TODO 1 invocation would be better than 2
         assertTrue(count == 2, "Event count wrong (maybe 1 instead of 2, that would be an improvement?)");
         assertTrue(*eventFxParameter == p, "FX parameter event wrong");
+      });
+
+      testWithUntil("fxParameterValueChanged with heuristic fail in REAPER < 5.95", [getFxChain](auto testIsOver) {
+        // Given
+        auto fxChain = getFxChain();
+        auto fx = *fxChain.fxByIndex(0);
+        auto p = fx.parameterByIndex(0);
+        p.setNormalizedValue(0.5);
+        auto otherFxChain = fxChain.isInputFx() ? fx.track().normalFxChain() : fx.track().inputFxChain();
+        auto fxOnOtherFxChain = otherFxChain.addFxByOriginalName("ReaControlMIDI (Cockos)");
+        auto pOnOtherFxChain = fxOnOtherFxChain->parameterByIndex(0);
+        // First set parameter on other FX chain to same value (confuses heuristic if fxChain is input FX chain)
+        pOnOtherFxChain.setNormalizedValue(0.5);
+
+        // When
+        optional<FxParameter> eventFxParameter;
+        int count = 0;
+        Reaper::instance().fxParameterValueChanged().take_until(testIsOver).subscribe([&](FxParameter f) {
+          count++;
+          eventFxParameter = f;
+        });
+        p.setNormalizedValue(0.5);
+
+        // Then
+        assertTrue(count == 2, "Event count wrong (maybe 1 instead of 2, that would be an improvement?)");
+        assertTrue(eventFxParameter.is_initialized(), "FX parameter event not set");
+        if (fxChain.isInputFx() && Reaper::instance().getVersion() < "5.95") {
+            assertTrue(*eventFxParameter != p, "FX parameter event correct in REAPER < 5.95. Impossible!");
+        } else {
+            assertTrue(*eventFxParameter == p, "FX parameter event wrong");
+        }
       });
 
       testWithUntil("Move FX", [getFxChain](auto testIsOver) {
@@ -1490,9 +1523,7 @@ namespace reaplus {
         assertTrue(fx.floatingWindow() == nullptr);
         assertTrue(!fx.windowIsOpen());
         assertTrue(!fx.windowHasFocus());
-        if (!fxChain.isInputFx()) {
-          assertTrue(!Reaper::instance().focusedFx().is_initialized());
-        }
+        assertTrue(!Reaper::instance().focusedFx().is_initialized(), "Focused FX not detected");
       });
 
       test("Show fx in floating window", [getFxChain] {
@@ -1507,12 +1538,9 @@ namespace reaplus {
         assertTrue(fx.floatingWindow() != nullptr);
         assertTrue(fx.windowIsOpen());
         assertTrue(fx.windowHasFocus(), "Window has no focus");
-        if (!fxChain.isInputFx()) {
-          const auto focusedFx = Reaper::instance().focusedFx();
+        const auto focusedFx = Reaper::instance().focusedFx();
           // TODO This is not reliable! After REAPER start no focused Fx can be found!
-//            assertTrue(focusedFx.is_initialized(), "Focused FX not found");
-//            assertTrue(*focusedFx == fx, "Wrong focused fx");
-        }
+//            assertTrue(focusedFx.is_initialized() && *focusedFx == fx, "Incorrect focused FX");
       });
 
       testWithUntil("Add track JS fx by original name", [getFxChain](auto testIsOver) {
@@ -1841,9 +1869,16 @@ namespace reaplus {
     Reaper::instance().showConsoleMessage(msg);
   }
 
-  void ReaPlusIntegrationTest::assertTrue(bool expression, const std::string& errorMsg) {
+  void ReaPlusIntegrationTest::assertTrue(bool expression, const std::string& errorMsg,
+      const std::string& minReaperVersion) {
     if (!expression) {
-      throw std::logic_error(errorMsg);
+      if (minReaperVersion.empty() || Reaper::instance().getVersion() >= minReaperVersion) {
+          throw std::logic_error(errorMsg);
+      } else {
+          // This is an older REAPER version and we expect it to not work there. Just log the error.
+          Reaper::instance()
+              .showConsoleMessage("\nERROR because REAPER version < " + minReaperVersion + " is used: " + errorMsg);
+      }
     }
   }
 
