@@ -17,9 +17,9 @@ namespace reaplus {
   }
 
   bool MidiOutputDevice::isAvailable() const {
-    char dummy[2];
-    const bool connected = reaper::GetMIDIOutputName(id_, dummy, 2);
-    return connected || dummy[0] != '\0';
+    char name[2] = {0};
+    const bool connected = reaper::GetMIDIOutputName(id_, name, 2);
+    return connected || name[0] != 0;
   }
 
   bool MidiOutputDevice::isConnected() const {
