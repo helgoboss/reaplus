@@ -69,6 +69,8 @@ namespace reaplus {
     void setChunk(const char* chunk);
     void setChunk(Chunk chunk);
     void select();
+    // Returns actual track to which has been scrolled (can be different)
+    Track scrollMixer();
     void unselect();
     void selectExclusively();
     bool isSelected() const;
