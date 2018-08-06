@@ -11,6 +11,12 @@ namespace reaplus {
     Continuous
   };
 
+  struct FxParameterValueRange {
+    double minVal = -1;
+    double midVal = -1;
+    double maxVal = -1;
+  };
+
   class FxParameter : public TrackParameter {
     friend class Fx;
   private:
@@ -35,8 +41,13 @@ namespace reaplus {
     std::string formatNormalizedValue(double normalizedValue) const;
     Fx fx() const;
     FxParameterCharacter character() const;
+    // Returns a normalized value
     // Returns -1 if no step size (continuous character)
+    // TODO This is a too opinionated function in that it already interprets and processes some of REAPER's return
+    // values.
     double stepSize() const;
+    // Doesn't necessarily return normalized values
+    FxParameterValueRange valueRange() const;
     friend bool operator==(const FxParameter& lhs, const FxParameter& rhs);
     friend bool operator!=(const FxParameter& lhs, const FxParameter& rhs);
   protected:

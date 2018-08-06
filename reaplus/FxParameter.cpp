@@ -70,22 +70,37 @@ namespace reaplus {
     }
 
   }
+  FxParameterValueRange FxParameter::valueRange() const {
+    FxParameterValueRange range;
+    reaper::TrackFX_GetParamEx(fx().track().mediaTrack(), fx().queryIndex(), index(),
+        &range.minVal, &range.maxVal, &range.midVal);
+    return range;
+  }
 
   double FxParameter::stepSize() const {
-    bool isToggle;
+    const auto range = valueRange();
+    bool isToggle = false;
+    double stepSize = -1;
     double smallStepSize = -1;
+    double largeStepSize = -1;
     // TODO deal with nullptr MediaTrack
     bool wasSuccessful = reaper::TrackFX_GetParameterStepSizes(fx().track().mediaTrack(), fx().queryIndex(), index(),
-        nullptr,
-        &smallStepSize, nullptr, &isToggle);
-    if (wasSuccessful) {
-      if (isToggle) {
-        return 1;
-      } else {
-        return smallStepSize;
-      }
-    } else {
+        &stepSize, &smallStepSize, &largeStepSize, &isToggle);
+    if (!wasSuccessful) {
       return -1;
+    }
+    if (isToggle) {
+      return 1;
+    }
+    // We are primarily interested in the smallest step size that makes sense. We can always create multiples of it.
+    if (smallStepSize != -1) {
+      return ModelUtil::mapValueInRangeToNormalizedValue(smallStepSize, range.minVal, range.maxVal);
+    }
+    if (stepSize != -1) {
+      return ModelUtil::mapValueInRangeToNormalizedValue(stepSize, range.minVal, range.maxVal);
+    }
+    if (largeStepSize != -1) {
+      return ModelUtil::mapValueInRangeToNormalizedValue(largeStepSize, range.minVal, range.maxVal);
     }
   }
 
