@@ -473,7 +473,7 @@ namespace reaplus {
 
   Chunk Track::chunk(int maxChunkSize) const {
     const auto chunkString = reaplus::toSharedString(maxChunkSize, [this](char* buffer, int maxSize) {
-      reaper::GetTrackStateChunk(mediaTrack(), buffer, maxSize, false);
+      reaper::GetTrackStateChunk(mediaTrack(), buffer, maxSize, true);
     });
     return Chunk(chunkString);
   }
