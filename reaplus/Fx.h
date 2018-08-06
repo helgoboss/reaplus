@@ -17,9 +17,10 @@ namespace reaplus {
   private:
     // TODO Save chain instead of track
     Track track_;
-    // Primary identifier
+    // Primary identifier, but only for tracked, GUID-based FX instances. Otherwise empty.
     std::string guid_;
-    // Secondary identifier, can become invalid on FX reorderings
+    // For GUID-based FX instances this is the secondary identifier, can become invalid on FX reorderings.
+    // For just index-based FX instances this is the primary identifier.
     // TODO Use boost::none instead of -1
     mutable int index_;
     bool isInputFx_;
@@ -69,6 +70,8 @@ namespace reaplus {
     Fx(Track track, std::string guid, bool isInputFx);
     // Use this constructor if you are sure about the GUID and index
     Fx(Track track, std::string guid, int index, bool isInputFx);
+    // Use this if you want to create a purely index-based FX without UUID tracking
+    Fx(Track track, int index, bool isInputFx);
     static int queryIndex(int index, bool isInputFx);
     static std::pair<int, bool> indexFromQueryIndex(int queryIndex);
     // Returns empty string if no FX at that index

@@ -28,6 +28,8 @@ namespace reaplus {
     Fx fxByGuid(const std::string& guid) const;
     // Like fxByGuid but if you already know the index
     Fx fxByGuidAndIndex(const std::string& guid, int index) const;
+    // This returns a purely index-based FX that doesn't keep track of FX GUID, doesn't follow reorderings and so on.
+    Fx fxByIndexUntracked(int index) const;
     bool isAvailable() const;
     boost::optional<Fx> addFxByOriginalName(const std::string& originalFxName);
     boost::optional<Fx> addFxOfChunk(const char* chunk);

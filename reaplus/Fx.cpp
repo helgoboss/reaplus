@@ -72,8 +72,11 @@ namespace reaplus {
   }
 
   Fx::Fx(Track track, string guid, int index, bool isInputFx)
-      : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx),
-      index_(index) {
+      : track_(std::move(track)), guid_(std::move(guid)), isInputFx_(isInputFx), index_(index) {
+  }
+
+  Fx::Fx(Track track, int index, bool isInputFx)
+      : track_(std::move(track)), guid_(""), isInputFx_(isInputFx), index_(index) {
   }
 
   void Fx::invalidateIndex() const {
@@ -178,6 +181,10 @@ namespace reaplus {
 
   bool Fx::loadByGuid() const {
     if (!chain().isAvailable()) {
+      return false;
+    }
+    if (guid_.empty()) {
+      // No GUID tracking
       return false;
     }
     const auto foundFx = chain().fxs()
@@ -308,10 +315,16 @@ namespace reaplus {
     if (index_ == -1) {
       // Not loaded
       return false;
-    } else {
-      // Loaded but might be at wrong index
-      return track_.isAvailable() && guidByIndex() == guid_;
     }
+    if (!track_.isAvailable()) {
+      return false;
+    }
+    if (guid_.empty()) {
+      // No GUID tracking
+      return true;
+    }
+    // Loaded but might be at wrong index
+    return guidByIndex() == guid_;
   }
 
   string Fx::guidByIndex() const {

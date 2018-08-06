@@ -26,6 +26,9 @@ namespace reaplus {
       return none;
     }
   }
+  Fx FxChain::fxByIndexUntracked(int index) const {
+    return Fx(track_, index, isInputFx_);
+  }
 
   boost::optional<Fx> FxChain::firstInstrumentFx() const {
     if (isInputFx_) {
