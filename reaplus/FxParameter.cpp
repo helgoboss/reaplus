@@ -52,24 +52,25 @@ namespace reaplus {
   }
 
   FxParameterCharacter FxParameter::character() const {
-    bool isToggle;
+    bool isToggle = false;
+    double stepSize = -1;
     double smallStepSize = -1;
-    // TODO deal with nullptr MediaTrack (continuous)
+    double largeStepSize = -1;
+    // TODO deal with nullptr MediaTrack
     bool wasSuccessful = reaper::TrackFX_GetParameterStepSizes(fx().track().mediaTrack(), fx().queryIndex(), index(),
-        nullptr, &smallStepSize, nullptr, &isToggle);
-    if (wasSuccessful) {
-      if (isToggle) {
-        return FxParameterCharacter::Toggle;
-      } else if (smallStepSize == -1) {
-        return FxParameterCharacter::Continuous;
-      } else {
-        return FxParameterCharacter::Discrete;
-      }
-    } else {
+        &stepSize, &smallStepSize, &largeStepSize, &isToggle);
+    if (!wasSuccessful) {
       return FxParameterCharacter::Continuous;
     }
-
+    if (isToggle) {
+      return FxParameterCharacter::Toggle;
+    }
+    if (smallStepSize != -1 || stepSize != -1 || largeStepSize != -1) {
+      return FxParameterCharacter::Discrete;
+    }
+    return FxParameterCharacter::Continuous;
   }
+
   FxParameterValueRange FxParameter::valueRange() const {
     FxParameterValueRange range;
     reaper::TrackFX_GetParamEx(fx().track().mediaTrack(), fx().queryIndex(), index(),
@@ -102,6 +103,7 @@ namespace reaplus {
     if (largeStepSize != -1) {
       return ModelUtil::mapValueInRangeToNormalizedValue(largeStepSize, range.minVal, range.maxVal);
     }
+    return -1;
   }
 
   bool operator==(const FxParameter& lhs, const FxParameter& rhs) {
