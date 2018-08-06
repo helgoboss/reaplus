@@ -50,7 +50,15 @@ namespace reaplus {
   }
 
   bool reaplus::operator==(const Fx& lhs, const Fx& rhs) {
-    return lhs.track_ == rhs.track_ && lhs.isInputFx_ == rhs.isInputFx_ && lhs.guid_ == rhs.guid_;
+    if (lhs.track_ != rhs.track_ || lhs.isInputFx_ != rhs.isInputFx_) {
+      return false;
+    }
+    if (!lhs.guid_.empty() && !rhs.guid_.empty()) {
+      // Both FX are guid-based
+      return lhs.guid_ == rhs.guid_;
+    } else {
+      return lhs.index() == rhs.index();
+    }
   }
 
   Fx::Fx(Track track, string guid, bool isInputFx)
