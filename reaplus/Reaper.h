@@ -195,6 +195,12 @@ namespace reaplus {
 
     rxcpp::observable<FxParameter> fxParameterTouched() const;
 
+    rxcpp::observable<Fx> fxOpened() const;
+
+    rxcpp::observable<Fx> fxClosed() const;
+
+    rxcpp::observable<boost::optional<Fx>> fxFocused() const;
+
     rxcpp::observable<Track> trackVolumeChanged() const;
 
     rxcpp::observable<Track> trackVolumeTouched() const;

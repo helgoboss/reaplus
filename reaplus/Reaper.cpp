@@ -426,6 +426,18 @@ namespace reaplus {
     return HelperControlSurface::instance().fxParameterTouched();
   }
 
+  rxcpp::observable<Fx> Reaper::fxOpened() const {
+    return HelperControlSurface::instance().fxOpened();
+  }
+
+  rxcpp::observable<Fx> Reaper::fxClosed() const {
+    return HelperControlSurface::instance().fxClosed();
+  }
+
+  rxcpp::observable<boost::optional<Fx>> Reaper::fxFocused() const {
+    return HelperControlSurface::instance().fxFocused();
+  }
+
   rxcpp::observable<Track> Reaper::trackVolumeChanged() const {
     return HelperControlSurface::instance().trackVolumeChanged();
   }

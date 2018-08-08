@@ -25,6 +25,7 @@ using std::pair;
 using std::string;
 using std::set;
 using std::unique_ptr;
+using boost::none;
 
 namespace reaplus {
   std::unique_ptr<HelperControlSurface> HelperControlSurface::INSTANCE = nullptr;
@@ -34,7 +35,8 @@ namespace reaplus {
       fastCommandQueue_(1000) {
     // Detect features
     const string reaperVersion = reaper::GetAppVersion();
-    supportsDetectionOfInputFx_ = reaperVersion >= "5.95";
+    supportsDetectionOfInputFx_ = reaperVersion >= "5.95"; // since pre1
+    supportsDetectionOfInputFxInSetFxChange_ = reaperVersion >= "5.95"; // since pre2 to be accurate but so what
 
     // Register
     reaper::plugin_register("csurf_inst", this);
@@ -212,10 +214,10 @@ namespace reaplus {
       }
       case CSURF_EXT_SETFXENABLED: {
         const auto mediaTrack = (MediaTrack*) parm1;
-        const auto fxIndex = *(int*) parm2;
+        const auto parmFxIndex = *(int*) parm2;
         // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
         const Track track(mediaTrack, nullptr);
-        if (const auto fx = getFxFromParmFxIndex(track, fxIndex)) {
+        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
           fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
         }
         return 0;
@@ -241,12 +243,52 @@ namespace reaplus {
         }
         return 0;
       }
-      case CSURF_EXT_SETFOCUSEDFX: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
-      case CSURF_EXT_SETFXOPEN: // because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted
+      case CSURF_EXT_SETFOCUSEDFX: {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        if (mediaTrack && parm3) {
+          const int parmFxIndex = *(int*) parm3;
+          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+          const Track track(mediaTrack, nullptr);
+          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+            fxFocusedSubject_.get_subscriber().on_next(*fx);
+          }
+        } else {
+          // Clear focused FX
+          fxFocusedSubject_.get_subscriber().on_next(none);
+        }
+        return 0;
+      }
+      case CSURF_EXT_SETFXOPEN: {
+        const auto mediaTrack = (MediaTrack*) parm1;
+        if (mediaTrack && parm2) {
+          const int parmFxIndex = *(int*) parm2;
+          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+          const Track track(mediaTrack, nullptr);
+          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+            if (parm3 == 0) {
+              fxClosedSubject_.get_subscriber().on_next(*fx);
+            } else {
+              fxOpenedSubject_.get_subscriber().on_next(*fx);
+            }
+          }
+        }
+        return 0;
+      }
       case CSURF_EXT_SETFXCHANGE: {
         const auto mediaTrack = (MediaTrack*) parm1;
         if (mediaTrack) {
-          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true);
+          if (supportsDetectionOfInputFxInSetFxChange_) {
+            const auto flags = (intptr_t) parm2;
+            const bool isInputFx = (flags & 1) == 1;
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !isInputFx, isInputFx);
+          } else {
+            // REAPER < 5.95, we don't know if the change happened on input or normal FX chain
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, true, true);
+          }
         }
         return 0;
       }
@@ -396,7 +438,7 @@ namespace reaplus {
         d.guid = Track::getMediaTrackGuid(mediaTrack);
         trackDatas[mediaTrack] = d;
         trackAddedSubject_.get_subscriber().on_next(track);
-        detectFxChangesOnTrack(track, false);
+        detectFxChangesOnTrack(track, false, true, true);
       }
     });
   }
@@ -555,15 +597,29 @@ namespace reaplus {
   rx::observable<Track> HelperControlSurface::fxReordered() const {
     return fxReorderedSubject_.get_observable();
   }
+  rxcpp::observable<Fx> HelperControlSurface::fxOpened() const {
+    return fxOpenedSubject_.get_observable();
+  }
+  rxcpp::observable<Fx> HelperControlSurface::fxClosed() const {
+    return fxClosedSubject_.get_observable();
+  }
+  rxcpp::observable<boost::optional<Fx>> HelperControlSurface::fxFocused() const {
+    return fxFocusedSubject_.get_observable();
+  }
 
-  void HelperControlSurface::detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges) {
+  void HelperControlSurface::detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges,
+      bool checkNormalFxChain, bool checkInputFxChain) {
     if (track.isAvailable()) {
       MediaTrack* mediaTrack = track.mediaTrack();
       auto& fxChainPair = fxChainPairByMediaTrack_[mediaTrack];
       const bool addedOrRemovedOutputFx =
-          detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false, notifyListenersAboutChanges);
+          checkNormalFxChain
+          ? detectFxChangesOnTrack(track, fxChainPair.outputFxGuids, false, notifyListenersAboutChanges)
+          : false;
       const bool addedOrRemovedInputFx =
-          detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true, notifyListenersAboutChanges);
+          checkInputFxChain
+          ? detectFxChangesOnTrack(track, fxChainPair.inputFxGuids, true, notifyListenersAboutChanges)
+          : false;
       if (notifyListenersAboutChanges && !addedOrRemovedInputFx && !addedOrRemovedOutputFx) {
         fxReorderedSubject_.get_subscriber().on_next(track);
       }

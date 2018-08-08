@@ -65,7 +65,9 @@ namespace reaplus {
     void enableAutoArm();
     void disableAutoArm();
     bool isArmed(bool supportAutoArm = true) const;
-    Chunk chunk(int maxChunkSize = MAX_CHUNK_SIZE) const;
+    // Attention! If you pass undoIsOptional = true it's faster but it returns a chunk that contains weird
+    // FXID_NEXT (in front of FX tag) instead of FXID (behind FX tag). So FX chunk code should be double checked then.
+    Chunk chunk(int maxChunkSize = MAX_CHUNK_SIZE, bool undoIsOptional = false) const;
     void setChunk(const char* chunk);
     void setChunk(Chunk chunk);
     void select();

@@ -8,6 +8,7 @@
 #include <array>
 #include <string>
 #include <mutex>
+#include <boost/optional.hpp>
 #include "reaper_plugin.h"
 #include "rxcpp/rx.hpp"
 #include "util/rx-relaxed-runloop.hpp"
@@ -88,6 +89,9 @@ namespace reaplus {
     rxcpp::subjects::subject<Fx> fxAddedSubject_;
     rxcpp::subjects::subject<Fx> fxRemovedSubject_;
     rxcpp::subjects::subject<Fx> fxEnabledChangedSubject_;
+    rxcpp::subjects::subject<Fx> fxOpenedSubject_;
+    rxcpp::subjects::subject<Fx> fxClosedSubject_;
+    rxcpp::subjects::subject<boost::optional<Fx>> fxFocusedSubject_;
     rxcpp::subjects::subject<Track> fxReorderedSubject_;
     rxcpp::subjects::subject<bool> masterTempoChangedSubject_;
     rxcpp::subjects::subject<bool> masterTempoTouchedSubject_;
@@ -105,7 +109,10 @@ namespace reaplus {
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
     moodycamel::ConcurrentQueue<std::function<void(void)>> fastCommandQueue_;
     std::array<std::function<void(void)>, FAST_COMMAND_BUFFER_SIZE> fastCommandBuffer_;
+
+    // Capabilities depending on REAPER version
     bool supportsDetectionOfInputFx_ = false;
+    bool supportsDetectionOfInputFxInSetFxChange_ = false;
 
   public:
     ~HelperControlSurface() override;
@@ -208,6 +215,12 @@ namespace reaplus {
 
     rxcpp::observable<Track> fxReordered() const;
 
+    rxcpp::observable<Fx> fxOpened() const;
+
+    rxcpp::observable<Fx> fxClosed() const;
+
+    rxcpp::observable<boost::optional<Fx>> fxFocused() const;
+
     rxcpp::observable<bool> masterTempoChanged() const;
 
     rxcpp::observable<bool> masterTempoTouched() const;
@@ -239,7 +252,8 @@ namespace reaplus {
 
     void updateMediaTrackPositions(const Project& project, TrackDataMap& trackDatas);
 
-    void detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges);
+    void detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges,
+        bool checkNormalFxChain, bool checkInputFxChain);
 
     // Returns true if FX was added or removed
     bool detectFxChangesOnTrack(Track track,

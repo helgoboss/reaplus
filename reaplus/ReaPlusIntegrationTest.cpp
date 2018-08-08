@@ -24,6 +24,8 @@ using std::function;
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() {
     // TODO Test tracksReordered event (how to test that?)
+    // TODO Test fxClosed event (how to test that?)
+    // TODO Test fxFocused with none event (how to test that?)
 
     test("Sandbox", [] {
       void* positiveInt = new int(5);
@@ -1526,21 +1528,36 @@ namespace reaplus {
         assertTrue(!Reaper::instance().focusedFx().is_initialized(), "Focused FX not detected");
       });
 
-      test("Show fx in floating window", [getFxChain] {
+      testWithUntil("Show fx in floating window", [getFxChain](auto testIsOver) {
         // Given
         auto fxChain = getFxChain();
         auto fx = *fxChain.fxByIndex(0);
 
         // When
+        optional<Fx> openedFx;
+        int openedCount = 0;
+        Reaper::instance().fxOpened().take_until(testIsOver).subscribe([&](auto f) {
+          openedCount++;
+          openedFx = f;
+        });
+        optional<Fx> focusedFx;
+        int focusedCount = 0;
+        Reaper::instance().fxFocused().take_until(testIsOver).subscribe([&](auto f) {
+          focusedCount++;
+          focusedFx = f;
+        });
         fxChain.fxByIndex(0)->showInFloatingWindow();
 
         // Then
         assertTrue(fx.floatingWindow() != nullptr);
         assertTrue(fx.windowIsOpen());
         assertTrue(fx.windowHasFocus(), "Window has no focus");
-        const auto focusedFx = Reaper::instance().focusedFx();
-          // TODO This is not reliable! After REAPER start no focused Fx can be found!
-//            assertTrue(focusedFx.is_initialized() && *focusedFx == fx, "Incorrect focused FX");
+        assertTrue(openedCount >= 1, "Incorrect opened event count", "5.95");
+        assertTrue(openedFx.is_initialized() && openedFx == fx, "Incorrect opened FX event", "5.95");
+        assertTrue(focusedCount == 0, "Focused FX event finally works!");
+        assertTrue(!focusedFx.is_initialized(), "Focused FX event finally works!");
+        const auto requestedFocusedFx = Reaper::instance().focusedFx();
+        assertTrue(!requestedFocusedFx.is_initialized(), "Focused FX request finally works!");
       });
 
       testWithUntil("Add track JS fx by original name", [getFxChain](auto testIsOver) {

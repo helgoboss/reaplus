@@ -56,10 +56,10 @@ namespace reaplus {
     friend class Chunk;
 
   private:
-    const Chunk parentChunk_;
+    Chunk parentChunk_;
     // startPos_ = 0 and length_ = 0 means it's invalid
-    const size_t startPos_;
-    const size_t length_;
+    size_t startPos_;
+    size_t length_;
 
   public:
     Chunk parentChunk() const;

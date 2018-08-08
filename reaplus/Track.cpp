@@ -190,7 +190,7 @@ namespace reaplus {
   }
 
   boost::optional<ChunkRegion> Track::autoArmChunkLine() const {
-    return Track::autoArmChunkLine(chunk());
+    return Track::autoArmChunkLine(chunk(MAX_CHUNK_SIZE, true));
   }
 
   bool Track::hasAutoArmEnabled() const {
@@ -471,9 +471,9 @@ namespace reaplus {
     return TrackSend(*this, targetTrack, sendIndex);
   }
 
-  Chunk Track::chunk(int maxChunkSize) const {
-    const auto chunkString = reaplus::toSharedString(maxChunkSize, [this](char* buffer, int maxSize) {
-      reaper::GetTrackStateChunk(mediaTrack(), buffer, maxSize, true);
+  Chunk Track::chunk(int maxChunkSize, bool undoIsOptional) const {
+    const auto chunkString = reaplus::toSharedString(maxChunkSize, [this, undoIsOptional](char* buffer, int maxSize) {
+      reaper::GetTrackStateChunk(mediaTrack(), buffer, maxSize, undoIsOptional);
     });
     return Chunk(chunkString);
   }
