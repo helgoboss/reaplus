@@ -1130,7 +1130,12 @@ namespace reaplus {
         assertTrue(fx1->tagChunk().endsWith("\n>"));
         assertTrue(!fx1->stateChunk().contains("<"));
         assertTrue(!fx1->stateChunk().contains(">"));
-        assertTrue(fx1->fileNameWithoutExtension() == "reacontrolmidi");
+        const auto fx1Info = fx1->getFxInfo();
+        assertTrue(fx1Info.getFileName().stem().string() == "reacontrolmidi");
+        assertTrue(fx1Info.getTypeExpression() == "VST");
+        assertTrue(fx1Info.getSubTypeExpression() == "VST");
+        assertTrue(fx1Info.getEffectName() == "ReaControlMIDI");
+        assertTrue(fx1Info.getVendorName() == "Cockos");
         assertTrue(fx1->track() == track);
         assertTrue(fx1->isInputFx() == fxChain.isInputFx());
         assertTrue(fx1->chain() == fxChain);
@@ -1209,8 +1214,10 @@ namespace reaplus {
         assertTrue(fx1->tagChunk().endsWith("\n>"));
         assertTrue(!fx1->stateChunk().contains("<"));
         assertTrue(!fx1->stateChunk().contains(">"));
-        assertTrue(fx1->fileNameWithoutExtension() == "reacontrolmidi");
-        assertTrue(fx2->fileNameWithoutExtension() == "reasynth");
+        const auto fx1Info = fx1->getFxInfo();
+        const auto fx2Info = fx2->getFxInfo();
+        assertTrue(fx1Info.getFileName().stem().string() == "reacontrolmidi");
+        assertTrue(fx2Info.getFileName().stem().string() == "reasynth");
         assertTrue(fx1->track() == track);
         assertTrue(fx2->track() == track);
         assertTrue(fx1->isInputFx() == fxChain.isInputFx());
@@ -1612,7 +1619,8 @@ namespace reaplus {
         assertTrue(fx->tagChunk().endsWith("\n>"));
         assertTrue(!fx->stateChunk().contains("<"));
         assertTrue(!fx->stateChunk().contains(">"));
-        assertTrue(fx->fileNameWithoutExtension() == "phaser");
+        const auto fxInfo = fx->getFxInfo();
+        assertTrue(fxInfo.getFileName().stem().string() == "phaser");
         assertTrue(fx->track() == track);
         assertTrue(fx->isInputFx() == fxChain.isInputFx());
         assertTrue(fx->chain() == fxChain);
