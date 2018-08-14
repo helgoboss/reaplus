@@ -5,10 +5,35 @@
 #include <functional>
 #include <memory>
 #include <boost/optional.hpp>
+#include <boost/filesystem.hpp>
 #include "FxChain.h"
 #include "Chunk.h"
 
 namespace reaplus {
+
+  class Fx;
+  class FxInfo {
+    friend class Fx;
+  private:
+    std::string effectName_;
+    std::string typeExpression_;
+    std::string subTypeExpression_;
+    std::string vendorName_;
+    boost::filesystem::path fileName_;
+  public:
+    // e.g. ReaSynth, currently empty if JS
+    std::string getEffectName() const;
+    // e.g. VST or JS
+    std::string getTypeExpression() const;
+    // e.g. VSTi, currently empty if JS
+    std::string getSubTypeExpression() const;
+    // e.g. Cockos, currently empty if JS
+    std::string getVendorName() const;
+    // e.g. reasynth.dll or phaser
+    boost::filesystem::path getFileName() const;
+  protected:
+    FxInfo(const std::string& firstLineOfTagChunk);
+  };
 
   class FxParameter;
   class Fx {
@@ -33,13 +58,14 @@ namespace reaplus {
     int queryIndex() const;
     std::string guid() const;
     std::string name() const;
+    // Attention: Currently implemented by parsing chunk
+    FxInfo getFxInfo() const;
     ChunkRegion chunk() const;
     void setChunk(const char* chunk);
     ChunkRegion tagChunk() const;
     void setTagChunk(const char* chunk);
     ChunkRegion stateChunk() const;
     void setStateChunk(const char* chunk);
-    std::string fileNameWithoutExtension() const;
     Track track() const;
     bool isInputFx() const;
     FxChain chain() const;
@@ -76,7 +102,6 @@ namespace reaplus {
     static std::pair<int, bool> indexFromQueryIndex(int queryIndex);
     // Returns empty string if no FX at that index
     static std::string guid(Track track, int index, bool isInputFx);
-    static std::string fileNameWithoutExtension(ChunkRegion firstLineOfTagChunk);
   private:
     static std::string fxIdLine(const std::string& guid);
     bool loadByGuid() const;

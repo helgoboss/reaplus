@@ -4,6 +4,8 @@
 #include "FxChain.h"
 #include <regex>
 #include <utility>
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string.hpp>
 #include "reaper_plugin_functions.h"
 
 #include "utility.h"
@@ -245,23 +247,56 @@ namespace reaplus {
     reaper::TrackFX_SetEnabled(track_.mediaTrack(), queryIndex(), false);
   }
 
-  string Fx::fileNameWithoutExtension() const {
-    return Fx::fileNameWithoutExtension(tagChunk().firstLine());
+  FxInfo Fx::getFxInfo() const {
+    return FxInfo(tagChunk().firstLine().content().to_string());
   }
-
-  string Fx::fileNameWithoutExtension(ChunkRegion firstLineOfTagChunk) {
-    static const std::regex VST_LINE_REGEX("<VST \".*?\" ([^.]*).*");
+  std::string FxInfo::getEffectName() const {
+    return effectName_;
+  }
+  std::string FxInfo::getTypeExpression() const {
+    return typeExpression_;
+  }
+  std::string FxInfo::getSubTypeExpression() const {
+    return subTypeExpression_;
+  }
+  std::string FxInfo::getVendorName() const {
+    return vendorName_;
+  }
+  boost::filesystem::path FxInfo::getFileName() const {
+    return fileName_;
+  }
+  FxInfo::FxInfo(const std::string& firstLineOfTagChunk) {
+    static const std::regex VST_LINE_REGEX("<VST \"(.+?): (.+?) \\((.+?)\\)\" (.+)");
+    static const std::regex VST_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
+    static const std::regex VST_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
     // FIXME What about JS effects with space inside?
     static const std::regex JS_LINE_REGEX("<JS ([^ ]+).*");
-    const auto regex = *firstLineOfTagChunk.tagName() == "VST" ? VST_LINE_REGEX : JS_LINE_REGEX;
-    // FIXME Add type enumeration (JS, VST etc.)
-    std::smatch match;
-    const string firstLineOfTagChunkAsString = firstLineOfTagChunk.content().to_string();
-    if (std::regex_match(firstLineOfTagChunkAsString, match, regex) && match.size() == 2) {
-      return match[1].str();
-    } else {
-      return "";
+    if (boost::starts_with(firstLineOfTagChunk, "<VST ")) {
+      // VST
+      typeExpression_ = "VST";
+      std::smatch lineMatch;
+      if (std::regex_match(firstLineOfTagChunk, lineMatch, VST_LINE_REGEX) && lineMatch.size() == 5) {
+        subTypeExpression_ = lineMatch[1].str();
+        effectName_ = lineMatch[2].str();
+        vendorName_ = lineMatch[3].str();
+        const auto remainder = lineMatch[4].str();
+        std::smatch remainderMatch;
+        const auto remainderRegex = boost::starts_with(remainder, "\"")
+                           ? VST_FILE_NAME_WITH_QUOTES_REGEX
+                           : VST_FILE_NAME_WITHOUT_QUOTES_REGEX;
+        if (std::regex_match(remainder, remainderMatch, remainderRegex) && remainderMatch.size() == 2) {
+          fileName_ = remainderMatch[1].str();
+        }
+      }
+    } else if (boost::starts_with(firstLineOfTagChunk, "<JS ")) {
+      // JS
+      std::smatch match;
+      if (std::regex_match(firstLineOfTagChunk, match, JS_LINE_REGEX) && match.size() == 2) {
+        typeExpression_ = "JS";
+        fileName_ = match[1].str();
+      }
     }
+    // FIXME Also handle other plugin types
   }
 
   ChunkRegion Fx::tagChunk() const {
