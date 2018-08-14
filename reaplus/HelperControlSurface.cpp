@@ -205,14 +205,23 @@ namespace reaplus {
         return 0;
       }
       case CSURF_EXT_SETFXPARAM: {
+        if (!parm1 || !parm2 || !parm3) {
+          return 0;
+        }
         fxParamSet(parm1, parm2, parm3, false);
         return 0;
       }
       case CSURF_EXT_SETFXPARAM_RECFX: {
+        if (!parm1 || !parm2 || !parm3) {
+          return 0;
+        }
         fxParamSet(parm1, parm2, parm3, true);
         return 0;
       }
       case CSURF_EXT_SETFXENABLED: {
+        if (!parm1 || !parm2) {
+          return 0;
+        }
         const auto mediaTrack = (MediaTrack*) parm1;
         const auto parmFxIndex = *(int*) parm2;
         // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
@@ -244,51 +253,53 @@ namespace reaplus {
         return 0;
       }
       case CSURF_EXT_SETFOCUSEDFX: {
-        const auto mediaTrack = (MediaTrack*) parm1;
-        if (mediaTrack && parm3) {
-          const int parmFxIndex = *(int*) parm3;
-          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-          const Track track(mediaTrack, nullptr);
-          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
-            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
-            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
-            fxFocusedSubject_.get_subscriber().on_next(*fx);
-          }
-        } else {
+        if (!parm1 || parm2 || !parm3) {
           // Clear focused FX
           fxFocusedSubject_.get_subscriber().on_next(none);
+          return 0;
+        }
+        const auto mediaTrack = (MediaTrack*) parm1;
+        const int parmFxIndex = *(int*) parm3;
+        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+        const Track track(mediaTrack, nullptr);
+        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+          // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+          fxFocusedSubject_.get_subscriber().on_next(*fx);
         }
         return 0;
       }
       case CSURF_EXT_SETFXOPEN: {
+        if (!parm1 || !parm2) {
+          return 0;
+        }
         const auto mediaTrack = (MediaTrack*) parm1;
-        if (mediaTrack && parm2) {
-          const int parmFxIndex = *(int*) parm2;
-          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-          const Track track(mediaTrack, nullptr);
-          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
-            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
-            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
-            if (parm3 == 0) {
-              fxClosedSubject_.get_subscriber().on_next(*fx);
-            } else {
-              fxOpenedSubject_.get_subscriber().on_next(*fx);
-            }
+        const int parmFxIndex = *(int*) parm2;
+        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+        const Track track(mediaTrack, nullptr);
+        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+          // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+          if (parm3 == 0) {
+            fxClosedSubject_.get_subscriber().on_next(*fx);
+          } else {
+            fxOpenedSubject_.get_subscriber().on_next(*fx);
           }
         }
         return 0;
       }
       case CSURF_EXT_SETFXCHANGE: {
+        if (!parm1) {
+          return 0;
+        }
         const auto mediaTrack = (MediaTrack*) parm1;
-        if (mediaTrack) {
-          if (supportsDetectionOfInputFxInSetFxChange_) {
-            const auto flags = (intptr_t) parm2;
-            const bool isInputFx = (flags & 1) == 1;
-            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !isInputFx, isInputFx);
-          } else {
-            // REAPER < 5.95, we don't know if the change happened on input or normal FX chain
-            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, true, true);
-          }
+        if (supportsDetectionOfInputFxInSetFxChange_) {
+          const auto flags = (intptr_t) parm2;
+          const bool isInputFx = (flags & 1) == 1;
+          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !isInputFx, isInputFx);
+        } else {
+          // REAPER < 5.95, we don't know if the change happened on input or normal FX chain
+          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, true, true);
         }
         return 0;
       }
