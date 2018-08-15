@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <boost/filesystem.hpp>
 #include <thread>
 #include <memory>
 #include <unordered_map>
@@ -147,6 +148,8 @@ namespace reaplus {
     void clearConsole();
 
     std::string exePath() const;
+
+    boost::filesystem::path getResourceDir() const;
 
     int projectCount() const;
 

@@ -248,6 +248,10 @@ namespace reaplus {
     return reaper::GetExePath();
   }
 
+  boost::filesystem::path Reaper::getResourceDir() const {
+    return reaper::GetResourcePath();
+  }
+
   void Reaper::Command::registerIt() {
     reaper::plugin_register("gaccel", &acceleratorRegister_);
   }
