@@ -270,9 +270,9 @@ namespace reaplus {
     static const std::regex VST_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
     static const std::regex JS_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
     static const std::regex JS_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
-    if (boost::starts_with(firstLineOfTagChunk, "<VST ")) {
+    typeExpression_ = firstLineOfTagChunk.substr(1, firstLineOfTagChunk.find(' ') - 1);
+    if (typeExpression_ == "VST") {
       // VST
-      typeExpression_ = "VST";
       std::smatch lineMatch;
       if (std::regex_match(firstLineOfTagChunk, lineMatch, VST_LINE_REGEX) && lineMatch.size() == 5) {
         subTypeExpression_ = lineMatch[1].str();
@@ -287,9 +287,8 @@ namespace reaplus {
           fileName_ = remainderMatch[1].str();
         }
       }
-    } else if (boost::starts_with(firstLineOfTagChunk, "<JS ")) {
+    } else if (typeExpression_ == "JS") {
       // JS
-      typeExpression_ = "JS";
       const auto remainder = firstLineOfTagChunk.substr(4);
       std::smatch remainderMatch;
       const auto remainderRegex = boost::starts_with(remainder, "\"")
