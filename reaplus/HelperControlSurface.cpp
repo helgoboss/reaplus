@@ -15,6 +15,7 @@
 #include "FxEnable.h"
 #include "reaper_plugin_functions.h"
 #include "utility.h"
+#include "util/log.h"
 
 using std::unique_lock;
 namespace rx = rxcpp;
@@ -26,6 +27,7 @@ using std::string;
 using std::set;
 using std::unique_ptr;
 using boost::none;
+using reaplus::util::logException;
 
 namespace reaplus {
   std::unique_ptr<HelperControlSurface> HelperControlSurface::INSTANCE = nullptr;
@@ -84,50 +86,62 @@ namespace reaplus {
   }
 
   void HelperControlSurface::Run() {
-    // Invoke custom idle code
-    mainThreadIdleSubject_.get_subscriber().on_next(true);
-    // Process items from fast queue
-    const auto count = fastCommandQueue_.try_dequeue_bulk(fastCommandBuffer_.begin(), FAST_COMMAND_BUFFER_SIZE);
-    for (auto i = 0; i < count; i++) {
-      fastCommandBuffer_.at(i)();
-    }
-    // Process items from slow queue
-    const auto fixedNow = mainThreadRunLoop_.now();
-    const auto maxExecutionTime = std::chrono::milliseconds(50);
-    while (mainThreadRunLoop_.now() - fixedNow <= maxExecutionTime
-        && !mainThreadRunLoop_.empty()
-        && mainThreadRunLoop_.peek().when <= fixedNow) {
-      mainThreadRunLoop_.dispatch();
+    try {
+      // Invoke custom idle code
+      mainThreadIdleSubject_.get_subscriber().on_next(true);
+      // Process items from fast queue
+      const auto count = fastCommandQueue_.try_dequeue_bulk(fastCommandBuffer_.begin(), FAST_COMMAND_BUFFER_SIZE);
+      for (auto i = 0; i < count; i++) {
+        fastCommandBuffer_.at(i)();
+      }
+      // Process items from slow queue
+      const auto fixedNow = mainThreadRunLoop_.now();
+      const auto maxExecutionTime = std::chrono::milliseconds(50);
+      while (mainThreadRunLoop_.now() - fixedNow <= maxExecutionTime
+          && !mainThreadRunLoop_.empty()
+          && mainThreadRunLoop_.peek().when <= fixedNow) {
+        mainThreadRunLoop_.dispatch();
+      }
+    } catch (...) {
+      logException();
     }
   }
 
   void HelperControlSurface::SetSurfaceVolume(MediaTrack* trackid, double volume) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->volume != volume) {
-          td->volume = volume;
-          Track track(trackid, nullptr);
-          trackVolumeChangedSubject_.get_subscriber().on_next(track);
-          if (!trackParameterIsAutomated(track, "Volume")) {
-            trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->volume != volume) {
+            td->volume = volume;
+            Track track(trackid, nullptr);
+            trackVolumeChangedSubject_.get_subscriber().on_next(track);
+            if (!trackParameterIsAutomated(track, "Volume")) {
+              trackVolumeTouchedSubject_.get_subscriber().on_next(track);
+            }
           }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
   void HelperControlSurface::SetSurfacePan(MediaTrack* trackid, double pan) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->pan != pan) {
-          td->pan = pan;
-          Track track(trackid, nullptr);
-          trackPanChangedSubject_.get_subscriber().on_next(track);
-          if (!trackParameterIsAutomated(track, "Pan")) {
-            trackPanTouchedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->pan != pan) {
+            td->pan = pan;
+            Track track(trackid, nullptr);
+            trackPanChangedSubject_.get_subscriber().on_next(track);
+            if (!trackParameterIsAutomated(track, "Pan")) {
+              trackPanTouchedSubject_.get_subscriber().on_next(track);
+            }
           }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
@@ -154,10 +168,14 @@ namespace reaplus {
   }
 
   void HelperControlSurface::SetTrackTitle(MediaTrack* trackid, const char*) {
-    if (state() == State::PropagatingTrackSetChanges) {
-      numTrackSetChangesLeftToBePropagated_--;
-    } else {
-      trackNameChangedSubject_.get_subscriber().on_next(Track(trackid, nullptr));
+    try {
+      if (state() == State::PropagatingTrackSetChanges) {
+        numTrackSetChangesLeftToBePropagated_--;
+      } else {
+        trackNameChangedSubject_.get_subscriber().on_next(Track(trackid, nullptr));
+      }
+    } catch (...) {
+      logException();
     }
   }
 
@@ -181,150 +199,153 @@ namespace reaplus {
   }
 
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
-    switch (call) {
-      case CSURF_EXT_SETINPUTMONITOR: {
-        if (state() != State::PropagatingTrackSetChanges) {
+    try {
+      switch (call) {
+        case CSURF_EXT_SETINPUTMONITOR: {
+          if (state() != State::PropagatingTrackSetChanges) {
+            const auto mediaTrack = (MediaTrack*) parm1;
+            if (auto td = findTrackDataByTrack(mediaTrack)) {
+              {
+                const auto recmonitor = (int*) parm2;
+                if (td->recmonitor != *recmonitor) {
+                  td->recmonitor = *recmonitor;
+                  trackInputMonitoringChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+                }
+              }
+              {
+                const auto recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+                if (td->recinput != recinput) {
+                  td->recinput = recinput;
+                  trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
+                }
+              }
+            }
+          }
+          return 0;
+        }
+        case CSURF_EXT_SETFXPARAM: {
+          if (!parm1 || !parm2 || !parm3) {
+            return 0;
+          }
+          fxParamSet(parm1, parm2, parm3, false);
+          return 0;
+        }
+        case CSURF_EXT_SETFXPARAM_RECFX: {
+          if (!parm1 || !parm2 || !parm3) {
+            return 0;
+          }
+          fxParamSet(parm1, parm2, parm3, true);
+          return 0;
+        }
+        case CSURF_EXT_SETFXENABLED: {
+          if (!parm1 || !parm2) {
+            return 0;
+          }
           const auto mediaTrack = (MediaTrack*) parm1;
-          if (auto td = findTrackDataByTrack(mediaTrack)) {
-            {
-              const auto recmonitor = (int*) parm2;
-              if (td->recmonitor != *recmonitor) {
-                td->recmonitor = *recmonitor;
-                trackInputMonitoringChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
-              }
+          const auto parmFxIndex = *(int*) parm2;
+          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+          const Track track(mediaTrack, nullptr);
+          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+            fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
+          }
+          return 0;
+        }
+        case CSURF_EXT_SETSENDVOLUME:
+        case CSURF_EXT_SETSENDPAN: {
+          const auto mediaTrack = (MediaTrack*) parm1;
+          const int sendIdx = *(int*) parm2;
+          const Track track(mediaTrack, nullptr);
+          const auto trackSend = track.indexBasedSendByIndex(sendIdx);
+          if (call == CSURF_EXT_SETSENDVOLUME) {
+            trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
+            // Send volume touch event only if not automated
+            if (!trackParameterIsAutomated(track, "Send Volume")) {
+              trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
             }
-            {
-              const auto recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
-              if (td->recinput != recinput) {
-                td->recinput = recinput;
-                trackInputChangedSubject_.get_subscriber().on_next(Track(mediaTrack, nullptr));
-              }
+          } else if (call == CSURF_EXT_SETSENDPAN) {
+            trackSendPanChangedSubject_.get_subscriber().on_next(trackSend);
+            // Send pan touch event only if not automated
+            if (!trackParameterIsAutomated(track, "Send Pan")) {
+              trackSendPanTouchedSubject_.get_subscriber().on_next(trackSend);
             }
           }
-        }
-        return 0;
-      }
-      case CSURF_EXT_SETFXPARAM: {
-        if (!parm1 || !parm2 || !parm3) {
           return 0;
         }
-        fxParamSet(parm1, parm2, parm3, false);
-        return 0;
-      }
-      case CSURF_EXT_SETFXPARAM_RECFX: {
-        if (!parm1 || !parm2 || !parm3) {
-          return 0;
-        }
-        fxParamSet(parm1, parm2, parm3, true);
-        return 0;
-      }
-      case CSURF_EXT_SETFXENABLED: {
-        if (!parm1 || !parm2) {
-          return 0;
-        }
-        const auto mediaTrack = (MediaTrack*) parm1;
-        const auto parmFxIndex = *(int*) parm2;
-        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-        const Track track(mediaTrack, nullptr);
-        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
-          fxEnabledChangedSubject_.get_subscriber().on_next(*fx);
-        }
-        return 0;
-      }
-      case CSURF_EXT_SETSENDVOLUME:
-      case CSURF_EXT_SETSENDPAN: {
-        const auto mediaTrack = (MediaTrack*) parm1;
-        const int sendIdx = *(int*) parm2;
-        const Track track(mediaTrack, nullptr);
-        const auto trackSend = track.indexBasedSendByIndex(sendIdx);
-        if (call == CSURF_EXT_SETSENDVOLUME) {
-          trackSendVolumeChangedSubject_.get_subscriber().on_next(trackSend);
-          // Send volume touch event only if not automated
-          if (!trackParameterIsAutomated(track, "Send Volume")) {
-            trackSendVolumeTouchedSubject_.get_subscriber().on_next(trackSend);
+        case CSURF_EXT_SETFOCUSEDFX: {
+          if (!parm1 || parm2 || !parm3) {
+            // Clear focused FX
+            fxFocusedSubject_.get_subscriber().on_next(none);
+            return 0;
           }
-        } else if (call == CSURF_EXT_SETSENDPAN) {
-          trackSendPanChangedSubject_.get_subscriber().on_next(trackSend);
-          // Send pan touch event only if not automated
-          if (!trackParameterIsAutomated(track, "Send Pan")) {
-            trackSendPanTouchedSubject_.get_subscriber().on_next(trackSend);
+          const auto mediaTrack = (MediaTrack*) parm1;
+          const int parmFxIndex = *(int*) parm3;
+          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+          const Track track(mediaTrack, nullptr);
+          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+            fxFocusedSubject_.get_subscriber().on_next(*fx);
           }
-        }
-        return 0;
-      }
-      case CSURF_EXT_SETFOCUSEDFX: {
-        if (!parm1 || parm2 || !parm3) {
-          // Clear focused FX
-          fxFocusedSubject_.get_subscriber().on_next(none);
           return 0;
         }
-        const auto mediaTrack = (MediaTrack*) parm1;
-        const int parmFxIndex = *(int*) parm3;
-        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-        const Track track(mediaTrack, nullptr);
-        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
-          // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
-          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
-          fxFocusedSubject_.get_subscriber().on_next(*fx);
-        }
-        return 0;
-      }
-      case CSURF_EXT_SETFXOPEN: {
-        if (!parm1 || !parm2) {
+        case CSURF_EXT_SETFXOPEN: {
+          if (!parm1 || !parm2) {
+            return 0;
+          }
+          const auto mediaTrack = (MediaTrack*) parm1;
+          const int parmFxIndex = *(int*) parm2;
+          // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
+          const Track track(mediaTrack, nullptr);
+          if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
+            // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
+            if (parm3 == 0) {
+              fxClosedSubject_.get_subscriber().on_next(*fx);
+            } else {
+              fxOpenedSubject_.get_subscriber().on_next(*fx);
+            }
+          }
           return 0;
         }
-        const auto mediaTrack = (MediaTrack*) parm1;
-        const int parmFxIndex = *(int*) parm2;
-        // Unfortunately, we don't have a ReaProject* here. Therefore we pass a nullptr.
-        const Track track(mediaTrack, nullptr);
-        if (const auto fx = getFxFromParmFxIndex(track, parmFxIndex)) {
-          // Because CSURF_EXT_SETFXCHANGE doesn't fire if FX pasted in REAPER < 5.95-pre2 and on chunk manipulations
-          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !fx->isInputFx(), fx->isInputFx());
-          if (parm3 == 0) {
-            fxClosedSubject_.get_subscriber().on_next(*fx);
+        case CSURF_EXT_SETFXCHANGE: {
+          if (!parm1) {
+            return 0;
+          }
+          const auto mediaTrack = (MediaTrack*) parm1;
+          if (supportsDetectionOfInputFxInSetFxChange_) {
+            const auto flags = (intptr_t) parm2;
+            const bool isInputFx = (flags & 1) == 1;
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !isInputFx, isInputFx);
           } else {
-            fxOpenedSubject_.get_subscriber().on_next(*fx);
+            // REAPER < 5.95, we don't know if the change happened on input or normal FX chain
+            detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, true, true);
           }
-        }
-        return 0;
-      }
-      case CSURF_EXT_SETFXCHANGE: {
-        if (!parm1) {
           return 0;
         }
-        const auto mediaTrack = (MediaTrack*) parm1;
-        if (supportsDetectionOfInputFxInSetFxChange_) {
-          const auto flags = (intptr_t) parm2;
-          const bool isInputFx = (flags & 1) == 1;
-          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, !isInputFx, isInputFx);
-        } else {
-          // REAPER < 5.95, we don't know if the change happened on input or normal FX chain
-          detectFxChangesOnTrack(Track(mediaTrack, nullptr), true, true, true);
+        case CSURF_EXT_SETLASTTOUCHEDFX: {
+          fxHasBeenTouchedJustAMomentAgo_ = true;
+          return 0;
         }
-        return 0;
-      }
-      case CSURF_EXT_SETLASTTOUCHEDFX: {
-        fxHasBeenTouchedJustAMomentAgo_ = true;
-        return 0;
-      }
-      case CSURF_EXT_SETBPMANDPLAYRATE: {
-        if (parm1) {
-          masterTempoChangedSubject_.get_subscriber().on_next(true);
-          // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
-          // So that's okay for "touched".
-          // TODO What about gradual tempo changes?
-          masterTempoTouchedSubject_.get_subscriber().on_next(true);
+        case CSURF_EXT_SETBPMANDPLAYRATE: {
+          if (parm1) {
+            masterTempoChangedSubject_.get_subscriber().on_next(true);
+            // If there's a tempo envelope, there are just tempo notifications when the tempo is actually changed.
+            // So that's okay for "touched".
+            // TODO What about gradual tempo changes?
+            masterTempoTouchedSubject_.get_subscriber().on_next(true);
+          }
+          if (parm2) {
+            masterPlayrateChangedSubject_.get_subscriber().on_next(true);
+            // FIXME What about playrate automation?
+            masterPlayrateTouchedSubject_.get_subscriber().on_next(true);
+          }
+          return 0;
         }
-        if (parm2) {
-          masterPlayrateChangedSubject_.get_subscriber().on_next(true);
-          // FIXME What about playrate automation?
-          masterPlayrateTouchedSubject_.get_subscriber().on_next(true);
-        }
-        return 0;
+        default:return 0;
       }
-      default:return 0;
+    } catch (...) {
+      logException();
     }
-
   }
   void HelperControlSurface::fxParamSet(void* parm1, void* parm2, void* parm3, bool isInputFxIfSupported) {
     const auto mediaTrack = (MediaTrack*) parm1;
@@ -404,14 +425,18 @@ namespace reaplus {
   }
 
   void HelperControlSurface::SetTrackListChange() {
-    // FIXME Not multi-project compatible!
-    const auto newActiveProject = Reaper::instance().currentProject();
-    if (newActiveProject != activeProjectBehavior_.get_value()) {
-      activeProjectBehavior_.get_subscriber().on_next(newActiveProject);
+    try {
+      // FIXME Not multi-project compatible!
+      const auto newActiveProject = Reaper::instance().currentProject();
+      if (newActiveProject != activeProjectBehavior_.get_value()) {
+        activeProjectBehavior_.get_subscriber().on_next(newActiveProject);
+      }
+      numTrackSetChangesLeftToBePropagated_ = reaper::CountTracks(nullptr) + 1;
+      removeInvalidReaProjects();
+      detectTrackSetChanges();
+    } catch (...) {
+      logException();
     }
-    numTrackSetChangesLeftToBePropagated_ = reaper::CountTracks(nullptr) + 1;
-    removeInvalidReaProjects();
-    detectTrackSetChanges();
   }
 
   HelperControlSurface::State HelperControlSurface::state() const {
@@ -485,53 +510,69 @@ namespace reaplus {
   }
 
   void HelperControlSurface::SetSurfaceMute(MediaTrack* trackid, bool mute) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->mute != mute) {
-          td->mute = mute;
-          Track track(trackid, nullptr);
-          trackMuteChangedSubject_.get_subscriber().on_next(track);
-          if (!trackParameterIsAutomated(track, "Mute")) {
-            trackMuteTouchedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->mute != mute) {
+            td->mute = mute;
+            Track track(trackid, nullptr);
+            trackMuteChangedSubject_.get_subscriber().on_next(track);
+            if (!trackParameterIsAutomated(track, "Mute")) {
+              trackMuteTouchedSubject_.get_subscriber().on_next(track);
+            }
           }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
   void HelperControlSurface::SetSurfaceSelected(MediaTrack* trackid, bool selected) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->selected != selected) {
-          td->selected = selected;
-          Track track(trackid, nullptr);
-          trackSelectedChangedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->selected != selected) {
+            td->selected = selected;
+            Track track(trackid, nullptr);
+            trackSelectedChangedSubject_.get_subscriber().on_next(track);
+          }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
   void HelperControlSurface::SetSurfaceSolo(MediaTrack* trackid, bool solo) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->solo != solo) {
-          td->solo = solo;
-          Track track(trackid, nullptr);
-          trackSoloChangedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->solo != solo) {
+            td->solo = solo;
+            Track track(trackid, nullptr);
+            trackSoloChangedSubject_.get_subscriber().on_next(track);
+          }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
   void HelperControlSurface::SetSurfaceRecArm(MediaTrack* trackid, bool recarm) {
-    if (state() != State::PropagatingTrackSetChanges) {
-      if (auto td = findTrackDataByTrack(trackid)) {
-        if (td->recarm != recarm) {
-          td->recarm = recarm;
-          Track track(trackid, nullptr);
-          trackArmChangedSubject_.get_subscriber().on_next(track);
+    try {
+      if (state() != State::PropagatingTrackSetChanges) {
+        if (auto td = findTrackDataByTrack(trackid)) {
+          if (td->recarm != recarm) {
+            td->recarm = recarm;
+            Track track(trackid, nullptr);
+            trackArmChangedSubject_.get_subscriber().on_next(track);
+          }
         }
       }
+    } catch (...) {
+      logException();
     }
   }
 
