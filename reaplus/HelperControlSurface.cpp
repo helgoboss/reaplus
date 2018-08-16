@@ -458,25 +458,28 @@ namespace reaplus {
   }
 
   void HelperControlSurface::addMissingMediaTracks(const Project& project, TrackDataMap& trackDatas) {
-    project.tracks().subscribe([this, &trackDatas](Track track) {
-      auto mediaTrack = track.mediaTrack();
-      if (trackDatas.count(mediaTrack) == 0) {
-        TrackData d;
-        d.recarm = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECARM") != 0;
-        d.mute = reaper::GetMediaTrackInfo_Value(mediaTrack, "B_MUTE") != 0;
-        d.number = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
-        d.pan = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_PAN");
-        d.volume = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_VOL");
-        d.selected = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SELECTED") != 0;
-        d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
-        d.recmonitor = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECMON");
-        d.recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
-        d.guid = Track::getMediaTrackGuid(mediaTrack);
-        trackDatas[mediaTrack] = d;
-        trackAddedSubject_.get_subscriber().on_next(track);
-        detectFxChangesOnTrack(track, false, true, true);
-      }
-    });
+    project.tracks().subscribe(
+        [this, &trackDatas](Track track) {
+          auto mediaTrack = track.mediaTrack();
+          if (trackDatas.count(mediaTrack) == 0) {
+            TrackData d;
+            d.recarm = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECARM") != 0;
+            d.mute = reaper::GetMediaTrackInfo_Value(mediaTrack, "B_MUTE") != 0;
+            d.number = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack, "IP_TRACKNUMBER", nullptr);
+            d.pan = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_PAN");
+            d.volume = reaper::GetMediaTrackInfo_Value(mediaTrack, "D_VOL");
+            d.selected = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SELECTED") != 0;
+            d.solo = reaper::GetMediaTrackInfo_Value(mediaTrack, "I_SOLO") != 0;
+            d.recmonitor = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECMON");
+            d.recinput = (int) reaper::GetMediaTrackInfo_Value(mediaTrack, "I_RECINPUT");
+            d.guid = Track::getMediaTrackGuid(mediaTrack);
+            trackDatas[mediaTrack] = d;
+            trackAddedSubject_.get_subscriber().on_next(track);
+            detectFxChangesOnTrack(track, false, true, true);
+          }
+        },
+        util::getLoggingErrorHandler()
+    );
   }
 
   void HelperControlSurface::updateMediaTrackPositions(const Project& project,
@@ -720,20 +723,26 @@ namespace reaplus {
       bool isInputFx,
       bool notifyListenersAboutChanges) {
     const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
-    fxChain.fxs().subscribe([this, &fxGuids, notifyListenersAboutChanges](Fx fx) {
-      bool wasInserted = fxGuids.insert(fx.guid()).second;
-      if (wasInserted && notifyListenersAboutChanges) {
-        fxAddedSubject_.get_subscriber().on_next(fx);
-      }
-    });
+    fxChain.fxs().subscribe(
+        [this, &fxGuids, notifyListenersAboutChanges](Fx fx) {
+          bool wasInserted = fxGuids.insert(fx.guid()).second;
+          if (wasInserted && notifyListenersAboutChanges) {
+            fxAddedSubject_.get_subscriber().on_next(fx);
+          }
+        },
+        util::getLoggingErrorHandler()
+    );
   }
 
   std::set<string> HelperControlSurface::fxGuidsOnTrack(Track track, bool isInputFx) const {
     const auto fxChain = isInputFx ? track.inputFxChain() : track.normalFxChain();
     std::set<string> fxGuids;
-    fxChain.fxs().subscribe([&fxGuids](Fx fx) {
-      fxGuids.insert(fx.guid());
-    });
+    fxChain.fxs().subscribe(
+        [&fxGuids](Fx fx) {
+          fxGuids.insert(fx.guid());
+        },
+        util::getLoggingErrorHandler()
+    );
     return fxGuids;
   }
 
