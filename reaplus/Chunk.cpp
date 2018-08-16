@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstring>
 #include <utility>
+#include <limits>
 using boost::none;
 using boost::string_ref;
 using boost::optional;
@@ -418,6 +419,22 @@ namespace reaplus {
     }
   }
 
+  ChunkRegion ChunkRegion::moveLeftCursorToRightCursor() const {
+    if (isValid()) {
+      return createRegionFromRelativeStartPos(length(), 0);
+    } else {
+      return *this;
+    }
+  }
+
+  ChunkRegion ChunkRegion::moveRightCursorToLeftCursor() const {
+    if (isValid()) {
+      return createRegionFromRelativeStartPos(0, 0);
+    } else {
+      return *this;
+    }
+  }
+
   ChunkRegion ChunkRegion::before() const {
     if (isValid()) {
       return ChunkRegion(parentChunk_, 0, startPos());
@@ -478,7 +495,8 @@ namespace reaplus {
   }
 
   bool ChunkRegion::isValid() const {
-    return length_ > 0 && startPos_ + length_ <= parentChunk_.content()->length();
+    return length_ != std::numeric_limits<std::size_t>::max() &&
+        startPos_ + length_ <= parentChunk_.content()->length();
   }
 
   optional<ChunkRegion> ChunkRegion::findFirstString(const string& needle) const {
@@ -511,7 +529,7 @@ namespace reaplus {
   }
 
   ChunkRegion ChunkRegion::createInvalidRegion() const {
-    return ChunkRegion(parentChunk_, startPos_, 0);
+    return ChunkRegion(parentChunk_, startPos_, std::numeric_limits<std::size_t>::max());
   }
 
   bool ChunkRegion::startsWith(const string& needle) const {

@@ -96,6 +96,8 @@ namespace reaplus {
     boost::optional<ChunkRegion> findFirstTagNamed(size_t relativeSearchStartPos, const std::string& tagName) const;
 
     // Returns the tag completely from < to >
+    // TODO Why don't we return an invalid chunk region instead of none? That would allow easier chaining and would
+    // be more in line with the other methods.
     boost::optional<ChunkRegion> findFirstTag(size_t relativeSearchStartPos) const;
 
     ChunkRegion moveLeftCursorLeftToStartOf(const std::string& needle) const;
@@ -121,6 +123,10 @@ namespace reaplus {
     ChunkRegion moveRightCursorRightBy(size_t count) const;
 
     ChunkRegion moveRightCursorLeftBy(size_t count) const;
+
+    ChunkRegion moveLeftCursorToRightCursor() const;
+
+    ChunkRegion moveRightCursorToLeftCursor() const;
 
     ChunkRegion moveRightCursorRightToStartOf(const std::string& needle) const;
 

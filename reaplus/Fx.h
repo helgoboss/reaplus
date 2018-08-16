@@ -11,9 +11,7 @@
 
 namespace reaplus {
 
-  class Fx;
   class FxInfo {
-    friend class Fx;
   private:
     std::string effectName_;
     std::string typeExpression_;
@@ -21,6 +19,7 @@ namespace reaplus {
     std::string vendorName_;
     boost::filesystem::path fileName_;
   public:
+    explicit FxInfo(const std::string& firstLineOfTagChunk);
     // e.g. ReaSynth, currently empty if JS
     std::string getEffectName() const;
     // e.g. VST or JS
@@ -31,8 +30,6 @@ namespace reaplus {
     std::string getVendorName() const;
     // e.g. reasynth.dll or phaser
     boost::filesystem::path getFileName() const;
-  protected:
-    FxInfo(const std::string& firstLineOfTagChunk);
   };
 
   class FxParameter;

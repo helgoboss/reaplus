@@ -5,7 +5,6 @@
 #include <regex>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/algorithm/string.hpp>
 #include "reaper_plugin_functions.h"
 
 #include "utility.h"
@@ -269,8 +268,8 @@ namespace reaplus {
     static const std::regex VST_LINE_REGEX("<VST \"(.+?): (.+?) \\((.+?)\\)\" (.+)");
     static const std::regex VST_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
     static const std::regex VST_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
-    // FIXME What about JS effects with space inside?
-    static const std::regex JS_LINE_REGEX("<JS ([^ ]+).*");
+    static const std::regex JS_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
+    static const std::regex JS_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
     if (boost::starts_with(firstLineOfTagChunk, "<VST ")) {
       // VST
       typeExpression_ = "VST";
@@ -290,10 +289,15 @@ namespace reaplus {
       }
     } else if (boost::starts_with(firstLineOfTagChunk, "<JS ")) {
       // JS
-      std::smatch match;
-      if (std::regex_match(firstLineOfTagChunk, match, JS_LINE_REGEX) && match.size() == 2) {
-        typeExpression_ = "JS";
-        fileName_ = match[1].str();
+      typeExpression_ = "JS";
+      const auto remainder = firstLineOfTagChunk.substr(4);
+      std::smatch remainderMatch;
+      const auto remainderRegex = boost::starts_with(remainder, "\"")
+                                  ? JS_FILE_NAME_WITH_QUOTES_REGEX
+                                  : JS_FILE_NAME_WITHOUT_QUOTES_REGEX;
+      const auto matchSuccesful = std::regex_match(remainder, remainderMatch, remainderRegex);
+      if (matchSuccesful && remainderMatch.size() == 2) {
+        fileName_ = remainderMatch[1].str();
       }
     }
     // FIXME Also handle other plugin types
