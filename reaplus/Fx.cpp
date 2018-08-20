@@ -265,7 +265,7 @@ namespace reaplus {
     return fileName_;
   }
   FxInfo::FxInfo(const std::string& firstLineOfTagChunk) {
-    static const std::regex VST_LINE_REGEX("<VST \"(.+?): (.+?) \\((.+?)\\)\" (.+)");
+    static const std::regex VST_LINE_REGEX(R"(<VST "(.+?): (.+?) \((.+?)\).*?" (.+))");
     static const std::regex VST_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
     static const std::regex VST_FILE_NAME_WITHOUT_QUOTES_REGEX("([^ ]+) .*");
     static const std::regex JS_FILE_NAME_WITH_QUOTES_REGEX("\"(.+?)\".*");
