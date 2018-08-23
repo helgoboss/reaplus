@@ -13,6 +13,9 @@
 #include "MidiOutputDevice.h"
 #include <cstring>
 #include <reaper_plugin_functions.h>
+#include <boost/range/counting_range.hpp>
+#include <boost/range/adaptor/transformed.hpp>
+#include <nanorange.hpp>
 
 using boost::none;
 using boost::optional;
@@ -20,6 +23,10 @@ using std::string;
 using rxcpp::composite_subscription;
 using rxcpp::observable;
 using std::function;
+using boost::make_counting_iterator;
+using boost::make_transform_iterator;
+using boost::counting_range;
+using boost::adaptors::transformed;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() {
@@ -27,13 +34,12 @@ namespace reaplus {
     // TODO Test fxClosed event (how to test that?)
     // TODO Test fxFocused with none event (how to test that?)
 
-    test("Sandbox", [] {
-      void* positiveInt = new int(5);
-      const auto positiveUnsignedInt = *static_cast<unsigned int*>(positiveInt);
-      const int negativeInt = -5;
-      const auto negativeUnsignedInt = static_cast<unsigned int>(negativeInt);
-      Reaper::instance().showConsoleMessage(
-          std::to_string(positiveUnsignedInt) + " vs. " + std::to_string(negativeUnsignedInt));
+    test("Boost ranges", [] {
+      const auto op = [](int i) { return std::to_string(i); };
+      const auto range = counting_range(0, 20) | transformed(op);
+      for (const auto& bla : range) {
+//        Reaper::instance().showConsoleMessage(bla);
+      }
     });
 
     testWithUntil("Create empty project in new tab", [](auto testIsOver) {
@@ -1296,11 +1302,11 @@ namespace reaplus {
         // Then
         auto lastTouchedFxParam = Reaper::instance().lastTouchedFxParameter();
         if (fxChain.isInputFx() && Reaper::instance().getVersion() < "5.95") {
-            assertTrue(!lastTouchedFxParam.is_initialized(),
-                "Last touched FX param on input FX chain set in REAPER < 5.95. Impossible!");
+          assertTrue(!lastTouchedFxParam.is_initialized(),
+              "Last touched FX param on input FX chain set in REAPER < 5.95. Impossible!");
         } else {
-            assertTrue(lastTouchedFxParam.is_initialized() && *lastTouchedFxParam == p,
-                "Last touched FX param incorrect");
+          assertTrue(lastTouchedFxParam.is_initialized() && *lastTouchedFxParam == p,
+              "Last touched FX param incorrect");
         }
         assertTrue(p.formattedValue() == "-4.44");
         assertTrue(p.normalizedValue() == 0.30000001192092896);
@@ -1336,9 +1342,9 @@ namespace reaplus {
         assertTrue(count == 2, "Event count wrong (maybe 1 instead of 2, that would be an improvement?)");
         assertTrue(eventFxParameter.is_initialized(), "FX parameter event not set");
         if (fxChain.isInputFx() && Reaper::instance().getVersion() < "5.95") {
-            assertTrue(*eventFxParameter != p, "FX parameter event correct in REAPER < 5.95. Impossible!");
+          assertTrue(*eventFxParameter != p, "FX parameter event correct in REAPER < 5.95. Impossible!");
         } else {
-            assertTrue(*eventFxParameter == p, "FX parameter event wrong");
+          assertTrue(*eventFxParameter == p, "FX parameter event wrong");
         }
       });
 
@@ -1898,11 +1904,11 @@ namespace reaplus {
       const std::string& minReaperVersion) {
     if (!expression) {
       if (minReaperVersion.empty() || Reaper::instance().getVersion() >= minReaperVersion) {
-          throw std::logic_error(errorMsg);
+        throw std::logic_error(errorMsg);
       } else {
-          // This is an older REAPER version and we expect it to not work there. Just log the error.
-          Reaper::instance()
-              .showConsoleMessage("\nERROR because REAPER version < " + minReaperVersion + " is used: " + errorMsg);
+        // This is an older REAPER version and we expect it to not work there. Just log the error.
+        Reaper::instance()
+            .showConsoleMessage("\nERROR because REAPER version < " + minReaperVersion + " is used: " + errorMsg);
       }
     }
   }
