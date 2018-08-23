@@ -554,6 +554,10 @@ namespace reaplus {
     return HelperControlSurface::instance().projectSwitched();
   }
 
+  rxcpp::observable<Project> Reaper::projectClosed() const {
+    return HelperControlSurface::instance().projectClosed();
+  }
+
   rxcpp::observable<bool> Reaper::masterTempoChanged() const {
     return HelperControlSurface::instance().masterTempoChanged();
   }

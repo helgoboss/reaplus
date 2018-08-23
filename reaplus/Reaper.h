@@ -261,6 +261,8 @@ namespace reaplus {
 
     rxcpp::observable<Project> projectSwitched() const;
 
+    rxcpp::observable<Project> projectClosed() const;
+
     rxcpp::observable<Action> actionInvoked() const;
 
     rxcpp::observable<bool> masterTempoChanged() const;

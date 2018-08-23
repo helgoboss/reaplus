@@ -424,6 +424,10 @@ namespace reaplus {
     return activeProjectBehavior_.get_observable().skip(1);
   }
 
+  rxcpp::observable<Project> HelperControlSurface::projectClosed() const {
+    return projectClosedSubject_.get_observable();
+  }
+
   void HelperControlSurface::SetTrackListChange() {
     try {
       // FIXME Not multi-project compatible!
@@ -600,6 +604,7 @@ namespace reaplus {
       if (reaper::ValidatePtr2(nullptr, (void*) project, "ReaProject*")) {
         it++;
       } else {
+        projectClosedSubject_.get_subscriber().on_next(Project(project));
         it = trackDataByMediaTrackByReaProject_.erase(it);
       }
     }
