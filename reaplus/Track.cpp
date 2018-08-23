@@ -180,7 +180,9 @@ namespace reaplus {
   }
 
   Project Track::project() const {
-    loadIfNecessaryOrComplain();
+    if (reaProject_ == nullptr) {
+      loadIfNecessaryOrComplain();
+    }
     return uncheckedProject();
   }
 
