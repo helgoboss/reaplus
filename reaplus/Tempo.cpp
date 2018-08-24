@@ -1,5 +1,5 @@
 #include "Tempo.h"
-#include "helgoboss/utility.h"
+#include "utility.h"
 #include "ModelUtil.h"
 
 namespace reaplus {
@@ -25,7 +25,7 @@ namespace reaplus {
 
   std::string Tempo::toStringWithoutUnit() const {
     // @closureIsSafe
-    return helgoboss::toString(10, [this](char* buffer, int maxSize) {
+    return reaplus::toString(10, [this](char* buffer, int maxSize) {
       sprintf(buffer, "%.4f", bpm_);
     });
   }

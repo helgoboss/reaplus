@@ -1,5 +1,5 @@
 #include "Playrate.h"
-#include "helgoboss/utility.h"
+#include "utility.h"
 #include "ModelUtil.h"
 #include "reaper_plugin_functions.h"
 
@@ -26,7 +26,7 @@ namespace reaplus {
 
   std::string Playrate::toStringWithoutUnit() const {
     // @closureIsSafe
-    return helgoboss::toString(8, [this](char* buffer, int maxSize) {
+    return reaplus::toString(8, [this](char* buffer, int maxSize) {
       sprintf(buffer, "%.2f", value_);
     });
   }

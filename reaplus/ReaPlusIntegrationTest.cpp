@@ -15,7 +15,6 @@
 #include <reaper_plugin_functions.h>
 #include <boost/range/counting_range.hpp>
 #include <boost/range/adaptor/transformed.hpp>
-#include <nanorange.hpp>
 
 using boost::none;
 using boost::optional;
