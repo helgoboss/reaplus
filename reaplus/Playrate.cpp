@@ -1,4 +1,5 @@
 #include "Playrate.h"
+#include <algorithm>
 #include "utility.h"
 #include "ModelUtil.h"
 #include "reaper_plugin_functions.h"

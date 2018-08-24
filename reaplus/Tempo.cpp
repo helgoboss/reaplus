@@ -1,4 +1,5 @@
 #include "Tempo.h"
+#include <algorithm>
 #include "utility.h"
 #include "ModelUtil.h"
 
