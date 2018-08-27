@@ -1,59 +1,61 @@
 cmake_minimum_required(VERSION 3.10)
 project(reaplus)
+include_directories(include)
 
 # Main target
 set(SOURCES
-    reaplus/ModelUtil.cpp
+    src/main/ModelUtil.cpp
     )
 set(MAIN_ONLY_SOURCES
-    reaplus/util/log.cpp
-    reaplus/Action.cpp
-    reaplus/Chunk.cpp
-    reaplus/Fx.cpp
-    reaplus/FxChain.cpp
-    reaplus/FxEnable.cpp
-    reaplus/FxParameter.cpp
-    reaplus/FxPreset.cpp
-    reaplus/Guid.cpp
-    reaplus/HelperControlSurface.cpp
-    reaplus/IncomingMidiEvent.cpp
-    reaplus/MasterPlayrate.cpp
-    reaplus/MasterTempo.cpp
-    reaplus/MidiInputDevice.cpp
-    reaplus/MidiMessage.cpp
-    reaplus/MidiOutputDevice.cpp
-    reaplus/Pan.cpp
-    reaplus/Parameter.cpp
-    reaplus/Playrate.cpp
-    reaplus/Project.cpp
-    reaplus/Reaper.cpp
-    reaplus/ReaPlusIntegrationTest.cpp
-    reaplus/RecordingInput.cpp
-    reaplus/RegisteredAction.cpp
-    reaplus/Section.cpp
-    reaplus/Tempo.cpp
-    reaplus/Track.cpp
-    reaplus/TrackArm.cpp
-    reaplus/TrackMute.cpp
-    reaplus/TrackPan.cpp
-    reaplus/TrackSelection.cpp
-    reaplus/TrackSend.cpp
-    reaplus/TrackSendPan.cpp
-    reaplus/TrackSendVolume.cpp
-    reaplus/TrackSolo.cpp
-    reaplus/TrackVolume.cpp
-    reaplus/UndoBlock.cpp
-    reaplus/utility.cpp
-    reaplus/Volume.cpp
+    src/main/util/log.cpp
+    src/main/Action.cpp
+    src/main/Chunk.cpp
+    src/main/Fx.cpp
+    src/main/FxChain.cpp
+    src/main/FxEnable.cpp
+    src/main/FxParameter.cpp
+    src/main/FxPreset.cpp
+    src/main/Guid.cpp
+    src/main/HelperControlSurface.cpp
+    src/main/IncomingMidiEvent.cpp
+    src/main/MasterPlayrate.cpp
+    src/main/MasterTempo.cpp
+    src/main/MidiInputDevice.cpp
+    src/main/MidiMessage.cpp
+    src/main/MidiOutputDevice.cpp
+    src/main/Pan.cpp
+    src/main/Parameter.cpp
+    src/main/Playrate.cpp
+    src/main/Project.cpp
+    src/main/Reaper.cpp
+    src/main/ReaPlusIntegrationTest.cpp
+    src/main/RecordingInput.cpp
+    src/main/RegisteredAction.cpp
+    src/main/Section.cpp
+    src/main/Tempo.cpp
+    src/main/Track.cpp
+    src/main/TrackArm.cpp
+    src/main/TrackMute.cpp
+    src/main/TrackPan.cpp
+    src/main/TrackSelection.cpp
+    src/main/TrackSend.cpp
+    src/main/TrackSendPan.cpp
+    src/main/TrackSendVolume.cpp
+    src/main/TrackSolo.cpp
+    src/main/TrackVolume.cpp
+    src/main/UndoBlock.cpp
+    src/main/utility.cpp
+    src/main/Volume.cpp
     )
 set(MAIN_ONLY_LIBS
     ${Boost_LIBRARIES}
     )
 add_library(${PROJECT_NAME} ${SOURCES} ${MAIN_ONLY_SOURCES})
+target_include_directories(${PROJECT_NAME} INTERFACE include)
 target_link_libraries(${PROJECT_NAME} ${MAIN_ONLY_LIBS})
 
 # Test target
 set(TEST_SOURCES
-    tests.cpp
+    src/test/tests.cpp
     )
 add_executable(${PROJECT_NAME}-tests ${SOURCES} ${TEST_SOURCES})
