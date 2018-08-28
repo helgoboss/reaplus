@@ -1,17 +1,19 @@
 #pragma once
 
-#include "MidiMessage.h"
+#include <helgoboss/midi/MidiMessage.h>
 #include "MidiInputDevice.h"
 
 namespace reaplus {
   class IncomingMidiEvent {
   private:
     MidiInputDevice inputDevice_;
-    MidiMessage message_;
+    helgoboss::MidiMessage message_;
+    int frameOffset_;
   public:
-    IncomingMidiEvent(MidiInputDevice inputDevice, MidiMessage message);
+    IncomingMidiEvent(MidiInputDevice inputDevice, helgoboss::MidiMessage message, int frameOffset);
     MidiInputDevice inputDevice() const;
-    MidiMessage message() const;
+    helgoboss::MidiMessage message() const;
+    int getFrameOffset() const;
   };
 }
 

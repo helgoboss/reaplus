@@ -11,7 +11,7 @@
 #include <boost/optional.hpp>
 #include "RegisteredAction.h"
 #include "AutomationMode.h"
-#include "MidiMessage.h"
+#include <helgoboss/midi/MidiMessage.h>
 #include "Guid.h"
 
 namespace reaplus {
@@ -293,7 +293,7 @@ namespace reaplus {
 
     uint64_t sampleCounter() const;
 
-    void stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message);
+    void stuffMidiMessage(StuffMidiMessageTarget target, const helgoboss::MidiMessage& message);
 
     std::string getVersion() const;
 
@@ -313,6 +313,8 @@ namespace reaplus {
         struct project_config_extension_t* reg);
     static void beginLoadProjectState(bool isUndo, struct project_config_extension_t* reg);
     static void saveExtensionConfig(ProjectStateContext* ctx, bool isUndo, struct project_config_extension_t* reg);
+    
+    static helgoboss::MidiMessage createMidiMessageFromEvent(const MIDI_event_t& event);
   };
 }
 

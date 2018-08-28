@@ -2,7 +2,7 @@
 
 #include <reaper_plugin.h>
 #include <string>
-#include "MidiMessage.h"
+#include <helgoboss/midi/MidiMessage.h>
 
 namespace reaplus {
   class MidiOutputDevice {
@@ -22,7 +22,7 @@ namespace reaplus {
     // Only returns true if the device is connected (= present)
     bool isConnected() const;
 
-    void send(const MidiMessage& message) const;
+    void send(const helgoboss::MidiMessage& message, int frameOffset) const;
 
     friend bool operator==(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs);
 

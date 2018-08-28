@@ -26,6 +26,8 @@ using boost::make_counting_iterator;
 using boost::make_transform_iterator;
 using boost::counting_range;
 using boost::adaptors::transformed;
+using helgoboss::MidiMessage;
+using helgoboss::MidiMessageType;
 
 namespace reaplus {
   void ReaPlusIntegrationTest::tests() {
@@ -1693,14 +1695,14 @@ namespace reaplus {
 
     testAndWait("Stuff MIDI messages", [] {
       // Given
-      const auto msg = MidiMessage::noteOn(0, 64, 100, 0);
+      const auto msg = MidiMessage::noteOn(0, 64, 100);
 
       // When
       const auto observable = Reaper::instance().incomingMidiEvents().map([](IncomingMidiEvent evt) {
-        return evt.message().type() == MidiMessageType::NoteOn
-            && evt.message().channel() == 0
-            && evt.message().note() == 64
-            && evt.message().velocity() == 100
+        return evt.message().getType() == MidiMessageType::NoteOn
+            && evt.message().getChannel() == 0
+            && evt.message().getKeyNumber() == 64
+            && evt.message().getVelocity() == 100
             && evt.inputDevice().id() == 62
             && Reaper::instance().sampleCounter() > 0;
       });

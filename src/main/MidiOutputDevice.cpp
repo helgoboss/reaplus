@@ -2,6 +2,8 @@
 #include <reaplus/utility.h>
 #include <reaper_plugin_functions.h>
 
+using helgoboss::MidiMessage;
+
 namespace reaplus {
   MidiOutputDevice::MidiOutputDevice(int id) : id_(id) {
   }
@@ -28,17 +30,17 @@ namespace reaplus {
     return reaper::GetMIDIOutputName(id_, dummy, 0);
   }
 
-  void MidiOutputDevice::send(const MidiMessage& message) const {
+  void MidiOutputDevice::send(const MidiMessage& message, int frameOffset) const {
     if (auto midiOutput = load()) {
-      midiOutput->Send(message.statusByte(), message.dataByte1(), message.dataByte2(), message.frameOffset());
+      midiOutput->Send(message.getStatusByte(), message.getDataByte1(), message.getDataByte2(), frameOffset);
     }
   }
 
-  bool reaplus::operator==(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs) {
+  bool operator==(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs) {
     return lhs.id_ == rhs.id_;
   }
 
-  bool reaplus::operator!=(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs) {
+  bool operator!=(const MidiOutputDevice& lhs, const MidiOutputDevice& rhs) {
     return !(lhs == rhs);
   }
 

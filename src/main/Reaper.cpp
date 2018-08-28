@@ -21,6 +21,7 @@ using std::unordered_map;
 using std::unique_ptr;
 using rxcpp::observable;
 using boost::optional;
+using helgoboss::MidiMessage;
 
 namespace reaplus {
   std::unique_ptr<Reaper> Reaper::INSTANCE = nullptr;
@@ -374,13 +375,28 @@ namespace reaplus {
             auto& msg = midiEvent->midi_message;
             if (msg[0] != 254) {
               // No active sensing, good to go
-              subject.get_subscriber().on_next(IncomingMidiEvent(MidiInputDevice(i), MidiMessage(*midiEvent)));
+              subject.get_subscriber().on_next(IncomingMidiEvent(
+                  MidiInputDevice(i),
+                  createMidiMessageFromEvent(*midiEvent),
+                  midiEvent->frame_offset
+              ));
             }
           }
         }
       }
       reaper.sampleCounter_ += len;
     }
+  }
+
+  MidiMessage Reaper::createMidiMessageFromEvent(const MIDI_event_t& event) {
+    if (event.size == 0) {
+      return MidiMessage::empty();
+    }
+    return MidiMessage(
+        event.midi_message[0],
+        event.size >= 2 ? event.midi_message[1] : static_cast<unsigned char>(0),
+        event.size >= 3 ? event.midi_message[2] : static_cast<unsigned char>(0)
+    );
   }
 
   void Reaper::registerProjectConfigExtension(ProjectConfigExtension extension) {
@@ -606,9 +622,9 @@ namespace reaplus {
     return reaper::GetMainHwnd();
   }
 
-  void Reaper::stuffMidiMessage(StuffMidiMessageTarget target, MidiMessage message) {
+  void Reaper::stuffMidiMessage(StuffMidiMessageTarget target, const MidiMessage& message) {
     const auto mode = static_cast<int>(target);
-    reaper::StuffMIDIMessage(mode, message.statusByte(), message.dataByte1(), message.dataByte2());
+    reaper::StuffMIDIMessage(mode, message.getStatusByte(), message.getDataByte1(), message.getDataByte2());
   }
 
   std::string Reaper::getVersion() const {

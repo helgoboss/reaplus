@@ -21,7 +21,6 @@ set(MAIN_ONLY_SOURCES
     src/main/MasterPlayrate.cpp
     src/main/MasterTempo.cpp
     src/main/MidiInputDevice.cpp
-    src/main/MidiMessage.cpp
     src/main/MidiOutputDevice.cpp
     src/main/Pan.cpp
     src/main/Parameter.cpp
