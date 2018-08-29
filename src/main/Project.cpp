@@ -13,6 +13,7 @@ using std::function;
 using std::unique_ptr;
 using rxcpp::observable;
 using boost::optional;
+using helgoboss::Tempo;
 
 namespace reaplus {
   Project::Project(ReaProject* reaProject) : reaProject_(reaProject) {

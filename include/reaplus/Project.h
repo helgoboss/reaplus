@@ -6,7 +6,7 @@
 #include <memory>
 #include <rxcpp/rx.hpp>
 #include <boost/optional.hpp>
-#include "Tempo.h"
+#include <helgoboss/music/Tempo.h>
 #include "Playrate.h"
 
 namespace reaplus {
@@ -44,7 +44,7 @@ namespace reaplus {
     Track insertTrackAt(int index);
     void removeTrack(Track track);
     boost::optional<std::string> filePath() const;
-    Tempo tempo() const;
+    helgoboss::Tempo tempo() const;
     void setTempo(double bpm, bool wantUndo);
     Playrate playrate() const;
     void setPlayrate(double playrate);

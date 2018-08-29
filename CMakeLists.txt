@@ -30,7 +30,6 @@ set(MAIN_ONLY_SOURCES
     src/main/RecordingInput.cpp
     src/main/RegisteredAction.cpp
     src/main/Section.cpp
-    src/main/Tempo.cpp
     src/main/Track.cpp
     src/main/TrackArm.cpp
     src/main/TrackMute.cpp
