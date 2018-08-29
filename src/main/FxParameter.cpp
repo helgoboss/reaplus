@@ -1,7 +1,7 @@
 #include <reaplus/FxParameter.h>
 #include <memory>
 #include <utility>
-#include <reaplus/ModelUtil.h>
+#include <helgoboss/math-util.h>
 #include <reaplus/HelperControlSurface.h>
 #include <reaplus/utility.h>
 
@@ -95,13 +95,13 @@ namespace reaplus {
     }
     // We are primarily interested in the smallest step size that makes sense. We can always create multiples of it.
     if (smallStepSize != -1) {
-      return ModelUtil::mapValueInRangeToNormalizedValue(smallStepSize, range.minVal, range.maxVal);
+      return helgoboss::util::mapValueInRangeToNormalizedValue(smallStepSize, range.minVal, range.maxVal);
     }
     if (stepSize != -1) {
-      return ModelUtil::mapValueInRangeToNormalizedValue(stepSize, range.minVal, range.maxVal);
+      return helgoboss::util::mapValueInRangeToNormalizedValue(stepSize, range.minVal, range.maxVal);
     }
     if (largeStepSize != -1) {
-      return ModelUtil::mapValueInRangeToNormalizedValue(largeStepSize, range.minVal, range.maxVal);
+      return helgoboss::util::mapValueInRangeToNormalizedValue(largeStepSize, range.minVal, range.maxVal);
     }
     return -1;
   }

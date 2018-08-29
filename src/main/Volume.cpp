@@ -1,6 +1,5 @@
 #include <reaplus/Volume.h>
 #include <cmath>
-#include <reaplus/ModelUtil.h>
 #include <reaplus/utility.h>
 
 #include <reaper_plugin_functions.h>

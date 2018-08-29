@@ -1,6 +1,5 @@
 #include <reaplus/Fx.h>
 #include <reaplus/FxParameter.h>
-#include <reaplus/ModelUtil.h>
 #include <reaplus/FxChain.h>
 #include <regex>
 #include <utility>

@@ -4,7 +4,6 @@
 #include <cstring>
 #include <utility>
 #include <reaplus/Action.h>
-#include <reaplus/ModelUtil.h>
 #include <reaplus/HelperControlSurface.h>
 #include <reaper_plugin_functions.h>
 #undef min

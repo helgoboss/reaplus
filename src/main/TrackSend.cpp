@@ -1,6 +1,5 @@
 #include <reaplus/TrackSend.h>
 #include <utility>
-#include <reaplus/ModelUtil.h>
 #include <reaplus/utility.h>
 #include <reaplus/HelperControlSurface.h>
 

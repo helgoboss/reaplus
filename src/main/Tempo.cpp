@@ -1,11 +1,11 @@
 #include <reaplus/Tempo.h>
 #include <algorithm>
 #include <reaplus/utility.h>
-#include <reaplus/ModelUtil.h>
+#include <helgoboss/math-util.h>
 
 namespace reaplus {
   Tempo Tempo::ofNormalizedValue(double normalizedValue) {
-    return Tempo(ModelUtil::mapNormalizedValueToValueInRange(normalizedValue, 1, 960));
+    return Tempo(helgoboss::util::mapNormalizedValueToValueInRange(normalizedValue, 1, 960));
   }
 
   Tempo::Tempo(double bpm) {
@@ -13,7 +13,7 @@ namespace reaplus {
   }
 
   double Tempo::normalizedValue() const {
-    return ModelUtil::mapValueInRangeToNormalizedValue(bpm_, 1, 960);
+    return helgoboss::util::mapValueInRangeToNormalizedValue(bpm_, 1, 960);
   }
 
   double Tempo::bpm() const {

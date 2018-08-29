@@ -1,6 +1,6 @@
 #include <reaplus/Pan.h>
 #include <cmath>
-#include <reaplus/ModelUtil.h>
+#include <helgoboss/math-util.h>
 #include <reaplus/utility.h>
 
 #include <reaper_plugin_functions.h>
@@ -10,7 +10,7 @@ namespace reaplus {
   }
 
   Pan Pan::ofReaperValue(double reaperValue) {
-    return Pan(ModelUtil::mapValueInRangeToNormalizedValue(reaperValue, -1, 1));
+    return Pan(helgoboss::util::mapValueInRangeToNormalizedValue(reaperValue, -1, 1));
   }
 
   Pan Pan::ofPanExpression(const std::string& panExpression) {
@@ -19,7 +19,7 @@ namespace reaplus {
   }
 
   double Pan::reaperValue() const {
-    return ModelUtil::mapNormalizedValueToValueInRange(normalizedValue_, -1, 1);
+    return helgoboss::util::mapNormalizedValueToValueInRange(normalizedValue_, -1, 1);
   }
 
   std::string Pan::toString() const {

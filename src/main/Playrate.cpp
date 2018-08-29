@@ -1,7 +1,6 @@
 #include <reaplus/Playrate.h>
 #include <algorithm>
 #include <reaplus/utility.h>
-#include <reaplus/ModelUtil.h>
 #include <reaper_plugin_functions.h>
 
 namespace reaplus {

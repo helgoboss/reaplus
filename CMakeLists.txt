@@ -4,7 +4,6 @@ include_directories(include)
 
 # Main target
 set(SOURCES
-    src/main/ModelUtil.cpp
     )
 set(MAIN_ONLY_SOURCES
     src/main/util/log.cpp
