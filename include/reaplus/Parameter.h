@@ -31,7 +31,7 @@ namespace reaplus {
     virtual bool equals(const Parameter& other) const = 0;
   };
 
-  // FIXME Factor out into separate file
+  // TODO Factor out into separate file
   class TrackParameter : public Parameter {
   public:
     bool isTrackParameter() const override;
