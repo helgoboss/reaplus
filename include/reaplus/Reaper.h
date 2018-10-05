@@ -13,6 +13,7 @@
 #include "AutomationMode.h"
 #include <helgoboss/midi/MidiMessage.h>
 #include "Guid.h"
+#include "util/rx-relaxed-runloop.hpp"
 
 namespace reaplus {
   class Action;
@@ -105,6 +106,9 @@ namespace reaplus {
     rxcpp::subjects::subject<IncomingMidiEvent> incomingMidiEventsSubject_;
     rxcpp::subjects::subject<Action> actionInvokedSubject_;
     uint64_t sampleCounter_ = 0;
+    rxcpp::schedulers::relaxed_run_loop audioThreadRunLoop_;
+    rxcpp::observe_on_one_worker audioThreadCoordination_ =
+        rxcpp::observe_on_one_worker(rxcpp::schedulers::make_relaxed_run_loop(audioThreadRunLoop_));
 
   public:
     static Reaper& instance();
@@ -282,6 +286,8 @@ namespace reaplus {
     rxcpp::composite_subscription executeWhenInMainThread(std::function<void(void)> command);
 
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
+
+    const rxcpp::observe_on_one_worker& audioThreadCoordination() const;
 
     // Attention: Returns normal fx only, not input fx!
     // This is not reliable! After REAPER start no focused Fx can be found!

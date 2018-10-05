@@ -361,6 +361,8 @@ namespace reaplus {
   void Reaper::processAudioBuffer(bool isPost, int len, double, struct audio_hook_register_t*) {
     if (!isPost) {
       auto& reaper = Reaper::instance();
+      // Make use of audioThreadCoordination for rxcpp possible
+      reaper.audioThreadRunLoop_.dispatch();
       // For each open MIDI device
       auto& subject = reaper.incomingMidiEventsSubject_;
       for (int i = 0; subject.has_observers() && i < reaper::GetMaxMidiInputs(); i++) {
@@ -612,6 +614,10 @@ namespace reaplus {
 
   const rxcpp::observe_on_one_worker& Reaper::mainThreadCoordination() const {
     return HelperControlSurface::instance().mainThreadCoordination();
+  }
+
+  const rxcpp::observe_on_one_worker& Reaper::audioThreadCoordination() const {
+    return audioThreadCoordination_;
   }
 
   std::thread::id Reaper::idOfMainThread() const {
