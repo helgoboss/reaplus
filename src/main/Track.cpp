@@ -220,9 +220,12 @@ namespace reaplus {
     reaper::SetTrackSelected(mediaTrack(), true);
   }
 
-  Track Track::scrollMixer() {
+  boost::optional<Track> Track::scrollMixer() {
     loadAndCheckIfNecessaryOrComplain();
     const auto actualLeftmostMediaTrack = reaper::SetMixerScroll(mediaTrack());
+    if (actualLeftmostMediaTrack == nullptr) {
+      return boost::none;
+    }
     return Track(actualLeftmostMediaTrack, reaProject_);
   }
 
