@@ -295,6 +295,8 @@ namespace reaplus {
 
     std::thread::id idOfMainThread() const;
 
+    bool currentThreadIsMainThread() const;
+
     HWND mainWindow() const;
 
     uint64_t sampleCounter() const;

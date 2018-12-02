@@ -604,7 +604,7 @@ namespace reaplus {
   }
 
   rxcpp::composite_subscription Reaper::executeWhenInMainThread(std::function<void(void)> command) {
-    if (std::this_thread::get_id() == idOfMainThread_) {
+    if (currentThreadIsMainThread()) {
       command();
       return rxcpp::composite_subscription();
     } else {
@@ -622,6 +622,10 @@ namespace reaplus {
 
   std::thread::id Reaper::idOfMainThread() const {
     return idOfMainThread_;
+  }
+
+  bool Reaper::currentThreadIsMainThread() const {
+    return std::this_thread::get_id() == idOfMainThread_;
   }
 
   HWND Reaper::mainWindow() const {
