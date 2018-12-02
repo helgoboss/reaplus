@@ -16,7 +16,7 @@ namespace reaplus::util {
             "Please report this error. Knowing about its existence and how it was caused is the single most important requirement for us to provide a fix in future versions of this extension.\n"
             "\n"
             "1. Copy'n'paste the following error information.\n"
-            "2. Send the error information (and if possible also the RPP file) via email to info@helgoboss.org.\n"
+            "2. Send the error information and the RPP file via email to info@helgoboss.org, along with some instructions how to reproduce the issue.\n"
             "\n"
             "Thank you for your support!\n\n";
         const auto completeMsg = prefix + baseMsg;
