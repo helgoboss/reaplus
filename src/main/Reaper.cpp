@@ -334,6 +334,10 @@ namespace reaplus {
     }
   }
 
+  boost::optional<Project> Reaper::getCurrentlyRenderingProject() const {
+    return projectByIndex(0x40000000);
+  }
+
   AutomationMode Reaper::globalAutomationOverride() const {
     return static_cast<AutomationMode>(reaper::GetGlobalAutomationOverride());
   }

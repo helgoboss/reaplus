@@ -297,6 +297,8 @@ namespace reaplus {
 
     bool currentThreadIsMainThread() const;
 
+    boost::optional<Project> getCurrentlyRenderingProject() const;
+
     HWND mainWindow() const;
 
     uint64_t sampleCounter() const;
