@@ -4,12 +4,10 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_sinks.h>
 #include <spdlog/sinks/msvc_sink.h>
-#include <spdlog/details/null_mutex.h>
 #include <reaplus/util/ReaperConsoleLogSink.h>
 
 using std::vector;
 using std::shared_ptr;
-using spdlog::details::null_mutex;
 using spdlog::sinks::stdout_sink_st;
 using spdlog::sinks::msvc_sink_st;
 using spdlog::sinks::sink;
@@ -25,7 +23,7 @@ namespace reaplus::util {
     // Create sinks
     // TODO Log to file in user home instead of to console
     static auto consoleSink = make_shared<stdout_sink_st>();
-    static auto reaperSink = make_shared<ReaperConsoleLogSink<null_mutex>>();
+    static auto reaperSink = make_shared<ReaperConsoleLogSink>();
 #if defined(_WIN32) && defined(HELGOBOSS_DEBUG)
     static auto debugSink = make_shared<msvc_sink_st>();
 #endif

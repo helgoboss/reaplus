@@ -7,6 +7,7 @@ set(SOURCES
     )
 set(MAIN_ONLY_SOURCES
     src/main/util/log.cpp
+    src/main/util/ReaperConsoleLogSink.cpp
     src/main/Action.cpp
     src/main/Chunk.cpp
     src/main/Fx.cpp
