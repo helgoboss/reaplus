@@ -10,8 +10,10 @@
 #include <reaplus/MidiOutputDevice.h>
 #include <reaplus/IncomingMidiEvent.h>
 #include <reaplus/HelperControlSurface.h>
+#include <reaplus/util/log.h>
 #include <reaper_plugin_functions.h>
 #include <utility>
+
 using rxcpp::subscriber;
 using boost::none;
 using std::string;
@@ -363,34 +365,38 @@ namespace reaplus {
   }
 
   void Reaper::processAudioBuffer(bool isPost, int len, double, struct audio_hook_register_t*) {
-    if (!isPost) {
-      auto& reaper = Reaper::instance();
-      // Make use of audioThreadCoordination for rxcpp possible
-      reaper.audioThreadRunLoop_.dispatch();
-      // For each open MIDI device
-      auto& subject = reaper.incomingMidiEventsSubject_;
-      for (int i = 0; subject.has_observers() && i < reaper::GetMaxMidiInputs(); i++) {
-        // Read MIDI messages
-        const auto midiInput = reaper::GetMidiInput(i);
-        if (midiInput != nullptr) {
-          const auto midiEvents = midiInput->GetReadBuf();
-          MIDI_event_t* midiEvent;
-          int l = 0;
-          while (subject.has_observers() && (midiEvent = midiEvents->EnumItems(&l))) {
-            // Send MIDI message
-            auto& msg = midiEvent->midi_message;
-            if (msg[0] != 254) {
-              // No active sensing, good to go
-              subject.get_subscriber().on_next(IncomingMidiEvent(
-                  MidiInputDevice(i),
-                  createMidiMessageFromEvent(*midiEvent),
-                  midiEvent->frame_offset
-              ));
+    try {
+      if (!isPost) {
+        auto& reaper = Reaper::instance();
+        // Make use of audioThreadCoordination for rxcpp possible
+        reaper.audioThreadRunLoop_.dispatch();
+        // For each open MIDI device
+        auto& subject = reaper.incomingMidiEventsSubject_;
+        for (int i = 0; subject.has_observers() && i < reaper::GetMaxMidiInputs(); i++) {
+          // Read MIDI messages
+          const auto midiInput = reaper::GetMidiInput(i);
+          if (midiInput != nullptr) {
+            const auto midiEvents = midiInput->GetReadBuf();
+            MIDI_event_t* midiEvent;
+            int l = 0;
+            while (subject.has_observers() && (midiEvent = midiEvents->EnumItems(&l))) {
+              // Send MIDI message
+              auto& msg = midiEvent->midi_message;
+              if (msg[0] != 254) {
+                // No active sensing, good to go
+                subject.get_subscriber().on_next(IncomingMidiEvent(
+                    MidiInputDevice(i),
+                    createMidiMessageFromEvent(*midiEvent),
+                    midiEvent->frame_offset
+                ));
+              }
             }
           }
         }
+        reaper.sampleCounter_ += len;
       }
-      reaper.sampleCounter_ += len;
+    } catch (...) {
+      util::logException();
     }
   }
 
