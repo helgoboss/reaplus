@@ -54,13 +54,17 @@ namespace reaplus {
   int Track::index() const {
     loadAndCheckIfNecessaryOrComplain();
     auto ipTrackNumber = (int) (size_t) reaper::GetSetMediaTrackInfo(mediaTrack(), "IP_TRACKNUMBER", nullptr);
+    if (ipTrackNumber == 0) {
+      // Usually means that track doesn't exist. But this we already checked. This happens only if we query the
+      // number of a track in another project tab. TODO Try to find a working solution. Till then, return 0.
+      return 0;
+    }
     if (ipTrackNumber == -1) {
       // Master track indicator
       return -1;
-    } else {
-      // Must be > 0 (is 0 if track not found which is impossible because we checked at the beginning)
-      return ipTrackNumber - 1;
     }
+    // Must be > 0. Make it zero-rooted.
+    return ipTrackNumber - 1;
   }
 
   string Track::name() const {
