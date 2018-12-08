@@ -9,7 +9,9 @@
 using std::vector;
 using std::shared_ptr;
 using spdlog::sinks::stdout_sink_st;
+#ifdef _WIN32
 using spdlog::sinks::msvc_sink_st;
+#endif
 using spdlog::sinks::sink;
 using spdlog::sinks_init_list;
 using std::make_shared;
