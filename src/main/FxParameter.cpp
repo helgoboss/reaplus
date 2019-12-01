@@ -94,14 +94,20 @@ namespace reaplus {
       return 1;
     }
     // We are primarily interested in the smallest step size that makes sense. We can always create multiples of it.
+    const double actualRangeMin = std::min(range.minVal, range.maxVal);
+    const double actualRangeMax = std::max(range.minVal, range.maxVal);
+    const double sourceSpan = actualRangeMax - actualRangeMin;
+    if (sourceSpan == 0) {
+      return -1;
+    }
     if (smallStepSize != -1) {
-      return helgoboss::util::mapValueInRangeToNormalizedValue(smallStepSize, range.minVal, range.maxVal);
+      return smallStepSize / sourceSpan;
     }
     if (stepSize != -1) {
-      return helgoboss::util::mapValueInRangeToNormalizedValue(stepSize, range.minVal, range.maxVal);
+      return stepSize / sourceSpan;
     }
     if (largeStepSize != -1) {
-      return helgoboss::util::mapValueInRangeToNormalizedValue(largeStepSize, range.minVal, range.maxVal);
+      return largeStepSize / sourceSpan;
     }
     return -1;
   }
