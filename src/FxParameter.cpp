@@ -1,7 +1,6 @@
 #include <reaplus/FxParameter.h>
 #include <memory>
 #include <utility>
-#include <helgoboss-learn/math-util.h>
 #include <reaplus/HelperControlSurface.h>
 #include <reaplus/utility.h>
 
