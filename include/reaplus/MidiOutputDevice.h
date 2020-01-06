@@ -2,7 +2,7 @@
 
 #include <reaper_plugin.h>
 #include <string>
-#include <helgoboss/midi/MidiMessage.h>
+#include <helgoboss-midi/MidiMessage.h>
 
 namespace reaplus {
   class MidiOutputDevice {

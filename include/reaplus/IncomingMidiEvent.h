@@ -1,6 +1,6 @@
 #pragma once
 
-#include <helgoboss/midi/MidiMessage.h>
+#include <helgoboss-midi/MidiMessage.h>
 #include "MidiInputDevice.h"
 
 namespace reaplus {

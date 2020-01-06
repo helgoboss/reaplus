@@ -17,7 +17,7 @@
 #include "FxParameter.h"
 #include "Parameter.h"
 #include "Track.h"
-#include "concurrentqueue.h"
+#include <concurrentqueue/concurrentqueue.h>
 
 namespace reaplus {
 

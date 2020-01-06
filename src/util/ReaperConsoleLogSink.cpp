@@ -2,8 +2,10 @@
 #include <reaplus/Reaper.h>
 
 namespace reaplus::util {
-  void ReaperConsoleLogSink::_sink_it(const spdlog::details::log_msg& msg) {
-    const auto baseMsg = msg.formatted.str() + "\n\n";
+  void ReaperConsoleLogSink::sink_it_(const spdlog::details::log_msg& msg) {
+    spdlog::memory_buf_t formatted;
+    base_sink<spdlog::details::null_mutex>::formatter_->format(msg, formatted);
+    const auto baseMsg = fmt::to_string(formatted) + "\n\n";
     const auto level = msg.level;
     Reaper::instance().executeWhenInMainThread([baseMsg, level] {
       if (level == spdlog::level::err) {
@@ -23,6 +25,6 @@ namespace reaplus::util {
     });
   }
 
-  void ReaperConsoleLogSink::_flush() {
+  void ReaperConsoleLogSink::flush_() {
   }
 }

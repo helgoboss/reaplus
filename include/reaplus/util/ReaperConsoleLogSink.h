@@ -7,8 +7,8 @@ namespace reaplus::util {
 
   class ReaperConsoleLogSink : public spdlog::sinks::base_sink<spdlog::details::null_mutex> {
   protected:
-    void _sink_it(const spdlog::details::log_msg& msg) override;
+    void sink_it_(const spdlog::details::log_msg& msg) override;
 
-    void _flush() override;
+    void flush_() override;
   };
 }

@@ -6,7 +6,7 @@
 #include <memory>
 #include <rxcpp/rx.hpp>
 #include <boost/optional.hpp>
-#include <helgoboss/music/Tempo.h>
+#include <helgoboss-learn/Tempo.h>
 #include "Playrate.h"
 
 namespace reaplus {

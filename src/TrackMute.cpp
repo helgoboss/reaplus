@@ -1,5 +1,6 @@
 #include <reaplus/TrackMute.h>
-#include <memory> #include <utility>
+#include <memory>
+#include <utility>
 using std::unique_ptr;
 
 namespace reaplus {

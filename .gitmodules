@@ -1,0 +1,6 @@
+[submodule "lib/helgoboss-vcpkg-overlays"]
+	path = lib/helgoboss-vcpkg-overlays
+	url = https://github.com/helgoboss/helgoboss-vcpkg-overlays.git
+[submodule "lib/vcpkg"]
+	path = lib/vcpkg
+	url = https://github.com/microsoft/vcpkg.git

@@ -1,0 +1,13 @@
+rxcpp
+boost-optional
+boost-utility
+boost-filesystem
+boost-exception
+boost-range
+boost-algorithm
+concurrentqueue
+catch2
+spdlog
+helgoboss-midi
+helgoboss-learn
+--overlay-ports=../helgoboss-vcpkg-overlays/ports

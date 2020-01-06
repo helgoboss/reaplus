@@ -11,7 +11,7 @@
 #include <boost/optional.hpp>
 #include "RegisteredAction.h"
 #include "AutomationMode.h"
-#include <helgoboss/midi/MidiMessage.h>
+#include <helgoboss-midi/MidiMessage.h>
 #include "Guid.h"
 #include "util/rx-relaxed-runloop.hpp"
 

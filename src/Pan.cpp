@@ -1,6 +1,6 @@
 #include <reaplus/Pan.h>
 #include <cmath>
-#include <helgoboss/math-util.h>
+#include <helgoboss-learn/math-util.h>
 #include <reaplus/utility.h>
 
 #include <reaper_plugin_functions.h>

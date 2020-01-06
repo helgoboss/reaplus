@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <mutex.h>
 #include "reaper_plugin.h"
 
 namespace reaplus {
