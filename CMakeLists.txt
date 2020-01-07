@@ -16,7 +16,7 @@ find_package(helgoboss-learn 0.1.0 CONFIG REQUIRED)
 find_package(rxcpp CONFIG REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem exception)
 find_package(spdlog CONFIG REQUIRED)
-add_library(reaplus
+add_library(reaplus STATIC
     src/util/log.cpp
     src/util/ReaperConsoleLogSink.cpp
     src/Action.cpp
