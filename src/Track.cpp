@@ -120,8 +120,7 @@ namespace reaplus {
   ReaProject* Track::findContainingProject() const {
     if (mediaTrack_ == nullptr) {
       throw std::logic_error("Containing project cannot be found if mediaTrack not available");
-    }
-    // No ReaProject* available. Try current project first (most likely in everyday REAPER usage).
+    }+
     const auto currentProject = Reaper::instance().currentProject();
     const bool isValidInCurrentProject = reaper::ValidatePtr2(currentProject.reaProject(), mediaTrack_,
         "MediaTrack*");

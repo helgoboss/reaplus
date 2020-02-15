@@ -101,24 +101,40 @@ namespace reaplus {
   }
 
   Reaper::Reaper() {
+    // DONE-rust
     idOfMainThread_ = std::this_thread::get_id();
+    // TODO-rust
     projectConfigExtension_.ProcessExtensionLine = &processExtensionLine;
+    // TODO-rust
     projectConfigExtension_.BeginLoadProjectState = &beginLoadProjectState;
+    // TODO-rust
     projectConfigExtension_.SaveExtensionConfig = &saveExtensionConfig;
+    // TODO-rust
     reaper::plugin_register("projectconfig", (void*) &projectConfigExtension_);
+    // DONE-rust
     reaper::plugin_register("hookcommand", (void*) &staticHookCommand);
+    // DONE-rust
     reaper::plugin_register("toggleaction", (void*) &staticToggleAction);
+    // DONE-rust
     reaper::plugin_register("hookpostcommand", (void*) &staticHookPostCommand);
+    // DONE-rust
     audioHook_.OnAudioBuffer = &processAudioBuffer;
+    // DONE-rust
     reaper::Audio_RegHardwareHook(true, &audioHook_);
   }
 
   Reaper::~Reaper() {
+    // TODO-rust
     HelperControlSurface::destroyInstance();
+    // DONE-rust
     reaper::Audio_RegHardwareHook(false, &audioHook_);
+    // DONE-rust
     reaper::plugin_register("-hookpostcommand", (void*) &staticHookPostCommand);
+    // DONE-rust
     reaper::plugin_register("-toggleaction", (void*) &staticToggleAction);
+    // DONE-rust
     reaper::plugin_register("-hookcommand", (void*) &staticHookCommand);
+    // TODO-rust
     reaper::plugin_register("-projectconfig", (void*) &projectConfigExtension_);
   }
 
@@ -369,6 +385,7 @@ namespace reaplus {
       if (!isPost) {
         auto& reaper = Reaper::instance();
         // Make use of audioThreadCoordination for rxcpp possible
+        // TODO-rust
         reaper.audioThreadRunLoop_.dispatch();
         // For each open MIDI device
         auto& subject = reaper.incomingMidiEventsSubject_;

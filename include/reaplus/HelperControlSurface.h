@@ -29,6 +29,7 @@ namespace reaplus {
 
   class Reaper;
 
+  // DONE-rust
   struct TrackData {
     double volume;
     double pan;
@@ -42,6 +43,7 @@ namespace reaplus {
     std::string guid;
   };
 
+  // DONE-rust
   struct FxChainPair {
     std::set<std::string> inputFxGuids;
     std::set<std::string> outputFxGuids;
@@ -51,22 +53,31 @@ namespace reaplus {
     friend class Reaper;
     friend class Track;
   private:
+    // DONE-rust
     class Guard {
     public:
       ~Guard();
     };
 
+    // DONE-rust
     enum class State {
       Normal,
       PropagatingTrackSetChanges
     };
 
+    // DONE-rust
     static std::unique_ptr<HelperControlSurface> INSTANCE;
+    // DONE-rust
     static constexpr int FAST_COMMAND_BUFFER_SIZE = 100;
+    // DONE-rust
     int numTrackSetChangesLeftToBePropagated_ = 0;
+    // DONE-rust
     rxcpp::subjects::subject<FxParameter> fxParameterValueChangedSubject_;
+    // DONE-rust
     rxcpp::subjects::subject<FxParameter> fxParameterTouchedSubject_;
+    // DONE-rust
     bool fxHasBeenTouchedJustAMomentAgo_ = false;
+    // DONE-rust ...
     rxcpp::subjects::subject<Track> trackVolumeChangedSubject_;
     rxcpp::subjects::subject<Track> trackVolumeTouchedSubject_;
     rxcpp::subjects::subject<Track> trackPanChangedSubject_;
@@ -99,57 +110,82 @@ namespace reaplus {
     rxcpp::subjects::subject<bool> masterPlayrateTouchedSubject_;
     rxcpp::subjects::subject<bool> mainThreadIdleSubject_;
     rxcpp::subjects::subject<Project> projectClosedSubject_;
+    // DONE-rust
     rxcpp::subjects::behavior<Project> activeProjectBehavior_;
+    // DONE-rust
     using TrackDataMap = std::unordered_map<MediaTrack*, TrackData>;
+    // DONE-rust
     std::unordered_map<ReaProject*, TrackDataMap> trackDataByMediaTrackByReaProject_;
+    // DONE-rust
     std::unordered_map<MediaTrack*, FxChainPair> fxChainPairByMediaTrack_;
     rxcpp::schedulers::relaxed_run_loop mainThreadRunLoop_;
     rxcpp::observe_on_one_worker mainThreadCoordination_ =
         rxcpp::observe_on_one_worker(rxcpp::schedulers::make_relaxed_run_loop(mainThreadRunLoop_));
     rxcpp::observe_on_one_worker::coordinator_type
         mainThreadCoordinator_ = mainThreadCoordination_.create_coordinator();
+    // DONE-rust
     moodycamel::ConcurrentQueue<std::function<void(void)>> fastCommandQueue_;
+    // DONE-rust
     std::array<std::function<void(void)>, FAST_COMMAND_BUFFER_SIZE> fastCommandBuffer_;
 
     // Capabilities depending on REAPER version
+    // DONE-rust
     bool supportsDetectionOfInputFx_ = false;
+    // DONE-rust
     bool supportsDetectionOfInputFxInSetFxChange_ = false;
 
   public:
+    // DONE-rust
     ~HelperControlSurface() override;
 
+    // DONE-rust
     void SetSurfacePan(MediaTrack* trackid, double pan) override;
 
+    // DONE-rust
     void SetSurfaceVolume(MediaTrack* trackid, double volume) override;
 
+    // DONE-rust
     const char* GetTypeString() override;
 
+    // DONE-rust
     const char* GetDescString() override;
 
+    // DONE-rust
     const char* GetConfigString() override;
 
+    // DONE-rust
     void SetTrackListChange() override;
 
+    // DONE-rust
     void Run() override;
 
+    // DONE-rust
     int Extended(int call, void* parm1, void* parm2, void* parm3) override;
 
+    // DONE-rust
     void SetTrackTitle(MediaTrack* trackid, const char* title) override;
 
+    // DONE-rust
     void SetSurfaceMute(MediaTrack* trackid, bool mute) override;
 
+    // DONE-rust
     void SetSurfaceSelected(MediaTrack* trackid, bool selected) override;
 
+    // DONE-rust
     void SetSurfaceSolo(MediaTrack* trackid, bool solo) override;
 
+    // DONE-rust
     void SetSurfaceRecArm(MediaTrack* trackid, bool recarm) override;
 
   protected:
 
+    // DONE-rust
     static void init();
 
+    // DONE-rust
     static HelperControlSurface& instance();
 
+    // DONE-rust
     static void destroyInstance();
 
     rxcpp::observable<Parameter*> parameterValueChangedUnsafe() const;
@@ -241,46 +277,63 @@ namespace reaplus {
     const rxcpp::observe_on_one_worker& mainThreadCoordination() const;
 
   private:
+    // DONE-rust
     HelperControlSurface();
 
+    // DONE-rust
     HelperControlSurface(const HelperControlSurface&);
 
+    // DONE-rust
     void removeInvalidReaProjects();
 
+    // DONE-rust
     void detectTrackSetChanges();
 
+    // DONE-rust
     void removeInvalidMediaTracks(const Project& project, TrackDataMap& trackDatas);
 
+    // DONE-rust
     void addMissingMediaTracks(const Project& project, TrackDataMap& trackDatas);
 
+    // DONE-rust
     void updateMediaTrackPositions(const Project& project, TrackDataMap& trackDatas);
 
+    // DONE-rust
     void detectFxChangesOnTrack(Track track, bool notifyListenersAboutChanges,
         bool checkNormalFxChain, bool checkInputFxChain);
 
     // Returns true if FX was added or removed
+    // DONE-rust
     bool detectFxChangesOnTrack(Track track,
         std::set<std::string>& oldFxGuids,
         bool isInputFx,
         bool notifyListenersAboutChanges);
 
+    // DONE-rust
     void removeInvalidFx(Track track,
         std::set<std::string>& oldFxGuids,
         bool isInputFx,
         bool notifyListenersAboutChanges);
 
+    // DONE-rust
     void addMissingFx(Track track, std::set<std::string>& fxGuids, bool isInputFx, bool notifyListenersAboutChanges);
 
+    // DONE-rust
     std::set<std::string> fxGuidsOnTrack(Track track, bool isInputFx) const;
 
+    // DONE-rust
     bool isProbablyInputFx(Track track, int fxIndex, int paramIndex, double fxValue) const;
 
+    // DONE-rust
     bool trackParameterIsAutomated(Track track, std::string parameterName) const;
 
+    // DONE-rust
     State state() const;
 
+    // DONE-rust
     TrackData* findTrackDataByTrack(MediaTrack* mediaTrack);
 
+    // DONE-rust
     // From REAPER > 5.95, parmFxIndex should be interpreted as query index. For earlier versions it's a normal index
     // - which unfortunately doesn't contain information if the FX is on the normal FX chain or the input FX chain.
     // In this case a heuristic is applied to determine which chain it is. It gets more accurate when paramIndex
@@ -288,6 +341,7 @@ namespace reaplus {
     boost::optional<Fx> getFxFromParmFxIndex(const Track& track, int parmFxIndex, int paramIndex = -1,
         int paramValue = -1) const;
 
+    // DONE-rust
     void fxParamSet(void* parm1, void* parm2, void* parm3, bool isInputFxIfSupported);
   };
 }

@@ -12,15 +12,23 @@ namespace reaplus {
   private:
     KbdSectionInfo* sectionInfo_;
   public:
+    // DONE-rust
     int actionCount() const;
+    // DONE-rust
     rxcpp::observable<Action> actions() const;
+    // DONE-rust
     KbdSectionInfo* sectionInfo() const;
+    // DONE-rust
     Action actionByCommandId(int commandId) const;
+    // DONE-rust
     Action actionByIndex(int index) const;
+    // DONE-rust
     friend bool operator==(const Section& lhs, const Section& rhs);
   protected:
+    // DONE-rust
     explicit Section(KbdSectionInfo* sectionInfo);
   private:
+    // DONE-rust
     Action actionByIndexUnchecked(int index) const;
   };
 }

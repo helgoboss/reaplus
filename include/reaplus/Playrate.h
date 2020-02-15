@@ -3,6 +3,7 @@
 #include <string>
 
 namespace reaplus {
+  // TODO-rust
   class Playrate {
   private:
     double value_;

@@ -201,6 +201,7 @@ namespace reaplus {
   int HelperControlSurface::Extended(int call, void* parm1, void* parm2, void* parm3) {
     try {
       switch (call) {
+        // DONE-rust
         case CSURF_EXT_SETINPUTMONITOR: {
           if (state() != State::PropagatingTrackSetChanges) {
             const auto mediaTrack = (MediaTrack*) parm1;
@@ -223,6 +224,7 @@ namespace reaplus {
           }
           return 0;
         }
+        // DONE-rust
         case CSURF_EXT_SETFXPARAM: {
           if (!parm1 || !parm2 || !parm3) {
             return 0;
@@ -230,6 +232,7 @@ namespace reaplus {
           fxParamSet(parm1, parm2, parm3, false);
           return 0;
         }
+        // DONE-rust
         case CSURF_EXT_SETFXPARAM_RECFX: {
           if (!parm1 || !parm2 || !parm3) {
             return 0;
@@ -237,6 +240,7 @@ namespace reaplus {
           fxParamSet(parm1, parm2, parm3, true);
           return 0;
         }
+        // DONE-rust
         case CSURF_EXT_SETFXENABLED: {
           if (!parm1 || !parm2) {
             return 0;
@@ -250,6 +254,7 @@ namespace reaplus {
           }
           return 0;
         }
+        // DONE-rust
         case CSURF_EXT_SETSENDVOLUME:
         case CSURF_EXT_SETSENDPAN: {
           const auto mediaTrack = (MediaTrack*) parm1;
@@ -271,6 +276,7 @@ namespace reaplus {
           }
           return 0;
         }
+          // DONE-rust
         case CSURF_EXT_SETFOCUSEDFX: {
           if (!parm1 || parm2 || !parm3) {
             // Clear focused FX
@@ -288,6 +294,7 @@ namespace reaplus {
           }
           return 0;
         }
+        // DONE-rust
         case CSURF_EXT_SETFXOPEN: {
           if (!parm1 || !parm2) {
             return 0;
@@ -307,6 +314,7 @@ namespace reaplus {
           }
           return 0;
         }
+          // DONE-rust
         case CSURF_EXT_SETFXCHANGE: {
           if (!parm1) {
             return 0;
@@ -322,10 +330,12 @@ namespace reaplus {
           }
           return 0;
         }
+          // DONE-rust
         case CSURF_EXT_SETLASTTOUCHEDFX: {
           fxHasBeenTouchedJustAMomentAgo_ = true;
           return 0;
         }
+          // DONE-rust
         case CSURF_EXT_SETBPMANDPLAYRATE: {
           if (parm1) {
             masterTempoChangedSubject_.get_subscriber().on_next(true);

@@ -4,6 +4,7 @@
 #include <string>
 
 namespace reaplus {
+  // DONE-rust
   class Guid {
   private:
     GUID data_;
