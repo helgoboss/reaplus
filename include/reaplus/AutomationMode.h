@@ -1,6 +1,7 @@
 #pragma once
 
 namespace reaplus {
+  // DONE-rust
   enum class AutomationMode : int {
     NoOverride = -1,
     TrimRead = 0,

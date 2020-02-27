@@ -352,6 +352,9 @@ namespace reaplus {
     }
   }
 
+  // Non-optional because we consider the index as a stable
+  // ID (which is not completely true because the plugin can add and remove parameters ... but we anyway don't have
+  // a way to represent a parameter in a stable way).
   FxParameter Fx::parameterByIndex(int index) const {
     return FxParameter(*this, index);
   }

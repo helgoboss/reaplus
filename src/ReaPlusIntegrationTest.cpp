@@ -35,6 +35,7 @@ namespace reaplus {
     // TODO Test fxClosed event (how to test that?)
     // TODO Test fxFocused with none event (how to test that?)
 
+    // DONE-rust
     test("Boost ranges", [] {
       const auto op = [](int i) { return std::to_string(i); };
       const auto range = counting_range(0, 20) | transformed(op);
@@ -43,6 +44,7 @@ namespace reaplus {
       }
     });
 
+    // DONE-rust
     testWithUntil("Create empty project in new tab", [](auto testIsOver) {
       // Given
       const auto currentProjectBefore = Reaper::instance().currentProject();
@@ -73,6 +75,7 @@ namespace reaplus {
       assertTrue(*eventProject == newProject, "Project event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Add track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -93,6 +96,7 @@ namespace reaplus {
       assertTrue(*eventTrack == newTrack, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query master track", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -104,6 +108,7 @@ namespace reaplus {
       assertTrue(masterTrack.isMasterTrack(), "Track is not master track");
     });
 
+    // DONE-rust
     test("Query all tracks", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -116,6 +121,7 @@ namespace reaplus {
       assertTrue(tracks.as_blocking().count() == 2, "Not enough tracks returned");
     });
 
+    // DONE-rust
     test("Query track by GUID", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -133,6 +139,7 @@ namespace reaplus {
           "getMediaTrackGuid() doesn't work");
     });
 
+    // DONE-rust
     test("Query non-existent track by GUID", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -144,6 +151,7 @@ namespace reaplus {
       assertTrue(!foundTrack.isAvailable(), "Reported non-existent track as available");
     });
 
+    // DONE-rust
     test("Query track project", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -155,6 +163,7 @@ namespace reaplus {
       assertTrue(trackProject == project, "Track project is not original project");
     });
 
+    // DONE-rust
     test("Query track name", [] {
       // Given
       auto track = firstTrack();
@@ -166,6 +175,7 @@ namespace reaplus {
       assertTrue(trackName.empty(), "Wrong name reported");
     });
 
+    // DONE-rust
     testWithUntil("Set track name", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -185,6 +195,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query track input monitoring", [] {
       // Given
       auto track = firstTrack();
@@ -196,6 +207,7 @@ namespace reaplus {
       assertTrue(mode == InputMonitoringMode::Normal, "Wrong input monitoring mode");
     });
 
+    // DONE-rust
     testWithUntil("Set track input monitoring", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -215,6 +227,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query track recording input", [] {
       // Given
       auto track = firstTrack();
@@ -231,6 +244,7 @@ namespace reaplus {
       assertTrue(*RecordingInput::ofRecInputIndex(recInput->recInputIndex()) == *recInput, "== doesn't work");
     });
 
+    // DONE-rust
     testWithUntil("Set track recording input 1", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -255,6 +269,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Set track recording input 2", [] {
       // Given
       auto track = firstTrack();
@@ -271,6 +286,7 @@ namespace reaplus {
       assertTrue(midiRecInput.device()->id() == 7, "Returned wrong device");
     });
 
+    // DONE-rust
     test("Set track recording input 3", [] {
       // Given
       auto track = firstTrack();
@@ -287,6 +303,7 @@ namespace reaplus {
       assertTrue(midiRecInput.device() == none, "Returned explicit device");
     });
 
+    // DONE-rust
     test("Set track recording input 4", [] {
       // Given
       auto track = firstTrack();
@@ -303,6 +320,7 @@ namespace reaplus {
       assertTrue(midiRecInput.device() == none, "Returned explicit device");
     });
 
+    // DONE-rust
     test("Query track volume", [] {
       // Given
       auto track = firstTrack();
@@ -316,6 +334,7 @@ namespace reaplus {
       assertTrue(volume.normalizedValue() == 0.71599999999999997, "Wrong normalized value returned");
     });
 
+    // DONE-rust
     testWithUntil("Set track volume", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -338,6 +357,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query track pan", [] {
       // Given
       auto track = firstTrack();
@@ -350,6 +370,7 @@ namespace reaplus {
       assertTrue(pan.normalizedValue() == 0.5, "Wrong normalized value returned");
     });
 
+    // DONE-rust
     testWithUntil("Set track pan", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -371,6 +392,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query track selection state", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -384,6 +406,7 @@ namespace reaplus {
       assertTrue(project.selectedTrackCount() == 0);
     });
 
+    // DONE-rust
     testWithUntil("Select track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -410,6 +433,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track2, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Unselect track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -434,6 +458,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Select master track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -451,6 +476,7 @@ namespace reaplus {
       assertTrue(project.selectedTracks(true).as_blocking().count() == 1);
     });
 
+    // DONE-rust
     test("Query track auto arm mode", [] {
       // Given
       auto track = firstTrack();
@@ -462,6 +488,7 @@ namespace reaplus {
       assertTrue(!isInAutoArmMode, "Wrong value returned");
     });
 
+    // DONE-rust
     test("Query track arm state", [] {
       // Given
       auto track = firstTrack();
@@ -475,6 +502,7 @@ namespace reaplus {
       assertTrue(!isArmedIgnoringAutoArm, "Wrong value returned (ignoring auto-arm)");
     });
 
+    // DONE-rust
     testWithUntil("Arm track in normal mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -496,6 +524,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Disarm track in normal mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -517,6 +546,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Enable track auto-arm mode", [] {
       // Given
       auto track = firstTrack();
@@ -530,6 +560,7 @@ namespace reaplus {
       assertTrue(!track.isArmed(false), "Track is suddenly armed (ignoring auto-arm)");
     });
 
+    // DONE-rust
     testWithUntil("Arm track in auto-arm mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -553,6 +584,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Disarm track in auto-arm mode", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -574,6 +606,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Disable track auto-arm mode", [] {
       // Given
       auto track = firstTrack();
@@ -587,6 +620,7 @@ namespace reaplus {
       assertTrue(!track.isArmed(false), "Track is suddenly armed (ignoring auto-arm)");
     });
 
+    // DONE-rust
     test("Switch to normal track mode while armed", [] {
       // Given
       auto track = firstTrack();
@@ -602,6 +636,7 @@ namespace reaplus {
       assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
+    // DONE-rust
     test("Switch track to auto-arm mode while armed", [] {
       // Given
       auto track = firstTrack();
@@ -616,6 +651,7 @@ namespace reaplus {
       assertTrue(track.isArmed(false), "Track is suddenly unarmed (ignoring auto-arm)");
     });
 
+    // DONE-rust
     testWithUntil("Disarm track in auto-arm mode (ignoring auto-arm)", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -637,6 +673,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Arm track in auto-arm mode (ignoring auto-arm)", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -661,6 +698,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Select track exclusively", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -688,6 +726,7 @@ namespace reaplus {
       assertTrue(count == 3, "Event count wrong");
     });
 
+    // DONE-rust
     testWithUntil("Remove track", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -717,6 +756,7 @@ namespace reaplus {
       assertTrue(*eventTrack == firstTrack, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query track automation mode", [] {
       // Given
       auto track = firstTrack();
@@ -735,6 +775,7 @@ namespace reaplus {
       }
     });
 
+    // DONE-rust
     test("Query track send count", [] {
       // Given
       auto track = firstTrack();
@@ -750,6 +791,7 @@ namespace reaplus {
       assertTrue(track.sends().as_blocking().count() == 0, "Sends not empty");
     });
 
+    // DONE-rust
     test("Add track send", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -769,6 +811,7 @@ namespace reaplus {
       assertTrue(firstTrack.sends().as_blocking().count() == 1, "Sends returns wrong number");
     });
 
+    // DONE-rust
     test("Query track send", [] {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -794,6 +837,7 @@ namespace reaplus {
       assertTrue(sendToThirdTrack.volume().db() == 0);
     });
 
+    // DONE-rust
     testWithUntil("Set track send volume", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -816,6 +860,7 @@ namespace reaplus {
       assertTrue(*eventTrackSend == send, "Track send event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Set track send pan", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -839,6 +884,7 @@ namespace reaplus {
       assertTrue(*eventTrackSend == send, "Track send event wrong");
     });
 
+    // DONE-rust
     test("Query action", [] {
       // Given
       firstTrack().selectExclusively();
@@ -866,6 +912,7 @@ namespace reaplus {
       assertTrue(normalActionByIndex == normalAction, "== doesn't work");
     });
 
+    // DONE-rust
     testWithUntil("Invoke action", [](auto testIsOver) {
       // Given
       auto action = Reaper::instance().mainSection().actionByCommandId(6);
@@ -887,6 +934,7 @@ namespace reaplus {
       assertTrue(!eventAction.is_initialized(), "actionInvoked was actually raised!");
     });
 
+    // DONE-rust
     testWithUntil("Test actionInvoked event", [](auto testIsOver) {
       // Given
       auto action = Reaper::instance().mainSection().actionByCommandId(1582);
@@ -905,6 +953,7 @@ namespace reaplus {
       assertTrue(*eventAction == action, "Action event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Unmute track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -924,6 +973,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Mute track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -943,6 +993,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Solo track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -962,6 +1013,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     testWithUntil("Unsolo track", [](auto testIsOver) {
       // Given
       auto track = firstTrack();
@@ -981,6 +1033,7 @@ namespace reaplus {
       assertTrue(*eventTrack == track, "Track event wrong");
     });
 
+    // DONE-rust
     test("Generate GUID", [] {
       // Given
 
@@ -991,6 +1044,7 @@ namespace reaplus {
       assertTrue(guid.toString().length() == 36);
     });
 
+    // DONE-rust
     test("Main section functions", [] {
       // Given
       auto section = Reaper::instance().mainSection();
@@ -1001,6 +1055,7 @@ namespace reaplus {
       assertTrue(section.actions().as_blocking().count() == section.actionCount());
     });
 
+    // DONE-rust
     test("Register and unregister action", [] {
       // Given
 
@@ -1023,6 +1078,7 @@ namespace reaplus {
       assertTrue(!action.isAvailable(), "Action should not be available anymore after unregistering");
     });
 
+    // DONE-rust
     test("Register and unregister toggle action", [] {
       // Given
 
@@ -1053,6 +1109,7 @@ namespace reaplus {
     });
 
     auto fxTests = [this](function<Track(void)> getTrack, function<FxChain(void)> getFxChain) {
+      // DONE-rust
       test("Query fx chain", [getFxChain] {
         // Given
         auto fxChain = getFxChain();
@@ -1071,6 +1128,7 @@ namespace reaplus {
         assertTrue(fxChain.chunk() == none);
       });
 
+      // DONE-rust
       testWithUntil("Add track fx by original name", [getFxChain](auto testIsOver) {
         // Given
         auto fxChain = getFxChain();
@@ -1116,6 +1174,7 @@ namespace reaplus {
         assertTrue(*eventFx == fx, "FX event wrong");
       });
 
+      // DONE-rust
       test("Check track fx with 1 fx", [getFxChain, getTrack] {
         // Given
         auto fxChain = getFxChain();
@@ -1153,6 +1212,7 @@ namespace reaplus {
         assertTrue(fx1->isEnabled());
       });
 
+      // DONE-rust
       testWithUntil("Disable track fx", [getFxChain](auto testIsOver) {
         // Given
         auto fxChain = getFxChain();
@@ -1173,6 +1233,7 @@ namespace reaplus {
         assertTrue(*eventFx == fx1, "FX event wrong");
       });
 
+      // DONE-rust
       testWithUntil("Enable track fx", [getFxChain](auto testIsOver) {
         // Given
         auto fxChain = getFxChain();
@@ -1193,6 +1254,7 @@ namespace reaplus {
         assertTrue(*eventFx == fx1, "FX event wrong");
       });
 
+      // DONE-rust
       test("Check track fx with 2 fx", [getFxChain, getTrack] {
         // Given
         auto fxChain = getFxChain();
@@ -1246,6 +1308,7 @@ namespace reaplus {
         }
       });
 
+      // DONE-rust
       test("Check fx parameter", [getFxChain, getTrack] {
         // Given
         auto fxChain = getFxChain();
@@ -1648,6 +1711,7 @@ namespace reaplus {
         [this] { return secondTrack().inputFxChain(); }
     );
 
+    // DONE-rust
     testWithUntil("Insert track at", [](auto testIsOver) {
       // Given
       auto project = Reaper::instance().currentProject();
@@ -1673,6 +1737,7 @@ namespace reaplus {
       assertTrue(*eventTrack == newTrack, "Track event wrong");
     });
 
+    // DONE-rust
     test("Query MIDI input devices", [] {
       // Given
 
@@ -1683,6 +1748,7 @@ namespace reaplus {
       // Then
     });
 
+    // DONE-rust
     test("Query MIDI output devices", [] {
       // Given
 
@@ -1693,10 +1759,10 @@ namespace reaplus {
       // Then
     });
 
+    // DONE-rust
     testAndWait("Stuff MIDI messages", [] {
       // Given
       const auto msg = MidiMessage::noteOn(0, 64, 100);
-
       // When
       const auto observable = Reaper::instance().incomingMidiEvents().map([](IncomingMidiEvent evt) {
         return evt.message().getType() == MidiMessageType::NoteOn
@@ -1710,6 +1776,7 @@ namespace reaplus {
       return observable;
     });
 
+    // DONE-rust
     testWithUntil("Use undoable", [](auto testIsOver) {
       // Given
       auto t = firstTrack();
@@ -1733,6 +1800,7 @@ namespace reaplus {
       assertTrue(*eventTrack == t, "Track event wrong");
     });
 
+    // DONE-rust
     test("Undo", [] {
       // Given
       auto t = firstTrack();
@@ -1746,6 +1814,7 @@ namespace reaplus {
       assertTrue(label && *label == "ReaPlus integration test operation", "Label was wrong");
     });
 
+    // DONE-rust
     test("Redo", [] {
       // Given
       auto t = firstTrack();
@@ -1757,6 +1826,7 @@ namespace reaplus {
       assertTrue(firstTrack().name() == "Renamed", "Redo didn't work");
     });
 
+    // DONE-rust
     test("Get REAPER window", [] {
       // Given
 
@@ -1767,6 +1837,7 @@ namespace reaplus {
       assertTrue(result == reaper::GetMainHwnd(), "Wrong main window");
     });
 
+    // DONE-rust
     test("Mark project as dirty", [] {
       // Given
 
@@ -1776,6 +1847,7 @@ namespace reaplus {
       // Then
     });
 
+    // DONE-result
     test("Get project tempo", [] {
       // Given
 
@@ -1787,6 +1859,7 @@ namespace reaplus {
       assertTrue(tempo.normalizedValue() == 119.0 / 959);
     });
 
+    // DONE-result
     testWithUntil("Set project tempo", [](auto testIsOver) {
       // Given
 
@@ -1803,6 +1876,7 @@ namespace reaplus {
       assertTrue(count == 2, "Event count wrong, but could be 1 which would be more correct");
     });
 
+    // DONE-result
     test("Show message box", [] {
       // Given
 
